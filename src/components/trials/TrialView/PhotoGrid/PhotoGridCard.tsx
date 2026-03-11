@@ -1,7 +1,6 @@
 import { useRef } from "react";
-import { Camera } from "lucide-react";
+import { Camera, ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useTrial, useUpdatePhotoGrid } from "@/hooks/useTrials";
 import {
   PHOTO_ROWS,
@@ -49,35 +48,40 @@ export default function PhotoGridCard({ trialId }: Props) {
     mutation.mutate({ ...photos, [slot]: dataUrl });
   }
 
-  const statusBadge =
-    filledCount === 0 ? (
-      <Badge variant="secondary" className="text-[10px]">
-        Not started
-      </Badge>
-    ) : allDone ? (
-      <Badge className="bg-green-100 text-green-800 text-[10px]">
-        Complete ✓
-      </Badge>
-    ) : (
-      <Badge className="bg-amber-100 text-amber-800 text-[10px]">
-        {filledCount} of {PHOTO_GRID_CELLS.length} uploaded
-      </Badge>
-    );
-
   return (
     <Card className="flex flex-col flex-1 min-h-0 overflow-hidden gap-0">
-      <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-b shrink-0">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Photos
-          </p>
+      <CardHeader className="py-3 px-5 flex-row items-center justify-between space-y-0 border-b shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="h-6 w-6 rounded-md bg-orange-100 flex items-center justify-center">
+            <ImageIcon size={13} className="text-orange-600" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">Photos</p>
         </div>
-        {statusBadge}
+        {filledCount === 0 ? (
+          <span className="text-xs text-muted-foreground">Not started</span>
+        ) : (
+          <div
+            className={cn(
+              "flex items-center gap-1.5 text-xs font-medium",
+              allDone ? "text-emerald-600" : "text-amber-600",
+            )}
+          >
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                allDone ? "bg-emerald-500" : "bg-amber-500",
+              )}
+            />
+            {allDone
+              ? "Complete"
+              : `${filledCount}/${PHOTO_GRID_CELLS.length} uploaded`}
+          </div>
+        )}
       </CardHeader>
-      <CardContent className="flex-1 p-4 flex flex-col gap-2 min-h-0">
-        {/* Grid: [row label] [col1] [col2] */}
+
+      <CardContent className="flex-1 p-5 flex flex-col gap-3 min-h-0">
         <div
-          className="grid gap-2 flex-1 min-h-0"
+          className="grid gap-3 flex-1 min-h-0"
           style={{
             gridTemplateColumns: "5rem 1fr 1fr",
             gridTemplateRows: "auto 1fr 1fr",
@@ -88,7 +92,7 @@ export default function PhotoGridCard({ trialId }: Props) {
           {PHOTO_COLUMNS.map((col) => (
             <div
               key={col}
-              className="bg-muted flex items-center justify-center text-[9px] font-bold uppercase tracking-wider text-muted-foreground rounded-lg py-2"
+              className="bg-muted/60 flex items-center justify-center text-xs font-semibold uppercase tracking-wide text-muted-foreground rounded-lg py-2"
             >
               {col}
             </div>
@@ -99,7 +103,7 @@ export default function PhotoGridCard({ trialId }: Props) {
             <>
               <div
                 key={`label-${row}`}
-                className="bg-muted flex items-center justify-center text-center text-[9px] font-bold uppercase tracking-wider text-muted-foreground rounded-lg px-2"
+                className="bg-muted/60 flex items-center justify-center text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground rounded-lg px-2"
               >
                 {row}
               </div>
@@ -128,10 +132,10 @@ export default function PhotoGridCard({ trialId }: Props) {
                       type="button"
                       onClick={() => fileRefs.current[cell.key]?.click()}
                       className={cn(
-                        "w-full h-full rounded-xl flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer",
+                        "w-full h-full rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload",
                         hasPhoto
-                          ? "border-2 border-green-300 bg-green-50"
-                          : "border-2 border-dashed border-border bg-muted/50 hover:bg-muted",
+                          ? "ring-2 ring-emerald-200 bg-emerald-50/50 hover:ring-emerald-300"
+                          : "border-2 border-dashed border-border/60 bg-muted/20 hover:bg-muted/40 hover:border-border",
                       )}
                     >
                       {hasPhoto ? (
@@ -139,20 +143,22 @@ export default function PhotoGridCard({ trialId }: Props) {
                           <img
                             src={photos[cell.key]}
                             alt={`${row} ${col}`}
-                            className="w-16 h-16 object-cover rounded-lg"
+                            className="w-20 h-20 object-cover rounded-lg shadow-sm"
                           />
-                          <span className="text-[11px] font-bold text-green-700">
+                          <span className="text-xs font-medium text-emerald-600">
                             ✓ Uploaded
                           </span>
                         </>
                       ) : (
                         <>
-                          <Camera
-                            size={24}
-                            className="text-muted-foreground/50"
-                          />
-                          <span className="text-[11px] text-muted-foreground/70">
-                            Tap to upload
+                          <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center group-hover/upload:bg-muted transition-colors">
+                            <Camera
+                              size={18}
+                              className="text-muted-foreground/50 group-hover/upload:text-muted-foreground transition-colors"
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground/50 group-hover/upload:text-muted-foreground transition-colors">
+                            Upload
                           </span>
                         </>
                       )}

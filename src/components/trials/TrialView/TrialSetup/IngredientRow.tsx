@@ -18,55 +18,43 @@ export function IngredientRow({
   onChange,
   onRemove,
 }: IngredientRowProps) {
-  const barWidth = `${Math.min(percentage * 2, 100)}%`;
-
   return (
-    <div>
-      <div className="grid grid-cols-[1fr_6rem_2.5rem] gap-3 items-center">
+    <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 items-center">
+      <Input
+        value={ingredient}
+        onChange={(e) => onChange(e.target.value, percentage)}
+        placeholder="Ingredient name"
+        className="h-8 text-sm bg-muted border-0 focus-visible:ring-1"
+      />
+      <div className="relative">
         <Input
-          value={ingredient}
-          onChange={(e) => onChange(e.target.value, percentage)}
-          placeholder="Ingredient name"
-          className="h-8 text-sm bg-muted border-0 focus-visible:ring-1"
+          type="number"
+          value={percentage === 0 ? "" : percentage}
+          onChange={(e) =>
+            onChange(
+              ingredient,
+              Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+            )
+          }
+          placeholder="0"
+          min={0}
+          max={100}
+          step={0.1}
+          className="h-8 text-sm bg-muted border-0 focus-visible:ring-1 pr-6"
         />
-        <div className="relative">
-          <Input
-            type="number"
-            value={percentage === 0 ? "" : percentage}
-            onChange={(e) =>
-              onChange(
-                ingredient,
-                Math.max(0, Math.min(100, Number(e.target.value) || 0)),
-              )
-            }
-            placeholder="0"
-            min={0}
-            max={100}
-            step={0.1}
-            className="h-8 text-sm bg-muted border-0 focus-visible:ring-1 pr-6"
-          />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-            %
-          </span>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          onClick={onRemove}
-        >
-          <X size={14} />
-        </Button>
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+          %
+        </span>
       </div>
-      {ingredient.trim() !== "" && (
-        <div className="mt-1 h-0.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-foreground rounded-full transition-all"
-            style={{ width: barWidth }}
-          />
-        </div>
-      )}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        onClick={onRemove}
+      >
+        <X size={14} />
+      </Button>
     </div>
   );
 }
@@ -90,8 +78,8 @@ export function AddIngredientRow({ onAdd }: AddIngredientRowProps) {
   }
 
   return (
-    <div className="mt-1 pt-3 border-t border-dashed border-border">
-      <div className="grid grid-cols-[1fr_6rem_2.5rem] gap-3 items-center">
+    <div className="pt-2 border-t border-dashed border-border/50">
+      <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 items-center">
         <Input
           value={ingredient}
           onChange={(e) => setIngredient(e.target.value)}

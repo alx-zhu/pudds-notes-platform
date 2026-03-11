@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import RatingDots from "@/components/trials/util/RatingDots";
 import { useUpdateSensoryCategory } from "@/hooks/useTrials";
@@ -80,7 +81,6 @@ export default function SensoryEvalModal({
       {
         onSuccess: (updated) => {
           const nextKey = firstIncompleteCategory(updated.sensory);
-          // If all done, close modal
           const allDone = SENSORY_CATEGORIES.every((c) =>
             isCategoryDone(updated.sensory, c.key),
           );
@@ -99,66 +99,91 @@ export default function SensoryEvalModal({
     (c) => c.key === activeCategory,
   )!;
 
+  const ratedCount = SENSORY_METRICS.filter(
+    (m) => draft[m.key] != null && (draft[m.key] ?? 0) >= 1,
+  ).length;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <DialogTitle>Sensory Evaluation</DialogTitle>
+          <DialogDescription>
+            Rate each metric from 1 to {SENSORY_METRICS[0]?.max ?? 5}
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Category chip strip */}
-        <div className="flex gap-1.5 flex-wrap">
-          {SENSORY_CATEGORIES.map((cat) => {
-            const done = isCategoryDone(sensory, cat.key);
-            const active = cat.key === activeCategory;
-            return (
-              <button
-                key={cat.key}
-                onClick={() => selectCategory(cat.key)}
-                className={cn(
-                  "text-[10px] font-bold px-2.5 py-1 rounded-lg cursor-pointer transition-colors whitespace-nowrap border",
-                  done &&
-                    !active &&
-                    "bg-green-100 text-green-800 border-green-200",
-                  active && "bg-foreground text-background border-foreground",
-                  !done &&
-                    !active &&
-                    "bg-muted text-muted-foreground border-transparent",
-                )}
-              >
-                {cat.shortLabel}
-                {done && !active && " ✓"}
-              </button>
-            );
-          })}
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5 min-h-0">
+          {/* Category chip strip */}
+          <div className="flex gap-2 flex-wrap">
+            {SENSORY_CATEGORIES.map((cat) => {
+              const done = isCategoryDone(sensory, cat.key);
+              const active = cat.key === activeCategory;
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => selectCategory(cat.key)}
+                  className={cn(
+                    "text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-all whitespace-nowrap",
+                    done &&
+                      !active &&
+                      "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+                    active && "bg-foreground text-background shadow-sm",
+                    !done &&
+                      !active &&
+                      "bg-muted text-muted-foreground ring-1 ring-transparent hover:ring-border",
+                  )}
+                >
+                  {cat.shortLabel}
+                  {done && !active && " ✓"}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Section label with progress */}
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {activeCategoryConfig.label}
+            </p>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {ratedCount}/{SENSORY_METRICS.length} rated
+            </span>
+          </div>
+
+          {/* Metrics */}
+          <div className="flex flex-col gap-2">
+            {SENSORY_METRICS.map((metric) => {
+              const hasValue =
+                draft[metric.key] != null && (draft[metric.key] ?? 0) >= 1;
+              return (
+                <div
+                  key={metric.key}
+                  className={cn(
+                    "rounded-xl px-4 py-3 flex items-center justify-between gap-4 transition-colors",
+                    hasValue
+                      ? "bg-blue-50/50 ring-1 ring-blue-100"
+                      : "bg-muted/40 ring-1 ring-border/30",
+                  )}
+                >
+                  <p className="text-sm font-medium text-foreground shrink-0">
+                    {metric.label}
+                  </p>
+                  <RatingDots
+                    value={draft[metric.key] ?? null}
+                    max={metric.max}
+                    onChange={(v) => setRating(metric.key, v)}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Context label */}
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-          {activeCategoryConfig.label}
-        </p>
-
-        {/* Metrics — one per row */}
-        <div className="flex flex-col gap-2">
-          {SENSORY_METRICS.map((metric) => (
-            <div
-              key={metric.key}
-              className="bg-muted/60 rounded-lg p-3 flex items-center justify-between gap-4"
-            >
-              <p className="text-xs font-semibold text-foreground shrink-0">
-                {metric.label}
-              </p>
-              <RatingDots
-                value={draft[metric.key] ?? null}
-                max={metric.max}
-                onChange={(v) => setRating(metric.key, v)}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
+        {/* Footer — pinned */}
+        <div className="px-6 py-4 border-t border-border shrink-0 flex gap-3">
           <Button
             variant="outline"
             size="sm"

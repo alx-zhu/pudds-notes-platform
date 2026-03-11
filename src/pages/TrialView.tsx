@@ -1,8 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import SensoryEvalCard from "@/components/trials/TrialView/SensoryEval/SensoryEvalCard";
 import PhotoGridCard from "@/components/trials/TrialView/PhotoGrid/PhotoGridCard";
@@ -49,54 +48,72 @@ export default function TrialView() {
 
   return (
     <>
-      {/* Topbar */}
-      <header className="h-14 bg-card border-b border-border flex items-center px-4 gap-3 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full h-8 w-8 bg-muted"
-          onClick={() => navigate("/trials")}
-        >
-          <ChevronLeft size={16} />
-        </Button>
-        <div>
-          <p className="text-base font-extrabold tracking-tight">
-            Trial #{trial.trialNumber}
-          </p>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <Badge
-            className={cn(
-              "text-[11px] font-semibold",
-              completion.isFullyComplete
-                ? "bg-green-100 text-green-800"
-                : "bg-amber-100 text-amber-800",
-            )}
+      {/* Header */}
+      <header className="bg-card border-b border-border px-6 py-4 shrink-0">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate("/trials")}
           >
-            ●{" "}
-            {completion.isFullyComplete
-              ? "All sections complete"
-              : `${completion.completedSections} of 3 sections complete`}
-          </Badge>
+            <ChevronLeft size={18} />
+          </Button>
+
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <FlaskConical size={16} className="text-primary-foreground" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-semibold leading-tight">
+                Trial #{trial.trialNumber}
+              </h1>
+              {subtitle && (
+                <p className="text-sm text-muted-foreground truncate">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
+                  completion.isFullyComplete
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                    : "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    completion.isFullyComplete
+                      ? "bg-emerald-500"
+                      : "bg-amber-500",
+                  )}
+                />
+                {completion.isFullyComplete
+                  ? "All complete"
+                  : `${completion.completedSections} of 3 complete`}
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* 3-section layout */}
+      {/* Content area */}
       <div
-        className="flex-1 overflow-hidden p-4 grid gap-3 min-h-0"
+        className="flex-1 overflow-hidden p-6 grid gap-5 min-h-0"
         style={{
-          gridTemplateColumns: "500px 1fr",
+          gridTemplateColumns: "minmax(380px, 460px) 1fr",
           gridTemplateRows: "1fr",
         }}
       >
         {/* Left column: Setup + Sensory */}
-        <div className="flex flex-col gap-3 min-h-0 overflow-hidden">
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <TrialSetupCard trialId={trial.id} />
-          </div>
+        <div className="flex flex-col gap-5 min-h-0 overflow-hidden">
+          <TrialSetupCard trialId={trial.id} />
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <SensoryEvalCard trialId={trial.id} />
           </div>

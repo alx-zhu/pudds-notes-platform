@@ -107,7 +107,7 @@ export default function TrialSetupModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-border shrink-0">
           <DialogTitle>
             {trialId ? "Edit Trial Setup" : "New Trial"}
           </DialogTitle>
@@ -119,10 +119,10 @@ export default function TrialSetupModal({
         </DialogHeader>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5 min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 min-h-0">
           {/* Date */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Date
             </Label>
             <Popover>
@@ -154,8 +154,8 @@ export default function TrialSetupModal({
           </div>
 
           {/* Flavor */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Flavor
             </Label>
             <ToggleGroup
@@ -171,7 +171,7 @@ export default function TrialSetupModal({
                   key={f.value}
                   value={f.value}
                   className={cn(
-                    "flex-1 text-sm font-semibold py-1.5",
+                    "flex-1 text-sm font-medium py-1.5",
                     f.activeClass,
                   )}
                 >
@@ -182,8 +182,8 @@ export default function TrialSetupModal({
           </div>
 
           {/* Processing Type */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Processing Type
             </Label>
             <ToggleGroup
@@ -203,7 +203,7 @@ export default function TrialSetupModal({
                   key={p.value}
                   value={p.value}
                   className={cn(
-                    "flex-1 text-sm font-semibold py-1.5",
+                    "flex-1 text-sm font-medium py-1.5",
                     p.activeClass,
                   )}
                 >
@@ -214,27 +214,35 @@ export default function TrialSetupModal({
           </div>
 
           {/* Variables */}
-          <div className="flex flex-col gap-2">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Variables — Ingredients & Percentages
-            </Label>
-            <div className="rounded-xl border border-border bg-muted/30 px-3 pt-3 pb-2">
-              <div className="grid grid-cols-[1fr_6rem_2.5rem] gap-3 pb-2 mb-1 border-b border-border/60">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Ingredient
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Ingredients
+              </Label>
+              {draft.variables.length > 0 && (
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {draft.variables.length} added
                 </span>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+              )}
+            </div>
+
+            <div className="rounded-xl bg-muted/30 ring-1 ring-border/40 p-3">
+              {/* Column headers */}
+              <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 px-1 pb-2 mb-2 border-b border-border/30">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Name
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
                   %
                 </span>
                 <span />
               </div>
-              <div className="flex flex-col gap-2.5 pt-1">
+
+              <div className="flex flex-col gap-2">
                 {draft.variables.length === 0 ? (
-                  <div className="flex items-center justify-center py-3">
-                    <p className="text-xs text-muted-foreground italic">
-                      No ingredients yet
-                    </p>
-                  </div>
+                  <p className="text-sm text-muted-foreground/50 py-2 px-1">
+                    No ingredients yet
+                  </p>
                 ) : (
                   draft.variables.map((v) => (
                     <IngredientRow
@@ -253,7 +261,7 @@ export default function TrialSetupModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border shrink-0 flex gap-2">
+        <div className="px-6 py-4 border-t border-border shrink-0 flex gap-3">
           <Button
             variant="outline"
             size="sm"
