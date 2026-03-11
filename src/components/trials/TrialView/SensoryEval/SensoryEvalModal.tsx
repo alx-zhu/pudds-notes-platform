@@ -6,12 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import RatingDots from "@/components/RatingDots";
+import RatingDots from "@/components/trials/util/RatingDots";
 import { useUpdateSensoryCategory } from "@/hooks/useTrials";
-import {
-  SENSORY_CATEGORIES,
-  SENSORY_METRICS,
-} from "@/config/trial.config";
+import { SENSORY_CATEGORIES, SENSORY_METRICS } from "@/config/trial.config";
 import type { SensoryCategory, SensoryMetricKey } from "@/config/trial.config";
 import type { SensoryMetrics } from "@/types/trial";
 import { cn } from "@/lib/utils";
@@ -41,7 +38,9 @@ function isCategoryDone(
 ): boolean {
   const entry = sensory[key];
   if (!entry) return false;
-  return SENSORY_METRICS.every((m) => entry[m.key] != null && entry[m.key] >= 1);
+  return SENSORY_METRICS.every(
+    (m) => entry[m.key] != null && entry[m.key] >= 1,
+  );
 }
 
 export default function SensoryEvalModal({
@@ -118,9 +117,13 @@ export default function SensoryEvalModal({
                 onClick={() => selectCategory(cat.key)}
                 className={cn(
                   "text-[10px] font-bold px-2.5 py-1 rounded-lg cursor-pointer transition-colors whitespace-nowrap border",
-                  done && !active && "bg-green-100 text-green-800 border-green-200",
+                  done &&
+                    !active &&
+                    "bg-green-100 text-green-800 border-green-200",
                   active && "bg-foreground text-background border-foreground",
-                  !done && !active && "bg-muted text-muted-foreground border-transparent",
+                  !done &&
+                    !active &&
+                    "bg-muted text-muted-foreground border-transparent",
                 )}
               >
                 {cat.shortLabel}

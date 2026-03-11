@@ -10,7 +10,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SensoryEvalModal from "@/components/trials/TrialView/SensoryEval/SensoryEvalModal";
@@ -174,7 +179,7 @@ export default function SensoryEvalCard({ trialId }: Props) {
 
   return (
     <>
-      <Card className="flex flex-col flex-1 min-h-0 overflow-hidden gap-0">
+      <Card className="flex flex-col flex-1 min-h-0 overflow-hidden gap-0 bg-white">
         <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-b shrink-0">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Sensory Evaluation
@@ -274,20 +279,19 @@ export default function SensoryEvalCard({ trialId }: Props) {
               </p>
             </div>
           )}
-
-          {/* Add / Review Data button — shrink-0 so it's always visible */}
-          <div className="flex justify-center shrink-0">
-            <Button
-              size="sm"
-              variant={allDone ? "outline" : "default"}
-              onClick={() => openModal()}
-              className="gap-2"
-            >
-              <BarChart2 size={14} />
-              {allDone ? "Review Data" : "Add Data"}
-            </Button>
-          </div>
         </CardContent>
+        {/* Add / Review Data button — shrink-0 so it's always visible */}
+        <CardFooter className="flex justify-center shrink-0 bg-white">
+          <Button
+            size="sm"
+            variant={allDone ? "outline" : "default"}
+            onClick={() => openModal()}
+            className="gap-2"
+          >
+            <BarChart2 size={14} />
+            {allDone ? "Review Data" : "Add Data"}
+          </Button>
+        </CardFooter>
       </Card>
 
       {modalOpen && (

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Bell } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -81,12 +81,6 @@ export default function TrialView() {
               ? "All sections complete"
               : `${completion.completedSections} of 3 sections complete`}
           </Badge>
-          <Button variant="outline" size="sm" className="h-8">
-            Compare
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
-            <Bell size={15} />
-          </Button>
         </div>
       </header>
 

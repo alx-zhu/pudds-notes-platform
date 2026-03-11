@@ -16,12 +16,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
-import { IngredientRow, AddIngredientRow } from "@/components/IngredientRow";
-import { useCreateTrialWithSetup, useUpdateTrialSetup } from "@/hooks/useTrials";
+  IngredientRow,
+  AddIngredientRow,
+} from "@/components/trials/TrialView/TrialSetup/IngredientRow";
+import {
+  useCreateTrialWithSetup,
+  useUpdateTrialSetup,
+} from "@/hooks/useTrials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
 import type { TrialSetup, Variable } from "@/types/trial";
@@ -50,9 +53,7 @@ export default function TrialSetupModal({
   initialSetup,
   onSuccess,
 }: Props) {
-  const [draft, setDraft] = useState<TrialSetup>(
-    initialSetup ?? DEFAULT_SETUP,
-  );
+  const [draft, setDraft] = useState<TrialSetup>(initialSetup ?? DEFAULT_SETUP);
 
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
@@ -130,7 +131,10 @@ export default function TrialSetupModal({
                   variant="outline"
                   className="justify-start text-left font-normal h-9 bg-muted border-0"
                 >
-                  <CalendarIcon size={14} className="mr-2 text-muted-foreground" />
+                  <CalendarIcon
+                    size={14}
+                    className="mr-2 text-muted-foreground"
+                  />
                   {draft.date
                     ? format(parseISO(draft.date), "MMMM d, yyyy")
                     : "Pick a date"}
@@ -141,7 +145,8 @@ export default function TrialSetupModal({
                   mode="single"
                   selected={draft.date ? parseISO(draft.date) : undefined}
                   onSelect={(d) =>
-                    d && setDraft((prev) => ({ ...prev, date: d.toISOString() }))
+                    d &&
+                    setDraft((prev) => ({ ...prev, date: d.toISOString() }))
                   }
                 />
               </PopoverContent>
@@ -165,7 +170,10 @@ export default function TrialSetupModal({
                 <ToggleGroupItem
                   key={f.value}
                   value={f.value}
-                  className={cn("flex-1 text-sm font-semibold py-1.5", f.activeClass)}
+                  className={cn(
+                    "flex-1 text-sm font-semibold py-1.5",
+                    f.activeClass,
+                  )}
                 >
                   {f.label}
                 </ToggleGroupItem>
@@ -194,7 +202,10 @@ export default function TrialSetupModal({
                 <ToggleGroupItem
                   key={p.value}
                   value={p.value}
-                  className={cn("flex-1 text-sm font-semibold py-1.5", p.activeClass)}
+                  className={cn(
+                    "flex-1 text-sm font-semibold py-1.5",
+                    p.activeClass,
+                  )}
                 >
                   {p.label}
                 </ToggleGroupItem>
@@ -218,15 +229,23 @@ export default function TrialSetupModal({
                 <span />
               </div>
               <div className="flex flex-col gap-2.5 pt-1">
-                {draft.variables.map((v) => (
-                  <IngredientRow
-                    key={v.id}
-                    ingredient={v.ingredient}
-                    percentage={v.percentage}
-                    onChange={(ing, pct) => updateVariable(v.id, ing, pct)}
-                    onRemove={() => removeVariable(v.id)}
-                  />
-                ))}
+                {draft.variables.length === 0 ? (
+                  <div className="flex items-center justify-center py-3">
+                    <p className="text-xs text-muted-foreground italic">
+                      No ingredients yet
+                    </p>
+                  </div>
+                ) : (
+                  draft.variables.map((v) => (
+                    <IngredientRow
+                      key={v.id}
+                      ingredient={v.ingredient}
+                      percentage={v.percentage}
+                      onChange={(ing, pct) => updateVariable(v.id, ing, pct)}
+                      onRemove={() => removeVariable(v.id)}
+                    />
+                  ))
+                )}
                 <AddIngredientRow onAdd={(ing, pct) => addVariable(ing, pct)} />
               </div>
             </div>
