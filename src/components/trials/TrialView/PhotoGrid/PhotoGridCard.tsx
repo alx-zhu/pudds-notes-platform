@@ -22,7 +22,9 @@ async function resizeImageToBase64(file: File, maxPx = 800): Promise<string> {
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
-      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas
+        .getContext("2d")!
+        .drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL("image/jpeg", 0.82));
       URL.revokeObjectURL(img.src);
     };
@@ -49,8 +51,8 @@ export default function PhotoGridCard({ trialId }: Props) {
   }
 
   return (
-    <Card className="flex flex-col flex-1 min-h-0 overflow-hidden gap-0">
-      <CardHeader className="py-3 px-5 flex-row items-center justify-between space-y-0 border-b shrink-0">
+    <Card className="flex flex-col overflow-hidden gap-0">
+      <CardHeader className="py-3 px-5 flex items-center justify-between border-b shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="h-6 w-6 rounded-md bg-orange-100 flex items-center justify-center">
             <ImageIcon size={13} className="text-orange-600" />
@@ -79,12 +81,11 @@ export default function PhotoGridCard({ trialId }: Props) {
         )}
       </CardHeader>
 
-      <CardContent className="flex-1 p-5 flex flex-col gap-3 min-h-0">
+      <CardContent className="p-5 flex flex-col gap-3">
         <div
-          className="grid gap-3 flex-1 min-h-0"
+          className="grid gap-3"
           style={{
             gridTemplateColumns: "5rem 1fr 1fr",
-            gridTemplateRows: "auto 1fr 1fr",
           }}
         >
           {/* Column headers */}
@@ -114,7 +115,7 @@ export default function PhotoGridCard({ trialId }: Props) {
                 const hasPhoto = Boolean(photos[cell.key]);
 
                 return (
-                  <div key={`${row}-${col}`}>
+                  <div key={`${row}-${col}`} className="aspect-square">
                     <input
                       type="file"
                       accept="image/*"
@@ -132,9 +133,9 @@ export default function PhotoGridCard({ trialId }: Props) {
                       type="button"
                       onClick={() => fileRefs.current[cell.key]?.click()}
                       className={cn(
-                        "w-full h-full rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload",
+                        "relative w-full h-full rounded-xl overflow-hidden flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload",
                         hasPhoto
-                          ? "ring-2 ring-emerald-200 bg-emerald-50/50 hover:ring-emerald-300"
+                          ? "ring-2 ring-emerald-200 hover:ring-emerald-300"
                           : "border-2 border-dashed border-border/60 bg-muted/20 hover:bg-muted/40 hover:border-border",
                       )}
                     >
@@ -143,11 +144,11 @@ export default function PhotoGridCard({ trialId }: Props) {
                           <img
                             src={photos[cell.key]}
                             alt={`${row} ${col}`}
-                            className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                            className="absolute inset-0 w-full h-full object-cover"
                           />
-                          <span className="text-xs font-medium text-emerald-600">
+                          {/* <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-medium text-white bg-emerald-600/80 backdrop-blur-sm px-2 py-0.5 rounded-full whitespace-nowrap">
                             ✓ Uploaded
-                          </span>
+                          </span> */}
                         </>
                       ) : (
                         <>

@@ -6,6 +6,7 @@ import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupC
 import SensoryEvalCard from "@/components/trials/TrialView/SensoryEval/SensoryEvalCard";
 import PhotoGridCard from "@/components/trials/TrialView/PhotoGrid/PhotoGridCard";
 import { useTrial } from "@/hooks/useTrials";
+import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
 import { cn } from "@/lib/utils";
 
@@ -33,18 +34,25 @@ export default function TrialView() {
   const completion = computeCompletion(trial);
   const setup = trial.setup;
 
-  const subtitle = [
-    setup?.date ? format(parseISO(setup.date), "MMM d, yyyy") : null,
-    setup?.flavor
-      ? setup.flavor.charAt(0).toUpperCase() + setup.flavor.slice(1)
-      : null,
-    setup?.processingType
-      ? setup.processingType.charAt(0).toUpperCase() +
-        setup.processingType.slice(1)
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Build display name: custom name → generated from params → fallback
+  const generatedName = setup
+    ? [
+        FLAVORS.find((f) => f.value === setup.flavor)?.label,
+        PROCESSING_TYPES.find((p) => p.value === setup.processingType)?.label,
+      ]
+        .filter(Boolean)
+        .join(" ") +
+      ` — ${format(parseISO(setup.date), "MMM d, yyyy")}`
+    : null;
+
+  const pageTitle = trial.name || generatedName || `Trial #${trial.trialNumber}`;
+
+  // Subtitle: always show trial number; include generated name when title is custom
+  const subtitleParts = [`Trial #${trial.trialNumber}`];
+  if (trial.name && generatedName) {
+    subtitleParts.push(generatedName);
+  }
+  const subtitle = subtitleParts.length > 0 ? subtitleParts.join(" · ") : "";
 
   return (
     <>
@@ -65,8 +73,8 @@ export default function TrialView() {
               <FlaskConical size={16} className="text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base font-semibold leading-tight">
-                Trial #{trial.trialNumber}
+              <h1 className="text-base font-semibold leading-tight truncate">
+                {pageTitle}
               </h1>
               {subtitle && (
                 <p className="text-sm text-muted-foreground truncate">
@@ -103,25 +111,24 @@ export default function TrialView() {
         </div>
       </header>
 
-      {/* Content area */}
-      <div
-        className="flex-1 overflow-hidden p-6 grid gap-5 min-h-0"
-        style={{
-          gridTemplateColumns: "minmax(380px, 460px) 1fr",
-          gridTemplateRows: "1fr",
-        }}
-      >
-        {/* Left column: Setup + Sensory */}
-        <div className="flex flex-col gap-5 min-h-0 overflow-hidden">
-          <TrialSetupCard trialId={trial.id} />
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <SensoryEvalCard trialId={trial.id} />
+      {/* Content area — scrollable */}
+      <div className="flex-1 overflow-y-auto p-6 min-h-0">
+        <div
+          className="grid gap-5 items-start"
+          style={{
+            gridTemplateColumns: "minmax(320px, 380px) 1fr",
+          }}
+        >
+          {/* Left column: Setup only, sticky */}
+          <div className="sticky top-0">
+            <TrialSetupCard trialId={trial.id} />
           </div>
-        </div>
 
-        {/* Right column: Photos */}
-        <div className="min-h-0 flex flex-col overflow-hidden">
-          <PhotoGridCard trialId={trial.id} />
+          {/* Right column: Sensory + Photos stacked */}
+          <div className="flex flex-col gap-5">
+            <SensoryEvalCard trialId={trial.id} />
+            <PhotoGridCard trialId={trial.id} />
+          </div>
         </div>
       </div>
     </>

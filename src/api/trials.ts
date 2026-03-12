@@ -120,6 +120,23 @@ export async function updatePhotoGrid(
   return simulateApiCall(updated);
 }
 
+export async function updateTrialName(
+  id: string,
+  name: string | undefined,
+): Promise<Trial> {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === id);
+  if (idx === -1) throw new Error(`Trial ${id} not found`);
+  const updated: Trial = {
+    ...data[idx],
+    name: name || undefined,
+    updatedAt: new Date().toISOString(),
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(updated);
+}
+
 export async function deleteTrial(id: string): Promise<void> {
   writeStorage(readStorage().filter((t) => t.id !== id));
   return simulateApiCall(undefined as void);

@@ -26,23 +26,23 @@ import { countDoneSensoryCategories } from "@/lib/completion";
 import { cn } from "@/lib/utils";
 
 const METRIC_SHORT: Record<string, string> = {
-  tasteLikeness: "Taste Like.",
+  tasteRating: "Taste Rat.",
   sweetnessIntensity: "Sweetness Int.",
-  sweetnessLikeness: "Sweetness Like.",
+  sweetnessRating: "Sweetness Rat.",
   flavorIntensity: "Flavor Int.",
   aftertasteIntensity: "Aftertaste",
   thicknessIntensity: "Thickness",
   textureIntensity: "Texture Int.",
-  textureLikeness: "Texture Like.",
-  colorLikeness: "Color Like.",
+  textureRating: "Texture Rat.",
+  colorRating: "Color Rat.",
 };
 
 const CHART_COLORS = {
   current: "hsl(217, 91%, 60%)",
-  average: "hsl(220, 14%, 82%)",
+  average: "hsl(220, 14%, 70%)",
   grid: "#e8e8ec",
   tick: "#8c8c96",
-  cursor: "rgba(0, 0, 0, 0.03)",
+  cursor: "rgba(0, 0, 0, 0.1)",
 } as const;
 
 function isCategoryDone(
@@ -120,10 +120,9 @@ export default function SensoryEvalCard({ trialId }: Props) {
   const completedCats = SENSORY_CATEGORIES.filter((c) =>
     isCategoryDone(sensory, c.key),
   );
+  const resolvedChip = selectedChart ?? completedCats[0]?.key ?? null;
   const activeChartKey =
-    selectedChart && isCategoryDone(sensory, selectedChart)
-      ? selectedChart
-      : (completedCats[0]?.key ?? null);
+    resolvedChip && isCategoryDone(sensory, resolvedChip) ? resolvedChip : null;
 
   const chartData = useMemo(() => {
     if (!activeChartKey || !trial) return [];
@@ -138,7 +137,7 @@ export default function SensoryEvalCard({ trialId }: Props) {
           ? Math.round(
               (otherVals.reduce((s, v) => s + v, 0) / otherVals.length) * 10,
             ) / 10
-          : undefined;
+          : 0;
       return {
         name: METRIC_SHORT[metric.key] ?? metric.label,
         current,
@@ -153,17 +152,13 @@ export default function SensoryEvalCard({ trialId }: Props) {
   }
 
   function handleChipClick(key: SensoryCategory) {
-    if (isCategoryDone(sensory, key)) {
-      setSelectedChart(key);
-    } else {
-      openModal(key);
-    }
+    setSelectedChart(key);
   }
 
   return (
     <>
-      <Card className="flex flex-col flex-1 min-h-0 overflow-hidden gap-0">
-        <CardHeader className="py-3 px-5 flex-row items-center justify-between space-y-0 border-b shrink-0">
+      <Card className="flex flex-col overflow-hidden gap-0">
+        <CardHeader className="py-3 px-5 flex items-center justify-between border-b shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="h-6 w-6 rounded-md bg-violet-100 flex items-center justify-center">
               <Activity size={13} className="text-violet-600" />
@@ -192,24 +187,24 @@ export default function SensoryEvalCard({ trialId }: Props) {
           )}
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-hidden p-5 flex flex-col gap-4 min-h-0">
+        <CardContent className="p-5 flex flex-col gap-4">
           {/* Category chips */}
           <div className="flex gap-2 flex-wrap shrink-0">
             {SENSORY_CATEGORIES.map((cat) => {
               const done = isCategoryDone(sensory, cat.key);
-              const active = done && cat.key === activeChartKey;
+              const active = cat.key === resolvedChip;
               return (
                 <button
                   key={cat.key}
                   onClick={() => handleChipClick(cat.key)}
                   className={cn(
                     "text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-all whitespace-nowrap",
-                    active &&
-                      "bg-foreground text-background shadow-sm",
+                    active && "bg-foreground text-background shadow-sm",
                     !active &&
                       done &&
                       "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100",
-                    !done &&
+                    !active &&
+                      !done &&
                       "bg-muted text-muted-foreground hover:bg-muted/80 ring-1 ring-transparent hover:ring-border",
                   )}
                 >
@@ -222,12 +217,14 @@ export default function SensoryEvalCard({ trialId }: Props) {
 
           {/* Chart area */}
           {activeChartKey ? (
-            <div className="flex-1 min-h-0 bg-muted/30 rounded-xl p-3 -mx-1">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="bg-muted/30 rounded-xl ring-1 ring-border/40 p-3 -mx-1">
+              <ResponsiveContainer width="100%" height={420}>
                 <BarChart
                   layout="vertical"
                   data={chartData}
-                  margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
+                  barCategoryGap="40%"
+                  barGap={3}
+                  margin={{ top: 4, right: 20, left: 4, bottom: 4 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -238,15 +235,15 @@ export default function SensoryEvalCard({ trialId }: Props) {
                     type="number"
                     domain={[0, 6]}
                     tickCount={7}
-                    tick={{ fontSize: 10, fill: CHART_COLORS.tick }}
+                    tick={{ fontSize: 11, fill: CHART_COLORS.tick }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={110}
-                    tick={{ fontSize: 10, fill: CHART_COLORS.tick }}
+                    width={130}
+                    tick={{ fontSize: 11, fill: CHART_COLORS.tick }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -255,7 +252,7 @@ export default function SensoryEvalCard({ trialId }: Props) {
                     cursor={{ fill: CHART_COLORS.cursor }}
                   />
                   <Legend
-                    wrapperStyle={{ fontSize: 11 }}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
                     formatter={(value) =>
                       value === "current" ? "This Trial" : "Other Trials Avg"
                     }
@@ -278,7 +275,7 @@ export default function SensoryEvalCard({ trialId }: Props) {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+            <div className="h-50 flex flex-col items-center justify-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
                 <BarChart2 size={18} className="text-muted-foreground" />
               </div>
@@ -293,7 +290,7 @@ export default function SensoryEvalCard({ trialId }: Props) {
           <Button
             size="sm"
             variant={allDone ? "outline" : "default"}
-            onClick={() => openModal()}
+            onClick={() => openModal(resolvedChip ?? undefined)}
             className="gap-2"
           >
             <BarChart2 size={14} />
@@ -302,16 +299,13 @@ export default function SensoryEvalCard({ trialId }: Props) {
         </CardFooter>
       </Card>
 
-      {modalOpen && (
-        <SensoryEvalModal
-          key={String(modalOpen)}
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-          trialId={trialId}
-          sensory={sensory}
-          initialCategory={modalCategory}
-        />
-      )}
+      <SensoryEvalModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        trialId={trialId}
+        sensory={sensory}
+        initialCategory={modalCategory}
+      />
     </>
   );
 }

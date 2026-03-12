@@ -1,4 +1,4 @@
-import { BarChart2, FileText, LayoutGrid } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -39,10 +39,6 @@ export default function AppShell() {
           active={isTrials}
           onClick={() => navigate("/trials")}
         />
-        <SidebarIcon icon={<FileText size={18} />} />
-        <div className="mt-auto">
-          <SidebarIcon icon={<BarChart2 size={18} />} />
-        </div>
       </aside>
 
       {/* Page content (header + main) injected by each route */}

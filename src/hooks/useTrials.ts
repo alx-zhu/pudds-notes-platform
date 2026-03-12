@@ -75,6 +75,17 @@ export function useUpdatePhotoGrid(trialId: string) {
   });
 }
 
+export function useUpdateTrialName(trialId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string | undefined) => api.updateTrialName(trialId, name),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+}
+
 export function useDeleteTrial() {
   const qc = useQueryClient();
   return useMutation({
