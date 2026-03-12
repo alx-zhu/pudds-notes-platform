@@ -58,15 +58,15 @@ export const SENSORY_CATEGORIES = [
 ] as const;
 
 export const SENSORY_METRICS = [
-  { key: "tasteLikeness", label: "Taste Likeness", max: 5 },
-  { key: "sweetnessIntensity", label: "Sweetness Intensity", max: 5 },
-  { key: "sweetnessLikeness", label: "Sweetness Likeness", max: 5 },
-  { key: "flavorIntensity", label: "Flavor Intensity", max: 5 },
-  { key: "aftertasteIntensity", label: "Aftertaste Intensity", max: 5 },
-  { key: "thicknessIntensity", label: "Thickness Intensity", max: 5 },
-  { key: "textureIntensity", label: "Texture Intensity", max: 6 },
-  { key: "textureLikeness", label: "Texture Likeness", max: 5 },
-  { key: "colorLikeness", label: "Color Likeness", max: 5, fullWidth: true },
+  { key: "tasteRating", label: "Taste Rating", max: 5, description: "On a scale from 1-5, rate how much you liked the taste of the product." },
+  { key: "sweetnessIntensity", label: "Sweetness Intensity", max: 5, description: "On a scale from 1-5, rate how sweet the product was. (References provided)" },
+  { key: "sweetnessRating", label: "Sweetness Rating", max: 5, description: "On a scale from 1-5, rate how much you liked the sweetness of the product." },
+  { key: "flavorIntensity", label: "Flavor Intensity", max: 5, description: "On a scale from 1-5, rate how intense the flavor of the product was. (References provided)" },
+  { key: "aftertasteIntensity", label: "Aftertaste Intensity", max: 5, description: "On a scale from 1-5, rate how much of an aftertaste the product had. (References provided)" },
+  { key: "thicknessIntensity", label: "Thickness Intensity", max: 5, description: "On a scale from 1-5, rate how thick the product was. (References provided)" },
+  { key: "textureIntensity", label: "Texture Intensity", max: 6, description: "On a scale from 1-6, rate how smooth the product was. (References provided)" },
+  { key: "textureRating", label: "Texture Rating", max: 5, description: "On a scale from 1-5, rate how much you liked the texture of the product." },
+  { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "On a scale from 1-5, rate how much you liked the color." },
 ] as const;
 
 export const PHOTO_ROWS = ["Thermo-mix", "Pressure Cook"] as const;

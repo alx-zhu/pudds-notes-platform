@@ -1,418 +1,1104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pudds Notes — Wireframe</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#d8d8d8;color:#1a1a1a;padding:32px}
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pudds Notes — Wireframe</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #d8d8d8;
+        color: #1a1a1a;
+        padding: 32px;
+      }
 
-/* Layout */
-.screen-label{text-align:center;padding:12px 0 10px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#888}
-.screen{width:1100px;height:700px;background:#f0f0f0;margin:0 auto 56px;border-radius:20px;overflow:hidden;display:flex;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+      /* Layout */
+      .screen-label {
+        text-align: center;
+        padding: 12px 0 10px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #888;
+      }
+      .screen {
+        width: 1100px;
+        height: 700px;
+        background: #f0f0f0;
+        margin: 0 auto 56px;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+      }
 
-/* Sidebar */
-.sidebar{width:64px;background:#fff;border-right:1px solid #eaeaea;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:6px}
-.si{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;color:#aaa;cursor:pointer}
-.si.on{background:#1a1a1a;color:#fff}
-.si:not(.on):hover{background:#f5f5f5;color:#555}
+      /* Sidebar */
+      .sidebar {
+        width: 64px;
+        background: #fff;
+        border-right: 1px solid #eaeaea;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 0;
+        gap: 6px;
+      }
+      .si {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        color: #aaa;
+        cursor: pointer;
+      }
+      .si.on {
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .si:not(.on):hover {
+        background: #f5f5f5;
+        color: #555;
+      }
 
-/* Main */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+      /* Main */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-/* Topbar */
-.topbar{height:56px;background:#fff;border-bottom:1px solid #eaeaea;display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
-.search{flex:1;max-width:420px;height:36px;background:#f5f5f5;border-radius:20px;display:flex;align-items:center;padding:0 14px;gap:8px;color:#bbb;font-size:13px}
-.filter-btn{height:36px;padding:0 14px;border:1.5px solid #e0e0e0;border-radius:20px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#666;background:#fff}
-.tr{margin-left:auto;display:flex;align-items:center;gap:10px}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #e5e5e5;display:flex;align-items:center;justify-content:center;font-size:15px;color:#777}
-.back-btn{width:32px;height:32px;border-radius:50%;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;color:#555;flex-shrink:0}
-.page-title{font-size:16px;font-weight:700}
-.save-tag{font-size:11px;color:#16a34a;font-weight:600}
+      /* Topbar */
+      .topbar {
+        height: 56px;
+        background: #fff;
+        border-bottom: 1px solid #eaeaea;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .search {
+        flex: 1;
+        max-width: 420px;
+        height: 36px;
+        background: #f5f5f5;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        gap: 8px;
+        color: #bbb;
+        font-size: 13px;
+      }
+      .filter-btn {
+        height: 36px;
+        padding: 0 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        background: #fff;
+      }
+      .tr {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1.5px solid #e5e5e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        color: #777;
+      }
+      .back-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        cursor: pointer;
+        color: #555;
+        flex-shrink: 0;
+      }
+      .page-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .save-tag {
+        font-size: 11px;
+        color: #16a34a;
+        font-weight: 600;
+      }
 
-/* Content */
-.content{flex:1;overflow-y:auto;padding:22px}
+      /* Content */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 22px;
+      }
 
-/* Section headers */
-.sh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
-.st{font-size:22px;font-weight:800;letter-spacing:-.3px}
-.cta{font-size:12px;font-weight:700;padding:7px 16px;background:#1a1a1a;color:#fff;border-radius:20px;cursor:pointer}
+      /* Section headers */
+      .sh {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .st {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+      }
+      .cta {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 16px;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 20px;
+        cursor: pointer;
+      }
 
-/* Tags */
-.tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;background:#f0f0f0;color:#666}
-.tag.choc{background:#f5ede0;color:#7c4a1e}
-.tag.van{background:#fefce8;color:#854d0e}
-.tag.shelf{background:#f0fdf4;color:#166534}
-.tag.ind{background:#eff6ff;color:#1d4ed8}
+      /* Tags */
+      .tag {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: #f0f0f0;
+        color: #666;
+      }
+      .tag.choc {
+        background: #f5ede0;
+        color: #7c4a1e;
+      }
+      .tag.van {
+        background: #fefce8;
+        color: #854d0e;
+      }
+      .tag.shelf {
+        background: #f0fdf4;
+        color: #166534;
+      }
+      .tag.ind {
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
 
-/* Emphasized row */
-.emp-row{display:flex;gap:14px;margin-bottom:28px}
-.emp-card{flex:0 0 270px;background:#fff;border-radius:16px;padding:16px;border-left:4px solid #1a1a1a;display:flex;flex-direction:column;justify-content:space-between;gap:8px;position:relative}
-.emp-badge{position:absolute;top:12px;right:12px;background:#fff8e1;color:#92400e;border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700}
-.emp-name{font-size:13px;font-weight:800}
-.emp-note{font-size:11px;color:#888;line-height:1.45}
-.emp-tags{display:flex;gap:6px}
+      /* Emphasized row */
+      .emp-row {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .emp-card {
+        flex: 0 0 270px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px;
+        border-left: 4px solid #1a1a1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+        position: relative;
+      }
+      .emp-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #fff8e1;
+        color: #92400e;
+        border-radius: 20px;
+        padding: 2px 9px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .emp-name {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .emp-note {
+        font-size: 11px;
+        color: #888;
+        line-height: 1.45;
+      }
+      .emp-tags {
+        display: flex;
+        gap: 6px;
+      }
 
-/* Trial grid */
-.trial-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.card{background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px}
-.card.new{border:2px dashed #d0d0d0;background:#fafafa;align-items:center;justify-content:center;min-height:130px;cursor:pointer;color:#ccc;gap:4px}
-.card.new span{font-size:12px;font-weight:600;color:#bbb}
-.card.new .plus{font-size:30px}
-.card-hd{display:flex;justify-content:space-between;align-items:flex-start}
-.card-title{font-size:13px;font-weight:800}
-.card-date{font-size:11px;color:#aaa}
-.card-tags{display:flex;gap:6px;flex-wrap:wrap}
-.ingr{font-size:11px;color:#777;line-height:1.5}
-.prog{display:flex;gap:6px}
-.pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
-.pill.done{background:#dcfce7;color:#166534}
-.pill.part{background:#fef3c7;color:#92400e}
-.pill.emp{background:#f5f5f5;color:#bbb}
+      /* Trial grid */
+      .trial-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .card.new {
+        border: 2px dashed #d0d0d0;
+        background: #fafafa;
+        align-items: center;
+        justify-content: center;
+        min-height: 130px;
+        cursor: pointer;
+        color: #ccc;
+        gap: 4px;
+      }
+      .card.new span {
+        font-size: 12px;
+        font-weight: 600;
+        color: #bbb;
+      }
+      .card.new .plus {
+        font-size: 30px;
+      }
+      .card-hd {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .card-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .card-date {
+        font-size: 11px;
+        color: #aaa;
+      }
+      .card-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .ingr {
+        font-size: 11px;
+        color: #777;
+        line-height: 1.5;
+      }
+      .prog {
+        display: flex;
+        gap: 6px;
+      }
+      .pill {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+      .pill.done {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .pill.part {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .pill.emp {
+        background: #f5f5f5;
+        color: #bbb;
+      }
 
-/* Stepper */
-.stepper{display:flex;margin-bottom:20px}
-.step{flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:700;color:#ccc;border-bottom:3px solid #e5e5e5;cursor:pointer}
-.step.on{color:#1a1a1a;border-bottom-color:#1a1a1a}
-.step.done{color:#16a34a;border-bottom-color:#16a34a}
+      /* Stepper */
+      .stepper {
+        display: flex;
+        margin-bottom: 20px;
+      }
+      .step {
+        flex: 1;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #ccc;
+        border-bottom: 3px solid #e5e5e5;
+        cursor: pointer;
+      }
+      .step.on {
+        color: #1a1a1a;
+        border-bottom-color: #1a1a1a;
+      }
+      .step.done {
+        color: #16a34a;
+        border-bottom-color: #16a34a;
+      }
 
-/* Form */
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fl{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px}
-.toggle{display:flex;background:#f5f5f5;border-radius:10px;padding:3px}
-.tb{flex:1;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;cursor:pointer;color:#aaa}
-.tb.on{background:#fff;color:#1a1a1a;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-.date-f{height:36px;background:#f5f5f5;border-radius:10px;padding:0 12px;font-size:13px;display:flex;align-items:center;gap:8px;color:#444}
+      /* Form */
+      .fg2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .fl {
+        font-size: 10px;
+        font-weight: 700;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .toggle {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 10px;
+        padding: 3px;
+      }
+      .tb {
+        flex: 1;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        color: #aaa;
+      }
+      .tb.on {
+        background: #fff;
+        color: #1a1a1a;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      }
+      .date-f {
+        height: 36px;
+        background: #f5f5f5;
+        border-radius: 10px;
+        padding: 0 12px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #444;
+      }
 
-/* Ingredients */
-.ing-hd{display:grid;grid-template-columns:1fr 90px 28px;gap:8px;padding-bottom:5px;border-bottom:1px solid #eee;margin-bottom:6px}
-.ing-hd span{font-size:10px;font-weight:700;color:#ccc;text-transform:uppercase}
-.ing-row{display:grid;grid-template-columns:1fr 90px 28px;gap:8px;margin-bottom:6px;align-items:center}
-.inf{height:34px;background:#f5f5f5;border-radius:8px;padding:0 10px;font-size:12px;color:#444;display:flex;align-items:center}
-.inf.ph{color:#ccc}
-.del{color:#ddd;text-align:center;cursor:pointer;font-size:14px}
+      /* Ingredients */
+      .ing-hd {
+        display: grid;
+        grid-template-columns: 1fr 90px 28px;
+        gap: 8px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 6px;
+      }
+      .ing-hd span {
+        font-size: 10px;
+        font-weight: 700;
+        color: #ccc;
+        text-transform: uppercase;
+      }
+      .ing-row {
+        display: grid;
+        grid-template-columns: 1fr 90px 28px;
+        gap: 8px;
+        margin-bottom: 6px;
+        align-items: center;
+      }
+      .inf {
+        height: 34px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 0 10px;
+        font-size: 12px;
+        color: #444;
+        display: flex;
+        align-items: center;
+      }
+      .inf.ph {
+        color: #ccc;
+      }
+      .del {
+        color: #ddd;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+      }
 
-/* Emphasis */
-.emp-box{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:14px;margin-top:10px}
-.emp-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.emp-lbl{font-size:11px;font-weight:800;color:#92400e}
-.emp-sub{font-size:10px;color:#b45309;margin-left:auto}
-.emp-inp{background:#fff;border-radius:8px;height:48px;padding:8px 10px;font-size:12px;color:#bbb;display:flex;align-items:center}
+      /* Emphasis */
+      .emp-box {
+        background: #fffbeb;
+        border: 1.5px solid #fcd34d;
+        border-radius: 12px;
+        padding: 14px;
+        margin-top: 10px;
+      }
+      .emp-hdr {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .emp-lbl {
+        font-size: 11px;
+        font-weight: 800;
+        color: #92400e;
+      }
+      .emp-sub {
+        font-size: 10px;
+        color: #b45309;
+        margin-left: auto;
+      }
+      .emp-inp {
+        background: #fff;
+        border-radius: 8px;
+        height: 48px;
+        padding: 8px 10px;
+        font-size: 12px;
+        color: #bbb;
+        display: flex;
+        align-items: center;
+      }
 
-/* Section B */
-.comp-bar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px}
-.comp-lbl{font-size:12px;font-weight:700;color:#666;flex:1}
-.comp-steps{display:flex;gap:6px;flex-wrap:wrap}
-.cs{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px}
-.cs.done{background:#dcfce7;color:#166534}
-.cs.on{background:#1a1a1a;color:#fff}
-.cs.pend{background:#f5f5f5;color:#bbb}
-.now-lbl{font-size:11px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-.sens-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.si-card{background:#fff;border-radius:10px;padding:12px}
-.si-name{font-size:11px;font-weight:700;color:#555;margin-bottom:8px}
-.dots{display:flex;gap:5px}
-.dot{width:28px;height:28px;border-radius:50%;border:1.5px solid #e0e0e0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#ccc;cursor:pointer;flex-shrink:0}
-.dot.on{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+      /* Section B */
+      .comp-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .comp-lbl {
+        font-size: 12px;
+        font-weight: 700;
+        color: #666;
+        flex: 1;
+      }
+      .comp-steps {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .cs {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .cs.done {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .cs.on {
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .cs.pend {
+        background: #f5f5f5;
+        color: #bbb;
+      }
+      .now-lbl {
+        font-size: 11px;
+        font-weight: 800;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+      }
+      .sens-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .si-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .si-name {
+        font-size: 11px;
+        font-weight: 700;
+        color: #555;
+        margin-bottom: 8px;
+      }
+      .dots {
+        display: flex;
+        gap: 5px;
+      }
+      .dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #ccc;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .dot.on {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: #fff;
+      }
 
-/* Section C */
-.axis-row{display:grid;grid-template-columns:100px 1fr 1fr;gap:2px;margin-bottom:2px}
-.ax{background:#e8e8e8;padding:8px;text-align:center;font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;border-radius:4px}
-.photo-wrap{display:grid;grid-template-columns:100px 1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;flex:1}
-.prow-lbl{background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;border-radius:4px}
-.pcell{background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:4px;min-height:140px}
-.pcell:hover{background:#f0f0f0}
-.pcell.done{background:#f0fdf4}
-.uicon{font-size:24px;color:#ccc}
-.utxt{font-size:11px;color:#ccc}
-.utxt.ok{color:#16a34a;font-weight:700}
+      /* Section C */
+      .axis-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 1fr;
+        gap: 2px;
+        margin-bottom: 2px;
+      }
+      .ax {
+        background: #e8e8e8;
+        padding: 8px;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 800;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 4px;
+      }
+      .photo-wrap {
+        display: grid;
+        grid-template-columns: 100px 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 2px;
+        flex: 1;
+      }
+      .prow-lbl {
+        background: #e8e8e8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 4px;
+      }
+      .pcell {
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        border-radius: 4px;
+        min-height: 140px;
+      }
+      .pcell:hover {
+        background: #f0f0f0;
+      }
+      .pcell.done {
+        background: #f0fdf4;
+      }
+      .uicon {
+        font-size: 24px;
+        color: #ccc;
+      }
+      .utxt {
+        font-size: 11px;
+        color: #ccc;
+      }
+      .utxt.ok {
+        color: #16a34a;
+        font-weight: 700;
+      }
 
-/* Action bar */
-.abar{padding:14px 22px;background:#fff;border-top:1px solid #eaeaea;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.btn-p{padding:9px 22px;background:#1a1a1a;color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-.btn-s{padding:9px 22px;background:#f5f5f5;color:#666;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-</style>
-</head>
-<body>
+      /* Action bar */
+      .abar {
+        padding: 14px 22px;
+        background: #fff;
+        border-top: 1px solid #eaeaea;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+      }
+      .btn-p {
+        padding: 9px 22px;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-s {
+        padding: 9px 22px;
+        background: #f5f5f5;
+        color: #666;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ==================== SCREEN 1: DASHBOARD ==================== -->
+    <div class="screen-label">Screen 1 — Dashboard</div>
+    <div class="screen">
+      <div class="sidebar">
+        <div class="si on">⊞</div>
+        <div class="si">↕</div>
+        <div class="si">≡</div>
+        <div class="si" style="margin-top: auto">📊</div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <div class="search">🔍 Search trials, ingredients...</div>
+          <div class="filter-btn">⚙ Filter</div>
+          <div class="tr">
+            <div class="icon-btn">🔔</div>
+            <div
+              style="
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: #ddd;
+              "
+            ></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="sh"><div class="st">Emphasized Trials</div></div>
+          <div class="emp-row">
+            <div class="emp-card">
+              <div class="emp-badge">⚑ Emphasized</div>
+              <div class="emp-name">Trial #24 — Jan 12</div>
+              <div class="emp-note">
+                Unusually high sweetness at 3 days. Retest Thermomix ratio.
+              </div>
+              <div class="emp-tags">
+                <span class="tag choc">Chocolate</span
+                ><span class="tag shelf">Shelftop</span>
+              </div>
+            </div>
+            <div class="emp-card">
+              <div class="emp-badge">⚑ Emphasized</div>
+              <div class="emp-name">Trial #19 — Dec 3</div>
+              <div class="emp-note">
+                Best texture score to date. Reference for future vanilla
+                batches.
+              </div>
+              <div class="emp-tags">
+                <span class="tag van">Vanilla</span
+                ><span class="tag ind">Industrial</span>
+              </div>
+            </div>
+            <div class="emp-card">
+              <div class="emp-badge">⚑ Emphasized</div>
+              <div class="emp-name">Trial #11 — Oct 18</div>
+              <div class="emp-note">
+                Aftertaste issue at 24hrs. Linked to cocoa % change.
+              </div>
+              <div class="emp-tags">
+                <span class="tag choc">Chocolate</span
+                ><span class="tag ind">Industrial</span>
+              </div>
+            </div>
+          </div>
 
-<!-- ==================== SCREEN 1: DASHBOARD ==================== -->
-<div class="screen-label">Screen 1 — Dashboard</div>
-<div class="screen">
-  <div class="sidebar">
-    <div class="si on">⊞</div>
-    <div class="si">↕</div>
-    <div class="si">≡</div>
-    <div class="si" style="margin-top:auto">📊</div>
-  </div>
-  <div class="main">
-    <div class="topbar">
-      <div class="search">🔍 Search trials, ingredients...</div>
-      <div class="filter-btn">⚙ Filter</div>
-      <div class="tr">
-        <div class="icon-btn">🔔</div>
-        <div style="width:36px;height:36px;border-radius:50%;background:#ddd"></div>
+          <div class="sh">
+            <div class="st">Trials</div>
+            <div class="cta">+ New Trial</div>
+          </div>
+          <div class="trial-grid">
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Trial #26 — Mar 8, 2026</div>
+                <div class="card-date">In Progress</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag choc">Chocolate</span
+                ><span class="tag shelf">Shelftop</span>
+              </div>
+              <div class="ingr">
+                Cocoa 32% · Milk Powder 18% · Sugar 24% · Lecithin 2%
+              </div>
+              <div class="prog">
+                <span class="pill done">A ✓</span
+                ><span class="pill part">B 2/4</span
+                ><span class="pill emp">C —</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Trial #25 — Feb 21, 2026</div>
+                <div class="card-date">Complete</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag van">Vanilla</span
+                ><span class="tag ind">Industrial</span>
+              </div>
+              <div class="ingr">
+                Vanilla 4% · Milk Powder 22% · Sugar 28% · Emulsifier 1.5%
+              </div>
+              <div class="prog">
+                <span class="pill done">A ✓</span
+                ><span class="pill done">B ✓</span
+                ><span class="pill done">C ✓</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Trial #24 — Jan 12, 2026</div>
+                <div class="card-date">Complete</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag choc">Chocolate</span
+                ><span class="tag shelf">Shelftop</span>
+              </div>
+              <div class="ingr">
+                Cocoa 28% · Milk Powder 20% · Sugar 26% · Lecithin 1.8%
+              </div>
+              <div class="prog">
+                <span class="pill done">A ✓</span
+                ><span class="pill done">B ✓</span
+                ><span class="pill done">C ✓</span>
+              </div>
+            </div>
+            <div class="card new">
+              <div class="plus">+</div>
+              <span>New Trial</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="content">
-      <div class="sh"><div class="st">Emphasized Trials</div></div>
-      <div class="emp-row">
-        <div class="emp-card">
-          <div class="emp-badge">⚑ Emphasized</div>
-          <div class="emp-name">Trial #24 — Jan 12</div>
-          <div class="emp-note">Unusually high sweetness at 3 days. Retest Thermomix ratio.</div>
-          <div class="emp-tags"><span class="tag choc">Chocolate</span><span class="tag shelf">Shelftop</span></div>
-        </div>
-        <div class="emp-card">
-          <div class="emp-badge">⚑ Emphasized</div>
-          <div class="emp-name">Trial #19 — Dec 3</div>
-          <div class="emp-note">Best texture score to date. Reference for future vanilla batches.</div>
-          <div class="emp-tags"><span class="tag van">Vanilla</span><span class="tag ind">Industrial</span></div>
-        </div>
-        <div class="emp-card">
-          <div class="emp-badge">⚑ Emphasized</div>
-          <div class="emp-name">Trial #11 — Oct 18</div>
-          <div class="emp-note">Aftertaste issue at 24hrs. Linked to cocoa % change.</div>
-          <div class="emp-tags"><span class="tag choc">Chocolate</span><span class="tag ind">Industrial</span></div>
-        </div>
-      </div>
 
-      <div class="sh">
-        <div class="st">Trials</div>
-        <div class="cta">+ New Trial</div>
+    <!-- ==================== SCREEN 2: SECTION A ==================== -->
+    <div class="screen-label" style="margin-top: 40px">
+      Screen 2 — Section A: Trial Setup
+    </div>
+    <div class="screen">
+      <div class="sidebar">
+        <div class="si">⊞</div>
+        <div class="si on">↕</div>
+        <div class="si">≡</div>
+        <div class="si" style="margin-top: auto">📊</div>
       </div>
-      <div class="trial-grid">
-        <div class="card">
-          <div class="card-hd"><div class="card-title">Trial #26 — Mar 8, 2026</div><div class="card-date">In Progress</div></div>
-          <div class="card-tags"><span class="tag choc">Chocolate</span><span class="tag shelf">Shelftop</span></div>
-          <div class="ingr">Cocoa 32% · Milk Powder 18% · Sugar 24% · Lecithin 2%</div>
-          <div class="prog"><span class="pill done">A ✓</span><span class="pill part">B 2/4</span><span class="pill emp">C —</span></div>
+      <div class="main">
+        <div class="topbar">
+          <div class="back-btn">←</div>
+          <div class="page-title">Trial #26</div>
+          <div class="tr">
+            <div class="save-tag">● Auto-saved</div>
+            <div class="icon-btn">🔔</div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-hd"><div class="card-title">Trial #25 — Feb 21, 2026</div><div class="card-date">Complete</div></div>
-          <div class="card-tags"><span class="tag van">Vanilla</span><span class="tag ind">Industrial</span></div>
-          <div class="ingr">Vanilla 4% · Milk Powder 22% · Sugar 28% · Emulsifier 1.5%</div>
-          <div class="prog"><span class="pill done">A ✓</span><span class="pill done">B ✓</span><span class="pill done">C ✓</span></div>
+        <div class="content">
+          <div class="stepper">
+            <div class="step on">Section A — Setup</div>
+            <div class="step">Section B — Sensory</div>
+            <div class="step">Section C — Photos</div>
+          </div>
+
+          <div class="fg2">
+            <div class="fg">
+              <div class="fl">Date</div>
+              <div class="date-f">📅 March 8, 2026</div>
+            </div>
+            <div class="fg">
+              <div class="fl">Flavor</div>
+              <div class="toggle">
+                <div class="tb on">Chocolate</div>
+                <div class="tb">Vanilla</div>
+              </div>
+            </div>
+            <div class="fg" style="grid-column: 1/-1">
+              <div class="fl">Processing Type</div>
+              <div class="toggle" style="max-width: 260px">
+                <div class="tb on">Shelftop</div>
+                <div class="tb">Industrial</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fg" style="margin-bottom: 12px">
+            <div class="fl">Variables — Ingredients & Percentages</div>
+            <div class="ing-hd">
+              <span>Ingredient</span><span>%</span><span></span>
+            </div>
+            <div class="ing-row">
+              <div class="inf">Cocoa</div>
+              <div class="inf">32%</div>
+              <div class="del">✕</div>
+            </div>
+            <div class="ing-row">
+              <div class="inf">Milk Powder</div>
+              <div class="inf">18%</div>
+              <div class="del">✕</div>
+            </div>
+            <div class="ing-row">
+              <div class="inf">Sugar</div>
+              <div class="inf">24%</div>
+              <div class="del">✕</div>
+            </div>
+            <div class="ing-row">
+              <div class="inf ph">+ Add ingredient</div>
+              <div class="inf ph">0%</div>
+              <div></div>
+            </div>
+          </div>
+
+          <div class="emp-box">
+            <div class="emp-hdr">
+              <span style="font-size: 15px">⚑</span>
+              <span class="emp-lbl">Emphasis</span>
+              <span class="emp-sub"
+                >Optional — highlight something notable about this trial</span
+              >
+            </div>
+            <div class="emp-inp">
+              Add a brief note about what makes this trial distinctive...
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-hd"><div class="card-title">Trial #24 — Jan 12, 2026</div><div class="card-date">Complete</div></div>
-          <div class="card-tags"><span class="tag choc">Chocolate</span><span class="tag shelf">Shelftop</span></div>
-          <div class="ingr">Cocoa 28% · Milk Powder 20% · Sugar 26% · Lecithin 1.8%</div>
-          <div class="prog"><span class="pill done">A ✓</span><span class="pill done">B ✓</span><span class="pill done">C ✓</span></div>
-        </div>
-        <div class="card new">
-          <div class="plus">+</div>
-          <span>New Trial</span>
+        <div class="abar">
+          <div class="btn-s">Cancel</div>
+          <div class="btn-p">Save & Continue →</div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- ==================== SCREEN 2: SECTION A ==================== -->
-<div class="screen-label" style="margin-top:40px">Screen 2 — Section A: Trial Setup</div>
-<div class="screen">
-  <div class="sidebar">
-    <div class="si">⊞</div>
-    <div class="si on">↕</div>
-    <div class="si">≡</div>
-    <div class="si" style="margin-top:auto">📊</div>
-  </div>
-  <div class="main">
-    <div class="topbar">
-      <div class="back-btn">←</div>
-      <div class="page-title">Trial #26</div>
-      <div class="tr"><div class="save-tag">● Auto-saved</div><div class="icon-btn">🔔</div></div>
+    <!-- ==================== SCREEN 3: SECTION B ==================== -->
+    <div class="screen-label" style="margin-top: 40px">
+      Screen 3 — Section B: Sensory Evaluation
     </div>
-    <div class="content">
-      <div class="stepper">
-        <div class="step on">Section A — Setup</div>
-        <div class="step">Section B — Sensory</div>
-        <div class="step">Section C — Photos</div>
+    <div class="screen">
+      <div class="sidebar">
+        <div class="si">⊞</div>
+        <div class="si on">↕</div>
+        <div class="si">≡</div>
+        <div class="si" style="margin-top: auto">📊</div>
       </div>
+      <div class="main">
+        <div class="topbar">
+          <div class="back-btn">←</div>
+          <div class="page-title">Trial #26 — Sensory</div>
+          <div class="tr">
+            <div class="save-tag">● Auto-saved</div>
+            <div class="icon-btn">🔔</div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="stepper">
+            <div class="step done">Section A — Setup ✓</div>
+            <div class="step on">Section B — Sensory</div>
+            <div class="step">Section C — Photos</div>
+          </div>
 
-      <div class="fg2">
-        <div class="fg">
-          <div class="fl">Date</div>
-          <div class="date-f">📅 March 8, 2026</div>
-        </div>
-        <div class="fg">
-          <div class="fl">Flavor</div>
-          <div class="toggle"><div class="tb on">Chocolate</div><div class="tb">Vanilla</div></div>
-        </div>
-        <div class="fg" style="grid-column:1/-1">
-          <div class="fl">Processing Type</div>
-          <div class="toggle" style="max-width:260px"><div class="tb on">Shelftop</div><div class="tb">Industrial</div></div>
-        </div>
-      </div>
+          <div class="comp-bar">
+            <div class="comp-lbl">Fill each category separately</div>
+            <div class="comp-steps">
+              <div class="cs done">Thermomix 24h ✓</div>
+              <div class="cs on">Thermomix 3d</div>
+              <div class="cs pend">Pressure 24h</div>
+              <div class="cs pend">Pressure 3d</div>
+            </div>
+          </div>
 
-      <div class="fg" style="margin-bottom:12px">
-        <div class="fl">Variables — Ingredients & Percentages</div>
-        <div class="ing-hd"><span>Ingredient</span><span>%</span><span></span></div>
-        <div class="ing-row">
-          <div class="inf">Cocoa</div><div class="inf">32%</div><div class="del">✕</div>
-        </div>
-        <div class="ing-row">
-          <div class="inf">Milk Powder</div><div class="inf">18%</div><div class="del">✕</div>
-        </div>
-        <div class="ing-row">
-          <div class="inf">Sugar</div><div class="inf">24%</div><div class="del">✕</div>
-        </div>
-        <div class="ing-row">
-          <div class="inf ph">+ Add ingredient</div><div class="inf ph">0%</div><div></div>
-        </div>
-      </div>
+          <div class="now-lbl">Now rating: Thermomix — 3 Days</div>
 
-      <div class="emp-box">
-        <div class="emp-hdr">
-          <span style="font-size:15px">⚑</span>
-          <span class="emp-lbl">Emphasis</span>
-          <span class="emp-sub">Optional — highlight something notable about this trial</span>
+          <div class="sens-grid">
+            <div class="si-card">
+              <div class="si-name">Taste Rating</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Sweetness Intensity</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot on">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Sweetness Rating</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Flavor Intensity</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot on">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Aftertaste Intensity</div>
+              <div class="dots">
+                <div class="dot">1</div>
+                <div class="dot">2</div>
+                <div class="dot">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Thickness Intensity</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">
+                Texture Intensity
+                <span style="color: #bbb; font-weight: 400; font-size: 10px"
+                  >(1–6)</span
+                >
+              </div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+                <div class="dot">6</div>
+              </div>
+            </div>
+            <div class="si-card">
+              <div class="si-name">Texture Rating</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot on">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+            <div class="si-card" style="grid-column: 1/-1">
+              <div class="si-name">Color Rating</div>
+              <div class="dots">
+                <div class="dot on">1</div>
+                <div class="dot on">2</div>
+                <div class="dot on">3</div>
+                <div class="dot">4</div>
+                <div class="dot">5</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="emp-inp">Add a brief note about what makes this trial distinctive...</div>
-      </div>
-    </div>
-    <div class="abar">
-      <div class="btn-s">Cancel</div>
-      <div class="btn-p">Save & Continue →</div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== SCREEN 3: SECTION B ==================== -->
-<div class="screen-label" style="margin-top:40px">Screen 3 — Section B: Sensory Evaluation</div>
-<div class="screen">
-  <div class="sidebar">
-    <div class="si">⊞</div>
-    <div class="si on">↕</div>
-    <div class="si">≡</div>
-    <div class="si" style="margin-top:auto">📊</div>
-  </div>
-  <div class="main">
-    <div class="topbar">
-      <div class="back-btn">←</div>
-      <div class="page-title">Trial #26 — Sensory</div>
-      <div class="tr"><div class="save-tag">● Auto-saved</div><div class="icon-btn">🔔</div></div>
-    </div>
-    <div class="content">
-      <div class="stepper">
-        <div class="step done">Section A — Setup ✓</div>
-        <div class="step on">Section B — Sensory</div>
-        <div class="step">Section C — Photos</div>
-      </div>
-
-      <div class="comp-bar">
-        <div class="comp-lbl">Fill each category separately</div>
-        <div class="comp-steps">
-          <div class="cs done">Thermomix 24h ✓</div>
-          <div class="cs on">Thermomix 3d</div>
-          <div class="cs pend">Pressure 24h</div>
-          <div class="cs pend">Pressure 3d</div>
-        </div>
-      </div>
-
-      <div class="now-lbl">Now rating: Thermomix — 3 Days</div>
-
-      <div class="sens-grid">
-        <div class="si-card">
-          <div class="si-name">Taste Likeness</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Sweetness Intensity</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot on">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Sweetness Likeness</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Flavor Intensity</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot on">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Aftertaste Intensity</div>
-          <div class="dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Thickness Intensity</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Texture Intensity <span style="color:#bbb;font-weight:400;font-size:10px">(1–6)</span></div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot">4</div><div class="dot">5</div><div class="dot">6</div></div>
-        </div>
-        <div class="si-card">
-          <div class="si-name">Texture Likeness</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot on">4</div><div class="dot">5</div></div>
-        </div>
-        <div class="si-card" style="grid-column:1/-1">
-          <div class="si-name">Color Likeness</div>
-          <div class="dots"><div class="dot on">1</div><div class="dot on">2</div><div class="dot on">3</div><div class="dot">4</div><div class="dot">5</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="abar">
-      <div class="btn-s">← Back</div>
-      <div class="btn-p">Save Category & Next →</div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== SCREEN 4: SECTION C ==================== -->
-<div class="screen-label" style="margin-top:40px">Screen 4 — Section C: Photo Upload</div>
-<div class="screen">
-  <div class="sidebar">
-    <div class="si">⊞</div>
-    <div class="si on">↕</div>
-    <div class="si">≡</div>
-    <div class="si" style="margin-top:auto">📊</div>
-  </div>
-  <div class="main">
-    <div class="topbar">
-      <div class="back-btn">←</div>
-      <div class="page-title">Trial #26 — Photos</div>
-      <div class="tr"><div class="save-tag">● Auto-saved</div><div class="icon-btn">🔔</div></div>
-    </div>
-    <div class="content" style="display:flex;flex-direction:column">
-      <div class="stepper">
-        <div class="step done">Section A — Setup ✓</div>
-        <div class="step done">Section B — Sensory ✓</div>
-        <div class="step on">Section C — Photos</div>
-      </div>
-
-      <div class="axis-row">
-        <div></div>
-        <div class="ax">24 Hours</div>
-        <div class="ax">3 Days</div>
-      </div>
-      <div class="photo-wrap">
-        <div class="prow-lbl">Thermomix</div>
-        <div class="pcell">
-          <div class="uicon">📷</div>
-          <div class="utxt">Tap to upload</div>
-        </div>
-        <div class="pcell done">
-          <div style="font-size:28px">🖼</div>
-          <div class="utxt ok">Uploaded ✓</div>
-        </div>
-        <div class="prow-lbl">Pressure Cook</div>
-        <div class="pcell">
-          <div class="uicon">📷</div>
-          <div class="utxt">Tap to upload</div>
-        </div>
-        <div class="pcell">
-          <div class="uicon">📷</div>
-          <div class="utxt">Tap to upload</div>
+        <div class="abar">
+          <div class="btn-s">← Back</div>
+          <div class="btn-p">Save Category & Next →</div>
         </div>
       </div>
     </div>
-    <div class="abar">
-      <div class="btn-s">← Back</div>
-      <div class="btn-p">Complete Trial ✓</div>
-    </div>
-  </div>
-</div>
 
-</body>
+    <!-- ==================== SCREEN 4: SECTION C ==================== -->
+    <div class="screen-label" style="margin-top: 40px">
+      Screen 4 — Section C: Photo Upload
+    </div>
+    <div class="screen">
+      <div class="sidebar">
+        <div class="si">⊞</div>
+        <div class="si on">↕</div>
+        <div class="si">≡</div>
+        <div class="si" style="margin-top: auto">📊</div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <div class="back-btn">←</div>
+          <div class="page-title">Trial #26 — Photos</div>
+          <div class="tr">
+            <div class="save-tag">● Auto-saved</div>
+            <div class="icon-btn">🔔</div>
+          </div>
+        </div>
+        <div class="content" style="display: flex; flex-direction: column">
+          <div class="stepper">
+            <div class="step done">Section A — Setup ✓</div>
+            <div class="step done">Section B — Sensory ✓</div>
+            <div class="step on">Section C — Photos</div>
+          </div>
+
+          <div class="axis-row">
+            <div></div>
+            <div class="ax">24 Hours</div>
+            <div class="ax">3 Days</div>
+          </div>
+          <div class="photo-wrap">
+            <div class="prow-lbl">Thermomix</div>
+            <div class="pcell">
+              <div class="uicon">📷</div>
+              <div class="utxt">Tap to upload</div>
+            </div>
+            <div class="pcell done">
+              <div style="font-size: 28px">🖼</div>
+              <div class="utxt ok">Uploaded ✓</div>
+            </div>
+            <div class="prow-lbl">Pressure Cook</div>
+            <div class="pcell">
+              <div class="uicon">📷</div>
+              <div class="utxt">Tap to upload</div>
+            </div>
+            <div class="pcell">
+              <div class="uicon">📷</div>
+              <div class="utxt">Tap to upload</div>
+            </div>
+          </div>
+        </div>
+        <div class="abar">
+          <div class="btn-s">← Back</div>
+          <div class="btn-p">Complete Trial ✓</div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

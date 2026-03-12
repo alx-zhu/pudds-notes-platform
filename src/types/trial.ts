@@ -27,6 +27,7 @@ export type PhotoGrid = Partial<Record<PhotoSlot, string>>;
 export interface Trial {
   id: string;
   trialNumber: number;
+  name?: string;
   setup?: TrialSetup;
   sensory: SensoryEvaluation;
   photos: PhotoGrid;

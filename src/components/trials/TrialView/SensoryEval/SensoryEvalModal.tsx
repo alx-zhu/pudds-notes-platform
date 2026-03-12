@@ -105,12 +105,14 @@ export default function SensoryEvalModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-          <DialogTitle>Sensory Evaluation</DialogTitle>
+          <DialogTitle>Formulation Analysis</DialogTitle>
           <DialogDescription>
-            Rate each metric from 1 to {SENSORY_METRICS[0]?.max ?? 5}
+            This survey will be used to conduct a sensory evaluation for a
+            formula. Pick one of the following categories you would like to
+            conduct a sensory evaluation for.
           </DialogDescription>
         </DialogHeader>
 
@@ -162,20 +164,27 @@ export default function SensoryEvalModal({
                 <div
                   key={metric.key}
                   className={cn(
-                    "rounded-xl px-4 py-3 flex items-center justify-between gap-4 transition-colors",
+                    "rounded-xl px-4 py-3 flex items-start justify-between gap-6 transition-colors",
                     hasValue
                       ? "bg-blue-50/50 ring-1 ring-blue-100"
                       : "bg-muted/40 ring-1 ring-border/30",
                   )}
                 >
-                  <p className="text-sm font-medium text-foreground shrink-0">
-                    {metric.label}
-                  </p>
-                  <RatingDots
-                    value={draft[metric.key] ?? null}
-                    max={metric.max}
-                    onChange={(v) => setRating(metric.key, v)}
-                  />
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {metric.label}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {metric.description}
+                    </p>
+                  </div>
+                  <div className="shrink-0 pt-0.5">
+                    <RatingDots
+                      value={draft[metric.key] ?? null}
+                      max={metric.max}
+                      onChange={(v) => setRating(metric.key, v)}
+                    />
+                  </div>
                 </div>
               );
             })}
