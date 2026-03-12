@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,14 +7,21 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FlaskConical } from "lucide-react";
 import type { Trial } from "@/types/trial";
-import { columns } from "./columns";
+import type { SensoryCategory } from "@/config/trial.config";
+import { getColumns } from "./columns";
 
 interface TrialsTableProps {
   trials: Trial[];
+  selectedCategory: SensoryCategory;
 }
 
-export default function TrialsTable({ trials }: TrialsTableProps) {
+export default function TrialsTable({ trials, selectedCategory }: TrialsTableProps) {
   const navigate = useNavigate();
+
+  const columns = useMemo(
+    () => getColumns(selectedCategory),
+    [selectedCategory],
+  );
 
   const table = useReactTable({
     data: trials,
