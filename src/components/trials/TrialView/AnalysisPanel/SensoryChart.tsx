@@ -10,9 +10,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { useTrial, useTrials } from "@/hooks/useTrials";
+import { useTrials } from "@/hooks/useTrials";
 import { SENSORY_METRICS } from "@/config/trial.config";
-import type { SensoryCategory } from "@/config/trial.config";
+import type { PartialSensoryMetrics } from "@/types/trial";
 
 const METRIC_SHORT: Record<string, string> = {
   tasteRating: "Taste Rat.",
@@ -64,7 +64,7 @@ function ChartTooltip({
             }}
           />
           <span className="text-muted-foreground">
-            {p.dataKey === "current" ? "This Trial" : "Other Trials Avg"}:
+            {p.dataKey === "current" ? "This Log" : "Other Logs Avg"}:
           </span>
           <span className="font-semibold text-foreground">
             {p.value != null ? p.value.toFixed(1) : "—"}
@@ -77,27 +77,28 @@ function ChartTooltip({
 
 interface Props {
   trialId: string;
-  categoryKey: SensoryCategory;
+  logMetrics: PartialSensoryMetrics;
   hasData: boolean;
   onAddData: () => void;
 }
 
-export default function SensoryChartPanel({
+export default function SensoryChart({
   trialId,
-  categoryKey,
+  logMetrics,
   hasData,
   onAddData,
 }: Props) {
-  const { data: trial } = useTrial(trialId);
   const { data: allTrials = [] } = useTrials();
 
   const chartData = useMemo(() => {
-    if (!hasData || !trial) return [];
-    const others = allTrials.filter((t) => t.id !== trialId);
+    if (!hasData) return [];
+    const otherLogs = allTrials
+      .filter((t) => t.id !== trialId)
+      .flatMap((t) => t.analysisLogs);
     return SENSORY_METRICS.map((metric) => {
-      const current = trial.sensory[categoryKey]?.[metric.key] ?? 0;
-      const otherVals = others
-        .map((t) => t.sensory[categoryKey]?.[metric.key])
+      const current = logMetrics[metric.key] ?? 0;
+      const otherVals = otherLogs
+        .map((log) => log.metrics[metric.key])
         .filter((v): v is number => v != null && v >= 1);
       const avg =
         otherVals.length > 0
@@ -111,11 +112,11 @@ export default function SensoryChartPanel({
         average: avg,
       };
     });
-  }, [hasData, trial, allTrials, trialId, categoryKey]);
+  }, [hasData, logMetrics, allTrials, trialId]);
 
   if (!hasData) {
     return (
-      <div className="h-full min-h-[360px] flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40">
+      <div className="h-full min-h-90 flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40">
         <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
           <BarChart2 size={18} className="text-muted-foreground" />
         </div>
@@ -171,7 +172,7 @@ export default function SensoryChartPanel({
           <Legend
             wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
             formatter={(value) =>
-              value === "current" ? "This Trial" : "Other Trials Avg"
+              value === "current" ? "This Log" : "Other Logs Avg"
             }
           />
           <Bar

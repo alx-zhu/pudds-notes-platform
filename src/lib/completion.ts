@@ -1,8 +1,5 @@
-import {
-  SENSORY_CATEGORIES,
-  SENSORY_METRICS,
-} from "@/config/trial.config";
-import type { Trial, CompletionStatus, TrialCompletion } from "@/types/trial";
+import { SENSORY_METRICS } from "@/config/trial.config";
+import type { Trial, AnalysisLog, CompletionStatus, TrialCompletion } from "@/types/trial";
 
 function getSetupStatus(trial: Trial): CompletionStatus {
   const s = trial.setup;
@@ -15,40 +12,32 @@ function getSetupStatus(trial: Trial): CompletionStatus {
   return "partial";
 }
 
-function getSensoryStatus(trial: Trial): CompletionStatus {
-  const done = SENSORY_CATEGORIES.filter(({ key }) => {
-    const entry = trial.sensory[key];
-    if (!entry) return false;
-    return SENSORY_METRICS.every((m) => entry[m.key] != null && entry[m.key] >= 1);
-  }).length;
-  if (done === 0) return "not-started";
-  if (done === SENSORY_CATEGORIES.length) return "done";
-  return "partial";
+export function isLogComplete(log: AnalysisLog): boolean {
+  const allMetricsRated = SENSORY_METRICS.every(
+    (m) => log.metrics[m.key] != null && (log.metrics[m.key] ?? 0) >= 1,
+  );
+  const hasPhoto = Boolean(log.photo);
+  return allMetricsRated && hasPhoto;
 }
 
-function getPhotosStatus(trial: Trial): CompletionStatus {
-  const filled = SENSORY_CATEGORIES.filter(({ photoSlot }) =>
-    Boolean(trial.photos[photoSlot]),
-  ).length;
-  if (filled === 0) return "not-started";
-  if (filled === SENSORY_CATEGORIES.length) return "done";
+function getAnalysisLogsStatus(trial: Trial): CompletionStatus {
+  const logs = trial.analysisLogs;
+  if (logs.length === 0) return "not-started";
+  const completeCount = logs.filter(isLogComplete).length;
+  if (completeCount === logs.length) return "done";
   return "partial";
 }
 
 export function computeCompletion(trial: Trial): TrialCompletion {
   const setup = getSetupStatus(trial);
-  const sensory = getSensoryStatus(trial);
-  const photos = getPhotosStatus(trial);
-  const completedSections = [setup, sensory, photos].filter(
+  const analysisLogs = getAnalysisLogsStatus(trial);
+  const completedSections = [setup, analysisLogs].filter(
     (s) => s === "done",
   ).length;
-  return { setup, sensory, photos, completedSections, isFullyComplete: completedSections === 3 };
-}
-
-export function countDoneSensoryCategories(trial: Trial): number {
-  return SENSORY_CATEGORIES.filter(({ key }) => {
-    const entry = trial.sensory[key];
-    if (!entry) return false;
-    return SENSORY_METRICS.every((m) => entry[m.key] != null && entry[m.key] >= 1);
-  }).length;
+  return {
+    setup,
+    analysisLogs,
+    completedSections,
+    isFullyComplete: completedSections === 2,
+  };
 }

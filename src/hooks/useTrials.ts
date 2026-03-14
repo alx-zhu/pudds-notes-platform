@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TrialSetup, SensoryMetrics, PhotoGrid } from "@/types/trial";
-import type { SensoryCategory } from "@/config/trial.config";
+import type { TrialSetup } from "@/types/trial";
+import type { AnalysisLogInput } from "@/api/trials";
 import * as api from "@/api/trials";
 
 export const trialKeys = {
@@ -47,16 +47,11 @@ export function useUpdateTrialSetup(trialId: string) {
   });
 }
 
-export function useUpdateSensoryCategory(trialId: string) {
+export function useAddAnalysisLog(trialId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      category,
-      metrics,
-    }: {
-      category: SensoryCategory;
-      metrics: SensoryMetrics;
-    }) => api.updateSensoryCategory(trialId, category, metrics),
+    mutationFn: (input: AnalysisLogInput) =>
+      api.addAnalysisLog(trialId, input),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });
@@ -64,10 +59,27 @@ export function useUpdateSensoryCategory(trialId: string) {
   });
 }
 
-export function useUpdatePhotoGrid(trialId: string) {
+export function useUpdateAnalysisLog(trialId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (photos: PhotoGrid) => api.updatePhotoGrid(trialId, photos),
+    mutationFn: ({
+      logId,
+      input,
+    }: {
+      logId: string;
+      input: Partial<AnalysisLogInput>;
+    }) => api.updateAnalysisLog(trialId, logId, input),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+}
+
+export function useDeleteAnalysisLog(trialId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (logId: string) => api.deleteAnalysisLog(trialId, logId),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });

@@ -1,7 +1,7 @@
 import type {
-  SensoryCategory,
   SensoryMetricKey,
-  PhotoSlot,
+  ThermalProcessingType,
+  StorageTime,
   ProcessingType,
   Flavor,
 } from "@/config/trial.config";
@@ -20,19 +20,24 @@ export interface TrialSetup {
   emphasis?: string;
 }
 
-export type SensoryMetrics = Record<SensoryMetricKey, number>;
-export type SensoryEvaluation = Partial<
-  Record<SensoryCategory, SensoryMetrics>
->;
-export type PhotoGrid = Partial<Record<PhotoSlot, string>>;
+export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
+
+export interface AnalysisLog {
+  id: string;
+  thermalProcessingType: ThermalProcessingType;
+  storageTime: StorageTime;
+  photo?: string;
+  metrics: PartialSensoryMetrics;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Trial {
   id: string;
   trialNumber: number;
   name?: string;
   setup?: TrialSetup;
-  sensory: SensoryEvaluation;
-  photos: PhotoGrid;
+  analysisLogs: AnalysisLog[];
   createdAt: string;
   updatedAt: string;
 }
@@ -41,8 +46,7 @@ export type CompletionStatus = "done" | "partial" | "not-started";
 
 export interface TrialCompletion {
   setup: CompletionStatus;
-  sensory: CompletionStatus;
-  photos: CompletionStatus;
+  analysisLogs: CompletionStatus;
   completedSections: number;
   isFullyComplete: boolean;
 }

@@ -3,7 +3,7 @@ import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
-import CategoryDetailCard from "@/components/trials/TrialView/CategoryDetail/CategoryDetailCard";
+import AnalysisLogPanel from "@/components/trials/TrialView/AnalysisPanel/AnalysisLogPanel";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
@@ -40,11 +40,11 @@ export default function TrialView() {
         PROCESSING_TYPES.find((p) => p.value === setup.processingType)?.label,
       ]
         .filter(Boolean)
-        .join(" ") +
-      ` — ${format(parseISO(setup.date), "MMM d, yyyy")}`
+        .join(" ") + ` — ${format(parseISO(setup.date), "MMM d, yyyy")}`
     : null;
 
-  const pageTitle = trial.name || generatedName || `Trial #${trial.trialNumber}`;
+  const pageTitle =
+    trial.name || generatedName || `Trial #${trial.trialNumber}`;
 
   // Subtitle: always show trial number; include generated name when title is custom
   const subtitleParts = [`Trial #${trial.trialNumber}`];
@@ -103,7 +103,7 @@ export default function TrialView() {
                 />
                 {completion.isFullyComplete
                   ? "All complete"
-                  : `${completion.completedSections} of 3 complete`}
+                  : `${completion.completedSections} of 2 complete`}
               </div>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function TrialView() {
 
           {/* Right column: unified category view */}
           <div className="flex flex-col gap-5">
-            <CategoryDetailCard trialId={trial.id} />
+            <AnalysisLogPanel trialId={trial.id} />
           </div>
         </div>
       </div>

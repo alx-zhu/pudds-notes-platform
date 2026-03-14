@@ -34,31 +34,15 @@ export const FLAVORS = [
   },
 ] as const;
 
-export const SENSORY_CATEGORIES = [
-  {
-    key: "thermo-24h",
-    label: "Thermomix — 24 Hours",
-    shortLabel: "Thermo 24h",
-    photoSlot: "thermo24h",
-  },
-  {
-    key: "thermo-3d",
-    label: "Thermomix — 3 Days",
-    shortLabel: "Thermo 3d",
-    photoSlot: "thermo3d",
-  },
-  {
-    key: "press-24h",
-    label: "Pressure Cook — 24 Hours",
-    shortLabel: "Press 24h",
-    photoSlot: "press24h",
-  },
-  {
-    key: "press-3d",
-    label: "Pressure Cook — 3 Days",
-    shortLabel: "Press 3d",
-    photoSlot: "press3d",
-  },
+export const THERMAL_PROCESSING_TYPES = [
+  { value: "thermomix", label: "Thermomix" },
+  { value: "pressure-cook", label: "Pressure Cook" },
+] as const;
+
+export const STORAGE_TIMES = [
+  { value: "immediate", label: "Immediate" },
+  { value: "24h", label: "24 Hours" },
+  { value: "3d", label: "3 Days" },
 ] as const;
 
 export const SENSORY_METRICS = [
@@ -73,19 +57,9 @@ export const SENSORY_METRICS = [
   { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "On a scale from 1-5, rate how much you liked the color." },
 ] as const;
 
-export const PHOTO_ROWS = ["Thermo-mix", "Pressure Cook"] as const;
-export const PHOTO_COLUMNS = ["24 Hours", "3 Days"] as const;
-
-export const PHOTO_GRID_CELLS = [
-  { key: "thermo24h", row: "Thermo-mix", col: "24 Hours" },
-  { key: "thermo3d", row: "Thermo-mix", col: "3 Days" },
-  { key: "press24h", row: "Pressure Cook", col: "24 Hours" },
-  { key: "press3d", row: "Pressure Cook", col: "3 Days" },
-] as const;
-
 // Derived types (consumed by types/trial.ts)
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];
 export type Flavor = (typeof FLAVORS)[number]["value"];
-export type SensoryCategory = (typeof SENSORY_CATEGORIES)[number]["key"];
+export type ThermalProcessingType = (typeof THERMAL_PROCESSING_TYPES)[number]["value"];
+export type StorageTime = (typeof STORAGE_TIMES)[number]["value"];
 export type SensoryMetricKey = (typeof SENSORY_METRICS)[number]["key"];
-export type PhotoSlot = (typeof PHOTO_GRID_CELLS)[number]["key"];

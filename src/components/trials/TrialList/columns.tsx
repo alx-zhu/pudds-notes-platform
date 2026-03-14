@@ -2,7 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
 import type { Trial } from "@/types/trial";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
-import { computeCompletion } from "@/lib/completion";
+import { computeCompletion, isLogComplete } from "@/lib/completion";
 import { Badge } from "@/components/ui/badge";
 import { CompletionPill } from "./CompletionPill";
 import { cn } from "@/lib/utils";
@@ -131,21 +131,20 @@ export const columns = [
     cell: ({ row }) => {
       const trial = row.original;
       const completion = computeCompletion(trial);
-      const doneCount = Object.values(trial.sensory).filter(Boolean).length;
+      const completedLogs = trial.analysisLogs.filter(isLogComplete).length;
       return (
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
             <CompletionPill label="A" status={completion.setup} />
             <CompletionPill
               label="B"
-              status={completion.sensory}
+              status={completion.analysisLogs}
               detail={
-                completion.sensory !== "not-started"
-                  ? `${doneCount}/4`
+                trial.analysisLogs.length > 0
+                  ? `${completedLogs}/${trial.analysisLogs.length}`
                   : undefined
               }
             />
-            <CompletionPill label="C" status={completion.photos} />
           </div>
         </div>
       );

@@ -3,20 +3,17 @@ import { format, parseISO } from "date-fns";
 import { Camera, FlaskConical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CompletionPill } from "./CompletionPill";
-import { computeCompletion, countDoneSensoryCategories } from "@/lib/completion";
-import { FLAVORS, PROCESSING_TYPES, PHOTO_GRID_CELLS } from "@/config/trial.config";
+import { computeCompletion, isLogComplete } from "@/lib/completion";
+import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import type { Trial } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
-/** Ordered photo slots for the 2x2 grid: top-left, top-right, bottom-left, bottom-right */
-const GRID_SLOTS = PHOTO_GRID_CELLS.map((c) => c.key);
-
 function PhotoGrid({ trial }: { trial: Trial }) {
-  const photos = trial.photos;
-  const filledCount = GRID_SLOTS.filter((k) => Boolean(photos[k])).length;
-  const hasAnyPhoto = filledCount > 0;
+  const logPhotos = trial.analysisLogs
+    .map((log) => log.photo)
+    .filter((p): p is string => Boolean(p));
 
-  if (!hasAnyPhoto) {
+  if (logPhotos.length === 0) {
     return (
       <div className="aspect-[2/1] bg-muted/40 flex flex-col items-center justify-center gap-2 rounded-t-xl">
         <div className="h-10 w-10 rounded-lg bg-muted/80 flex items-center justify-center">
@@ -27,26 +24,18 @@ function PhotoGrid({ trial }: { trial: Trial }) {
     );
   }
 
+  const displayPhotos = logPhotos.slice(0, 4);
+  const cols = displayPhotos.length === 1 ? 1 : 2;
   return (
-    <div className="grid grid-cols-2 grid-rows-2 rounded-t-xl overflow-hidden aspect-[2/1]">
-      {GRID_SLOTS.map((slot) => {
-        const src = photos[slot];
-        return src ? (
-          <img
-            key={slot}
-            src={src}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div
-            key={slot}
-            className="w-full h-full bg-muted/30 flex items-center justify-center"
-          >
-            <Camera size={14} className="text-muted-foreground/20" />
-          </div>
-        );
-      })}
+    <div
+      className={cn(
+        "grid rounded-t-xl overflow-hidden aspect-[2/1]",
+        cols === 1 ? "grid-cols-1" : "grid-cols-2",
+      )}
+    >
+      {displayPhotos.map((src, i) => (
+        <img key={i} src={src} alt="" className="w-full h-full object-cover" />
+      ))}
     </div>
   );
 }
@@ -55,7 +44,7 @@ export function TrialCard({ trial }: { trial: Trial }) {
   const navigate = useNavigate();
   const completion = computeCompletion(trial);
   const setup = trial.setup;
-  const sensoryDoneCount = countDoneSensoryCategories(trial);
+  const completedLogs = trial.analysisLogs.filter(isLogComplete).length;
 
   const flavorConfig = setup
     ? FLAVORS.find((f) => f.value === setup.flavor)
@@ -117,7 +106,7 @@ export function TrialCard({ trial }: { trial: Trial }) {
             />
             {completion.isFullyComplete
               ? "Complete"
-              : `${completion.completedSections}/3`}
+              : `${completion.completedSections}/2`}
           </div>
         </div>
 
@@ -149,15 +138,14 @@ export function TrialCard({ trial }: { trial: Trial }) {
           <div className="flex gap-1.5">
             <CompletionPill label="Setup" status={completion.setup} />
             <CompletionPill
-              label="Sensory"
-              status={completion.sensory}
+              label="Logs"
+              status={completion.analysisLogs}
               detail={
-                completion.sensory !== "not-started"
-                  ? `${sensoryDoneCount}/4`
+                trial.analysisLogs.length > 0
+                  ? `${completedLogs}/${trial.analysisLogs.length}`
                   : undefined
               }
             />
-            <CompletionPill label="Photos" status={completion.photos} />
           </div>
         </div>
       </div>

@@ -1,8 +1,15 @@
-import type { Trial, TrialSetup, SensoryMetrics, PhotoGrid } from "@/types/trial";
-import type { SensoryCategory } from "@/config/trial.config";
+import type { Trial, TrialSetup, AnalysisLog, PartialSensoryMetrics } from "@/types/trial";
+import type { ThermalProcessingType, StorageTime } from "@/config/trial.config";
 import { simulateApiCall } from "./client";
 
 const STORAGE_KEY = "pudds:trials";
+
+export interface AnalysisLogInput {
+  thermalProcessingType: ThermalProcessingType;
+  storageTime: StorageTime;
+  photo?: string;
+  metrics: PartialSensoryMetrics;
+}
 
 function readStorage(): Trial[] {
   try {
@@ -43,8 +50,7 @@ export async function createTrial(): Promise<Trial> {
     id: crypto.randomUUID(),
     trialNumber: nextTrialNumber(data),
     setup: undefined,
-    sensory: {},
-    photos: {},
+    analysisLogs: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -59,8 +65,7 @@ export async function createTrialWithSetup(setup: TrialSetup): Promise<Trial> {
     id: crypto.randomUUID(),
     trialNumber: nextTrialNumber(data),
     setup,
-    sensory: {},
-    photos: {},
+    analysisLogs: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -85,35 +90,63 @@ export async function updateTrialSetup(
   return simulateApiCall(updated);
 }
 
-export async function updateSensoryCategory(
-  id: string,
-  category: SensoryCategory,
-  metrics: SensoryMetrics,
+export async function addAnalysisLog(
+  trialId: string,
+  input: AnalysisLogInput,
 ): Promise<Trial> {
   const data = readStorage();
-  const idx = data.findIndex((t) => t.id === id);
-  if (idx === -1) throw new Error(`Trial ${id} not found`);
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const newLog: AnalysisLog = {
+    id: crypto.randomUUID(),
+    ...input,
+    createdAt: now,
+    updatedAt: now,
+  };
   const updated: Trial = {
     ...data[idx],
-    sensory: { ...data[idx].sensory, [category]: metrics },
-    updatedAt: new Date().toISOString(),
+    analysisLogs: [...data[idx].analysisLogs, newLog],
+    updatedAt: now,
   };
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
 }
 
-export async function updatePhotoGrid(
-  id: string,
-  photos: PhotoGrid,
+export async function updateAnalysisLog(
+  trialId: string,
+  logId: string,
+  input: Partial<AnalysisLogInput>,
 ): Promise<Trial> {
   const data = readStorage();
-  const idx = data.findIndex((t) => t.id === id);
-  if (idx === -1) throw new Error(`Trial ${id} not found`);
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
   const updated: Trial = {
     ...data[idx],
-    photos,
-    updatedAt: new Date().toISOString(),
+    analysisLogs: data[idx].analysisLogs.map((log) =>
+      log.id === logId ? { ...log, ...input, updatedAt: now } : log,
+    ),
+    updatedAt: now,
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(updated);
+}
+
+export async function deleteAnalysisLog(
+  trialId: string,
+  logId: string,
+): Promise<Trial> {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const updated: Trial = {
+    ...data[idx],
+    analysisLogs: data[idx].analysisLogs.filter((log) => log.id !== logId),
+    updatedAt: now,
   };
   data[idx] = updated;
   writeStorage(data);
