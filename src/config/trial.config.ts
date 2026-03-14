@@ -39,21 +39,25 @@ export const SENSORY_CATEGORIES = [
     key: "thermo-24h",
     label: "Thermomix — 24 Hours",
     shortLabel: "Thermo 24h",
+    photoSlot: "thermo24h",
   },
   {
     key: "thermo-3d",
     label: "Thermomix — 3 Days",
     shortLabel: "Thermo 3d",
+    photoSlot: "thermo3d",
   },
   {
     key: "press-24h",
     label: "Pressure Cook — 24 Hours",
     shortLabel: "Press 24h",
+    photoSlot: "press24h",
   },
   {
     key: "press-3d",
     label: "Pressure Cook — 3 Days",
     shortLabel: "Press 3d",
+    photoSlot: "press3d",
   },
 ] as const;
 

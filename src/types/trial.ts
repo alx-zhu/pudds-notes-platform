@@ -21,7 +21,9 @@ export interface TrialSetup {
 }
 
 export type SensoryMetrics = Record<SensoryMetricKey, number>;
-export type SensoryEvaluation = Partial<Record<SensoryCategory, SensoryMetrics>>;
+export type SensoryEvaluation = Partial<
+  Record<SensoryCategory, SensoryMetrics>
+>;
 export type PhotoGrid = Partial<Record<PhotoSlot, string>>;
 
 export interface Trial {

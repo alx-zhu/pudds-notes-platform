@@ -1,7 +1,6 @@
 import {
   SENSORY_CATEGORIES,
   SENSORY_METRICS,
-  PHOTO_GRID_CELLS,
 } from "@/config/trial.config";
 import type { Trial, CompletionStatus, TrialCompletion } from "@/types/trial";
 
@@ -28,9 +27,11 @@ function getSensoryStatus(trial: Trial): CompletionStatus {
 }
 
 function getPhotosStatus(trial: Trial): CompletionStatus {
-  const filled = PHOTO_GRID_CELLS.filter(({ key }) => Boolean(trial.photos[key])).length;
+  const filled = SENSORY_CATEGORIES.filter(({ photoSlot }) =>
+    Boolean(trial.photos[photoSlot]),
+  ).length;
   if (filled === 0) return "not-started";
-  if (filled === PHOTO_GRID_CELLS.length) return "done";
+  if (filled === SENSORY_CATEGORIES.length) return "done";
   return "partial";
 }
 

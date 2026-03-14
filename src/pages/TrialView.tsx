@@ -3,8 +3,7 @@ import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
-import SensoryEvalCard from "@/components/trials/TrialView/SensoryEval/SensoryEvalCard";
-import PhotoGridCard from "@/components/trials/TrialView/PhotoGrid/PhotoGridCard";
+import CategoryDetailCard from "@/components/trials/TrialView/CategoryDetail/CategoryDetailCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
@@ -124,10 +123,9 @@ export default function TrialView() {
             <TrialSetupCard trialId={trial.id} />
           </div>
 
-          {/* Right column: Sensory + Photos stacked */}
+          {/* Right column: unified category view */}
           <div className="flex flex-col gap-5">
-            <SensoryEvalCard trialId={trial.id} />
-            <PhotoGridCard trialId={trial.id} />
+            <CategoryDetailCard trialId={trial.id} />
           </div>
         </div>
       </div>
