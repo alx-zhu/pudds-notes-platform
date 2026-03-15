@@ -16,7 +16,7 @@ export function isLogComplete(log: AnalysisLog): boolean {
   const allMetricsRated = SENSORY_METRICS.every(
     (m) => log.metrics[m.key] != null && (log.metrics[m.key] ?? 0) >= 1,
   );
-  const hasPhoto = Boolean(log.photo);
+  const hasPhoto = (log.photos?.length ?? 0) > 0;
   return allMetricsRated && hasPhoto;
 }
 

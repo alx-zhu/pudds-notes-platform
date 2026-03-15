@@ -3,7 +3,7 @@ import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
-import AnalysisLogPanel from "@/components/trials/TrialView/AnalysisPanel/AnalysisLogPanel";
+import AnalysisLogCard from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
@@ -125,7 +125,7 @@ export default function TrialView() {
 
           {/* Right column: unified category view */}
           <div className="flex flex-col gap-5">
-            <AnalysisLogPanel trialId={trial.id} />
+            <AnalysisLogCard trialId={trial.id} />
           </div>
         </div>
       </div>

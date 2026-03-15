@@ -26,7 +26,7 @@ export interface AnalysisLog {
   id: string;
   thermalProcessingType: ThermalProcessingType;
   storageTime: StorageTime;
-  photo?: string;
+  photos?: string[];
   metrics: PartialSensoryMetrics;
   createdAt: string;
   updatedAt: string;

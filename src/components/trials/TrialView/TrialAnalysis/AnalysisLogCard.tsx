@@ -30,7 +30,7 @@ interface Props {
   trialId: string;
 }
 
-export default function AnalysisLogPanel({ trialId }: Props) {
+export default function AnalysisLogCard({ trialId }: Props) {
   const { data: trial } = useTrial(trialId);
 
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function AnalysisLogPanel({ trialId }: Props) {
           {activeLog ? (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-4">
               <TrialImage
-                photoSrc={activeLog.photo}
+                photos={activeLog.photos}
                 label={getLogLabel(activeLog)}
               />
               <SensoryChart
@@ -173,6 +173,7 @@ export default function AnalysisLogPanel({ trialId }: Props) {
         onOpenChange={setModalOpen}
         trialId={trialId}
         existingLog={editingLog}
+        allLogs={logs}
       />
     </>
   );

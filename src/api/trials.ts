@@ -7,7 +7,7 @@ const STORAGE_KEY = "pudds:trials";
 export interface AnalysisLogInput {
   thermalProcessingType: ThermalProcessingType;
   storageTime: StorageTime;
-  photo?: string;
+  photos?: string[];
   metrics: PartialSensoryMetrics;
 }
 

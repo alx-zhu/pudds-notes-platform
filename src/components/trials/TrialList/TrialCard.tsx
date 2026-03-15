@@ -9,9 +9,7 @@ import type { Trial } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
 function PhotoGrid({ trial }: { trial: Trial }) {
-  const logPhotos = trial.analysisLogs
-    .map((log) => log.photo)
-    .filter((p): p is string => Boolean(p));
+  const logPhotos = trial.analysisLogs.flatMap((log) => log.photos ?? []);
 
   if (logPhotos.length === 0) {
     return (
