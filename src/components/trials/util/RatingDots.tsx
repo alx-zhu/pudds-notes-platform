@@ -7,12 +7,12 @@ interface RatingDotsProps {
   readOnly?: boolean;
 }
 
-export default function RatingDots({
+export const RatingDots = ({
   value,
   max,
   onChange,
   readOnly = false,
-}: RatingDotsProps) {
+}: RatingDotsProps) => {
   const dots = Array.from({ length: max }, (_, i) => i + 1);
 
   return (
@@ -44,4 +44,4 @@ export default function RatingDots({
       })}
     </div>
   );
-}
+};

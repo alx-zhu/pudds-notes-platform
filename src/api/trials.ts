@@ -11,39 +11,39 @@ export interface AnalysisLogInput {
   metrics: PartialSensoryMetrics;
 }
 
-function readStorage(): Trial[] {
+const readStorage = (): Trial[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Trial[]) : [];
   } catch {
     return [];
   }
-}
+};
 
-function writeStorage(trials: Trial[]): void {
+const writeStorage = (trials: Trial[]): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trials));
-}
+};
 
-function nextTrialNumber(trials: Trial[]): number {
+const nextTrialNumber = (trials: Trial[]): number => {
   if (trials.length === 0) return 1;
   return Math.max(...trials.map((t) => t.trialNumber)) + 1;
-}
+};
 
-export async function fetchTrials(): Promise<Trial[]> {
+export const fetchTrials = async (): Promise<Trial[]> => {
   const data = readStorage();
   return simulateApiCall(
     [...data].sort((a, b) => b.trialNumber - a.trialNumber),
   );
-}
+};
 
-export async function fetchTrial(id: string): Promise<Trial> {
+export const fetchTrial = async (id: string): Promise<Trial> => {
   const data = readStorage();
   const trial = data.find((t) => t.id === id);
   if (!trial) throw new Error(`Trial ${id} not found`);
   return simulateApiCall(trial);
-}
+};
 
-export async function createTrial(): Promise<Trial> {
+export const createTrial = async (): Promise<Trial> => {
   const data = readStorage();
   const now = new Date().toISOString();
   const trial: Trial = {
@@ -56,9 +56,9 @@ export async function createTrial(): Promise<Trial> {
   };
   writeStorage([...data, trial]);
   return simulateApiCall(trial);
-}
+};
 
-export async function createTrialWithSetup(setup: TrialSetup): Promise<Trial> {
+export const createTrialWithSetup = async (setup: TrialSetup): Promise<Trial> => {
   const data = readStorage();
   const now = new Date().toISOString();
   const trial: Trial = {
@@ -71,12 +71,12 @@ export async function createTrialWithSetup(setup: TrialSetup): Promise<Trial> {
   };
   writeStorage([...data, trial]);
   return simulateApiCall(trial);
-}
+};
 
-export async function updateTrialSetup(
+export const updateTrialSetup = async (
   id: string,
   setup: TrialSetup,
-): Promise<Trial> {
+): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === id);
   if (idx === -1) throw new Error(`Trial ${id} not found`);
@@ -88,12 +88,12 @@ export async function updateTrialSetup(
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
-}
+};
 
-export async function addAnalysisLog(
+export const addAnalysisLog = async (
   trialId: string,
   input: AnalysisLogInput,
-): Promise<Trial> {
+): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === trialId);
   if (idx === -1) throw new Error(`Trial ${trialId} not found`);
@@ -112,13 +112,13 @@ export async function addAnalysisLog(
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
-}
+};
 
-export async function updateAnalysisLog(
+export const updateAnalysisLog = async (
   trialId: string,
   logId: string,
   input: Partial<AnalysisLogInput>,
-): Promise<Trial> {
+): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === trialId);
   if (idx === -1) throw new Error(`Trial ${trialId} not found`);
@@ -133,12 +133,12 @@ export async function updateAnalysisLog(
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
-}
+};
 
-export async function deleteAnalysisLog(
+export const deleteAnalysisLog = async (
   trialId: string,
   logId: string,
-): Promise<Trial> {
+): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === trialId);
   if (idx === -1) throw new Error(`Trial ${trialId} not found`);
@@ -151,12 +151,12 @@ export async function deleteAnalysisLog(
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
-}
+};
 
-export async function updateTrialName(
+export const updateTrialName = async (
   id: string,
   name: string | undefined,
-): Promise<Trial> {
+): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === id);
   if (idx === -1) throw new Error(`Trial ${id} not found`);
@@ -168,9 +168,9 @@ export async function updateTrialName(
   data[idx] = updated;
   writeStorage(data);
   return simulateApiCall(updated);
-}
+};
 
-export async function deleteTrial(id: string): Promise<void> {
+export const deleteTrial = async (id: string): Promise<void> => {
   writeStorage(readStorage().filter((t) => t.id !== id));
   return simulateApiCall(undefined as void);
-}
+};

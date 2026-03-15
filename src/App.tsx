@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import AppShell from "@/components/AppShell";
-import TrialsList from "@/pages/TrialsList";
-import TrialView from "@/pages/TrialView";
+import { AppShell } from "@/components/AppShell";
+import { TrialsList } from "@/pages/TrialsList";
+import { TrialView } from "@/pages/TrialView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function App() {
+export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -29,4 +29,4 @@ export default function App() {
       </BrowserRouter>
     </QueryClientProvider>
   );
-}
+};

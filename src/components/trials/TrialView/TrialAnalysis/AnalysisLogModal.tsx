@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import RatingDots from "@/components/trials/util/RatingDots";
+import { RatingDots } from "@/components/trials/util/RatingDots";
 import {
   useAddAnalysisLog,
   useUpdateAnalysisLog,
@@ -46,13 +46,13 @@ interface Props {
   allLogs?: AnalysisLog[];
 }
 
-export default function AnalysisLogModal({
+export const AnalysisLogModal = ({
   open,
   onOpenChange,
   trialId,
   existingLog,
   allLogs = [],
-}: Props) {
+}: Props) => {
   const formKey = existingLog?.id ?? "new";
 
   return (
@@ -70,23 +70,23 @@ export default function AnalysisLogModal({
       </DialogContent>
     </Dialog>
   );
-}
+};
 
-function findMatchingLog(
+const findMatchingLog = (
   logs: AnalysisLog[],
   thermalType: ThermalProcessingType,
   storageTime: StorageTime,
   excludeId?: string,
-): AnalysisLog | undefined {
+): AnalysisLog | undefined => {
   return logs.find(
     (l) =>
       l.thermalProcessingType === thermalType &&
       l.storageTime === storageTime &&
       l.id !== excludeId,
   );
-}
+};
 
-function AnalysisLogForm({
+const AnalysisLogForm = ({
   trialId,
   existingLog,
   allLogs,
@@ -96,7 +96,7 @@ function AnalysisLogForm({
   existingLog?: AnalysisLog;
   allLogs: AnalysisLog[];
   onClose: () => void;
-}) {
+}) => {
   // On open: if no existingLog, check if a log already exists for the default selectors
   const initialLog = useMemo(() => {
     if (existingLog) return existingLog;
@@ -135,15 +135,15 @@ function AnalysisLogForm({
     updateMutation.isPending ||
     deleteMutation.isPending;
 
-  function switchToLog(log: AnalysisLog) {
+  const switchToLog = (log: AnalysisLog) => {
     setActiveLogId(log.id);
     setThermalType(log.thermalProcessingType);
     setStorageTime(log.storageTime);
     setPhotos(log.photos ?? []);
     setMetrics(log.metrics);
-  }
+  };
 
-  function handleThermalChange(v: ThermalProcessingType) {
+  const handleThermalChange = (v: ThermalProcessingType) => {
     const match = findMatchingLog(allLogs, v, storageTime, activeLogId);
     if (match) {
       switchToLog(match);
@@ -151,9 +151,9 @@ function AnalysisLogForm({
       setThermalType(v);
       setActiveLogId(undefined);
     }
-  }
+  };
 
-  function handleStorageChange(v: StorageTime) {
+  const handleStorageChange = (v: StorageTime) => {
     const match = findMatchingLog(allLogs, thermalType, v, activeLogId);
     if (match) {
       switchToLog(match);
@@ -161,24 +161,24 @@ function AnalysisLogForm({
       setStorageTime(v);
       setActiveLogId(undefined);
     }
-  }
+  };
 
-  function setRating(key: SensoryMetricKey, value: number) {
+  const setRating = (key: SensoryMetricKey, value: number) => {
     setMetrics((prev) => ({ ...prev, [key]: value || undefined }));
-  }
+  };
 
-  async function handleFileChange(files: FileList) {
+  const handleFileChange = async (files: FileList) => {
     const newPhotos = await Promise.all(
       Array.from(files).map((f) => resizeImageToBase64(f)),
     );
     setPhotos((prev) => [...prev, ...newPhotos]);
-  }
+  };
 
-  function removePhoto(index: number) {
+  const removePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
-  }
+  };
 
-  function handleSave() {
+  const handleSave = () => {
     const input = {
       thermalProcessingType: thermalType,
       storageTime,
@@ -194,12 +194,12 @@ function AnalysisLogForm({
     } else {
       addMutation.mutate(input, { onSuccess: onClose });
     }
-  }
+  };
 
-  function handleDelete() {
+  const handleDelete = () => {
     if (!activeLogId) return;
     deleteMutation.mutate(activeLogId, { onSuccess: onClose });
-  }
+  };
 
   const ratedCount = SENSORY_METRICS.filter(
     (m) => metrics[m.key] != null && (metrics[m.key] ?? 0) >= 1,
@@ -439,4 +439,4 @@ function AnalysisLogForm({
       </div>
     </>
   );
-}
+};

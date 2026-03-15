@@ -8,7 +8,7 @@ import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import type { Trial } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
-function PhotoGrid({ trial }: { trial: Trial }) {
+const PhotoGrid = ({ trial }: { trial: Trial }) => {
   const logPhotos = trial.analysisLogs.flatMap((log) => log.photos ?? []);
 
   if (logPhotos.length === 0) {
@@ -36,9 +36,9 @@ function PhotoGrid({ trial }: { trial: Trial }) {
       ))}
     </div>
   );
-}
+};
 
-export function TrialCard({ trial }: { trial: Trial }) {
+export const TrialCard = ({ trial }: { trial: Trial }) => {
   const navigate = useNavigate();
   const completion = computeCompletion(trial);
   const setup = trial.setup;
@@ -149,4 +149,4 @@ export function TrialCard({ trial }: { trial: Trial }) {
       </div>
     </div>
   );
-}
+};

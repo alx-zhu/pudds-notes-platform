@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CompletionStatus } from "@/types/trial";
 
-export function CompletionPill({
+export const CompletionPill = ({
   label,
   status,
   detail,
@@ -10,7 +10,7 @@ export function CompletionPill({
   label: string;
   status: CompletionStatus;
   detail?: string;
-}) {
+}) => {
   return (
     <Badge
       className={cn(
@@ -24,4 +24,4 @@ export function CompletionPill({
       {detail ? ` ${detail}` : status === "done" ? " ✓" : " —"}
     </Badge>
   );
-}
+};

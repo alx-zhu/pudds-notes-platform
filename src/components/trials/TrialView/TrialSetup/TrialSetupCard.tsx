@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import TrialSetupModal from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
+import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
 import { useTrial, useUpdateTrialName } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import type { Trial } from "@/types/trial";
@@ -19,7 +19,7 @@ interface Props {
   trialId: string;
 }
 
-function getDefaultTrialName(trial: Trial): string {
+const getDefaultTrialName = (trial: Trial): string => {
   const setup = trial.setup;
   if (!setup) return `Trial #${trial.trialNumber}`;
 
@@ -34,9 +34,9 @@ function getDefaultTrialName(trial: Trial): string {
   return parts.length > 0
     ? `${parts.join(" ")} — ${date}`
     : `Trial #${trial.trialNumber}`;
-}
+};
 
-export default function TrialSetupCard({ trialId }: Props) {
+export const TrialSetupCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -56,20 +56,20 @@ export default function TrialSetupCard({ trialId }: Props) {
     }
   }, [isEditingName]);
 
-  function startEditingName() {
+  const startEditingName = () => {
     setNameDraft(trial?.name || "");
     setIsEditingName(true);
-  }
+  };
 
-  function saveName() {
+  const saveName = () => {
     const trimmed = nameDraft.trim();
     nameMutation.mutate(trimmed || undefined);
     setIsEditingName(false);
-  }
+  };
 
-  function cancelEditingName() {
+  const cancelEditingName = () => {
     setIsEditingName(false);
-  }
+  };
 
   return (
     <>
@@ -224,4 +224,4 @@ export default function TrialSetupCard({ trialId }: Props) {
       />
     </>
   );
-}
+};

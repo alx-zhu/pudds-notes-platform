@@ -2,15 +2,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
-import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
-import IngredientsCard from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
-import AnalysisLogCard from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
+import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
+import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
+import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
 import { cn } from "@/lib/utils";
 
-export default function TrialView() {
+export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: trial, isLoading, isError } = useTrial(id ?? "");
@@ -133,4 +133,4 @@ export default function TrialView() {
       </div>
     </>
   );
-}
+};

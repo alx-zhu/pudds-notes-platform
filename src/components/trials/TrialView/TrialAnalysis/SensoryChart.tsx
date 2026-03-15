@@ -40,7 +40,7 @@ interface TooltipPayload {
   value: number | undefined;
 }
 
-function ChartTooltip({
+const ChartTooltip = ({
   active,
   payload,
   label,
@@ -48,7 +48,7 @@ function ChartTooltip({
   active?: boolean;
   payload?: TooltipPayload[];
   label?: string;
-}) {
+}) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-lg text-xs">
@@ -74,7 +74,7 @@ function ChartTooltip({
       ))}
     </div>
   );
-}
+};
 
 interface Props {
   comparison: SensoryComparisonParams;
@@ -83,12 +83,12 @@ interface Props {
   onAddData: () => void;
 }
 
-export default function SensoryChart({
+export const SensoryChart = ({
   comparison,
   logMetrics,
   hasData,
   onAddData,
-}: Props) {
+}: Props) => {
   const { averages } = useSensoryComparison(comparison);
 
   const chartData = useMemo(() => {
@@ -179,4 +179,4 @@ export default function SensoryChart({
       </ResponsiveContainer>
     </div>
   );
-}
+};

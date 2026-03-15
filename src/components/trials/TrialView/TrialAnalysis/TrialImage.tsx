@@ -7,7 +7,7 @@ interface Props {
   label: string;
 }
 
-export default function TrialImage({ photos = [], label }: Props) {
+export const TrialImage = ({ photos = [], label }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const hasPhotos = photos.length > 0;
   const clampedIndex = Math.min(activeIndex, photos.length - 1);
@@ -68,4 +68,4 @@ export default function TrialImage({ photos = [], label }: Props) {
       )}
     </div>
   );
-}
+};

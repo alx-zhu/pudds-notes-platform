@@ -13,13 +13,13 @@ interface IngredientRowProps {
   suggestions: string[];
 }
 
-export function IngredientRow({
+export const IngredientRow = ({
   ingredient,
   percentage,
   onChange,
   onRemove,
   suggestions,
-}: IngredientRowProps) {
+}: IngredientRowProps) => {
   return (
     <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 items-center">
       <IngredientCombobox
@@ -59,7 +59,4 @@ export function IngredientRow({
       </Button>
     </div>
   );
-}
-
-// Default export kept for backward compatibility
-export default IngredientRow;
+};

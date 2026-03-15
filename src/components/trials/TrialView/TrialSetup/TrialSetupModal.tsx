@@ -39,23 +39,22 @@ const DEFAULT_SETUP: TrialSetup = {
   processingType: "shelftop",
   flavor: "chocolate",
   variables: [],
-  emphasis: "",
 };
 
-export default function TrialSetupModal({
+export const TrialSetupModal = ({
   open,
   onOpenChange,
   trialId,
   initialSetup,
   onSuccess,
-}: Props) {
+}: Props) => {
   const [draft, setDraft] = useState<TrialSetup>(initialSetup ?? DEFAULT_SETUP);
 
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  function handleSave() {
+  const handleSave = () => {
     if (trialId) {
       updateMutation.mutate(draft, {
         onSuccess: () => {
@@ -71,7 +70,7 @@ export default function TrialSetupModal({
         },
       });
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -210,4 +209,4 @@ export default function TrialSetupModal({
       </DialogContent>
     </Dialog>
   );
-}
+};

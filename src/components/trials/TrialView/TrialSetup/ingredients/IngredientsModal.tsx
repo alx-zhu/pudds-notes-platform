@@ -23,12 +23,12 @@ interface Props {
   setup: TrialSetup;
 }
 
-export default function IngredientsModal({
+export const IngredientsModal = ({
   open,
   onOpenChange,
   trialId,
   setup,
-}: Props) {
+}: Props) => {
   const [variables, setVariables] = useState<Variable[]>(setup.variables);
   const [pendingIngredient, setPendingIngredient] = useState("");
   const [showPendingError, setShowPendingError] = useState(false);
@@ -36,30 +36,30 @@ export default function IngredientsModal({
   const updateMutation = useUpdateTrialSetup(trialId);
   const suggestions = useAllIngredientSuggestions();
 
-  function updateVariable(id: string, ingredient: string, percentage: number) {
+  const updateVariable = (id: string, ingredient: string, percentage: number) => {
     setVariables((vs) =>
       vs.map((v) => (v.id === id ? { ...v, ingredient, percentage } : v)),
     );
-  }
+  };
 
-  function removeVariable(id: string) {
+  const removeVariable = (id: string) => {
     setVariables((vs) => vs.filter((v) => v.id !== id));
-  }
+  };
 
-  function addVariable(ingredient: string, percentage: number) {
+  const addVariable = (ingredient: string, percentage: number) => {
     if (!ingredient.trim()) return;
     setVariables((vs) => [
       ...vs,
       { id: crypto.randomUUID(), ingredient, percentage },
     ]);
     setShowPendingError(false);
-  }
+  };
 
   const total = variables.reduce((sum, v) => sum + v.percentage, 0);
   const roundedTotal = Math.round(total * 10) / 10;
   const exceeds100 = roundedTotal > 100;
 
-  function handleSave() {
+  const handleSave = () => {
     if (exceeds100) return;
     if (pendingIngredient.trim()) {
       setShowPendingError(true);
@@ -69,7 +69,7 @@ export default function IngredientsModal({
       { ...setup, variables },
       { onSuccess: () => onOpenChange(false) },
     );
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -178,4 +178,4 @@ export default function IngredientsModal({
       </DialogContent>
     </Dialog>
   );
-}
+};

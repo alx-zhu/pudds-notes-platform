@@ -17,35 +17,33 @@ export const trialKeys = {
   detail: (id: string) => ["trials", id] as const,
 };
 
-export function useTrials() {
-  return useQuery({ queryKey: trialKeys.all, queryFn: api.fetchTrials });
-}
+export const useTrials = () =>
+  useQuery({ queryKey: trialKeys.all, queryFn: api.fetchTrials });
 
-export function useTrial(id: string) {
-  return useQuery({
+export const useTrial = (id: string) =>
+  useQuery({
     queryKey: trialKeys.detail(id),
     queryFn: () => api.fetchTrial(id),
     enabled: Boolean(id),
   });
-}
 
-export function useCreateTrial() {
+export const useCreateTrial = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: api.createTrial,
     onSuccess: () => qc.invalidateQueries({ queryKey: trialKeys.all }),
   });
-}
+};
 
-export function useCreateTrialWithSetup() {
+export const useCreateTrialWithSetup = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (setup: TrialSetup) => api.createTrialWithSetup(setup),
     onSuccess: () => qc.invalidateQueries({ queryKey: trialKeys.all }),
   });
-}
+};
 
-export function useUpdateTrialSetup(trialId: string) {
+export const useUpdateTrialSetup = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (setup: TrialSetup) => api.updateTrialSetup(trialId, setup),
@@ -54,9 +52,9 @@ export function useUpdateTrialSetup(trialId: string) {
       qc.invalidateQueries({ queryKey: trialKeys.all });
     },
   });
-}
+};
 
-export function useAddAnalysisLog(trialId: string) {
+export const useAddAnalysisLog = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: AnalysisLogInput) => api.addAnalysisLog(trialId, input),
@@ -65,9 +63,9 @@ export function useAddAnalysisLog(trialId: string) {
       qc.invalidateQueries({ queryKey: trialKeys.all });
     },
   });
-}
+};
 
-export function useUpdateAnalysisLog(trialId: string) {
+export const useUpdateAnalysisLog = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -82,9 +80,9 @@ export function useUpdateAnalysisLog(trialId: string) {
       qc.invalidateQueries({ queryKey: trialKeys.all });
     },
   });
-}
+};
 
-export function useDeleteAnalysisLog(trialId: string) {
+export const useDeleteAnalysisLog = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (logId: string) => api.deleteAnalysisLog(trialId, logId),
@@ -93,9 +91,9 @@ export function useDeleteAnalysisLog(trialId: string) {
       qc.invalidateQueries({ queryKey: trialKeys.all });
     },
   });
-}
+};
 
-export function useUpdateTrialName(trialId: string) {
+export const useUpdateTrialName = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (name: string | undefined) =>
@@ -105,27 +103,29 @@ export function useUpdateTrialName(trialId: string) {
       qc.invalidateQueries({ queryKey: trialKeys.all });
     },
   });
-}
+};
 
-export function useDeleteTrial() {
+export const useDeleteTrial = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: api.deleteTrial,
     onSuccess: () => qc.invalidateQueries({ queryKey: trialKeys.all }),
   });
-}
+};
 
-export function useAllIngredientSuggestions(): string[] {
+export const useAllIngredientSuggestions = (): string[] => {
   const { data: trials } = useTrials();
-  if (!trials) return [];
-  const seen = new Set<string>();
-  for (const trial of trials) {
-    for (const v of trial.setup?.variables ?? []) {
-      if (v.ingredient.trim()) seen.add(v.ingredient.trim());
+  return useMemo(() => {
+    if (!trials) return [];
+    const seen = new Set<string>();
+    for (const trial of trials) {
+      for (const v of trial.setup?.variables ?? []) {
+        if (v.ingredient.trim()) seen.add(v.ingredient.trim());
+      }
     }
-  }
-  return [...seen].sort((a, b) => a.localeCompare(b));
-}
+    return [...seen].sort((a, b) => a.localeCompare(b));
+  }, [trials]);
+};
 
 /**
  * Returns averaged sensory metrics from logs across other trials that share the
@@ -151,9 +151,9 @@ export interface SensoryComparisonResult {
   logCount: number;
 }
 
-export function useSensoryComparison(
+export const useSensoryComparison = (
   params: SensoryComparisonParams,
-): SensoryComparisonResult {
+): SensoryComparisonResult => {
   const { data: allTrials = [] } = useTrials();
 
   return useMemo(() => {
@@ -192,4 +192,4 @@ export function useSensoryComparison(
     params.thermalProcessingType,
     params.storageTime,
   ]);
-}
+};

@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IngredientsPieChart } from "@/components/trials/TrialView/TrialSetup/ingredients/shared/IngredientsPieChart";
-import IngredientsModal from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsModal";
+import { IngredientsModal } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsModal";
 import { useTrial } from "@/hooks/useTrials";
 
 interface Props {
   trialId: string;
 }
 
-export default function IngredientsCard({ trialId }: Props) {
+export const IngredientsCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -91,4 +91,4 @@ export default function IngredientsCard({ trialId }: Props) {
       )}
     </>
   );
-}
+};

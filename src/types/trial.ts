@@ -17,7 +17,6 @@ export interface TrialSetup {
   processingType: ProcessingType;
   flavor: Flavor;
   variables: Variable[];
-  emphasis?: string;
 }
 
 export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;

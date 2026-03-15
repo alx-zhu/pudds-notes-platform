@@ -24,13 +24,13 @@ interface Props {
   className?: string;
 }
 
-export function IngredientCombobox({
+export const IngredientCombobox = ({
   value,
   onChange,
   suggestions,
   placeholder = "Select ingredient...",
   className,
-}: Props) {
+}: Props) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -110,4 +110,4 @@ export function IngredientCombobox({
       </PopoverContent>
     </Popover>
   );
-}
+};

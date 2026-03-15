@@ -1,3 +1,5 @@
+"use no memo";
+
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,7 +14,7 @@ interface TrialsTableProps {
   trials: Trial[];
 }
 
-export default function TrialsTable({ trials }: TrialsTableProps) {
+export const TrialsTable = ({ trials }: TrialsTableProps) => {
   const navigate = useNavigate();
 
   const table = useReactTable({
@@ -79,4 +81,4 @@ export default function TrialsTable({ trials }: TrialsTableProps) {
       </table>
     </div>
   );
-}
+};

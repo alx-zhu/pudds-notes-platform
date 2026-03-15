@@ -9,7 +9,7 @@ interface SidebarIconProps {
   onClick?: () => void;
 }
 
-function SidebarIcon({ icon, active, onClick }: SidebarIconProps) {
+const SidebarIcon = ({ icon, active, onClick }: SidebarIconProps) => {
   return (
     <Button
       variant={active ? "default" : "ghost"}
@@ -23,9 +23,9 @@ function SidebarIcon({ icon, active, onClick }: SidebarIconProps) {
       {icon}
     </Button>
   );
-}
+};
 
-export default function AppShell() {
+export const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isTrials = location.pathname === "/trials";
@@ -47,4 +47,4 @@ export default function AppShell() {
       </div>
     </div>
   );
-}
+};

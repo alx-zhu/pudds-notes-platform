@@ -2,10 +2,10 @@
  * Resize an image file and convert it to a base64 JPEG data URL.
  * Used for compressing uploaded photos before storing in localStorage.
  */
-export async function resizeImageToBase64(
+export const resizeImageToBase64 = async (
   file: File,
   maxPx = 800,
-): Promise<string> {
+): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -21,4 +21,4 @@ export async function resizeImageToBase64(
     };
     img.src = URL.createObjectURL(file);
   });
-}
+};

@@ -23,7 +23,7 @@ interface TooltipProps {
   payload?: Array<{ name: string; value: number }>;
 }
 
-function CustomTooltip({ active, payload }: TooltipProps) {
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
@@ -32,9 +32,9 @@ function CustomTooltip({ active, payload }: TooltipProps) {
       <span className="text-muted-foreground ml-1.5">{item.value}%</span>
     </div>
   );
-}
+};
 
-export function IngredientsPieChart({ variables }: Props) {
+export const IngredientsPieChart = ({ variables }: Props) => {
   const total = variables.reduce((sum, v) => sum + v.percentage, 0);
   const roundedTotal = Math.round(total * 10) / 10;
 
@@ -102,4 +102,4 @@ export function IngredientsPieChart({ variables }: Props) {
       </div>
     </div>
   );
-}
+};

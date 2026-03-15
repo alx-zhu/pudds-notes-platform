@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import TrialSetupModal from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
-import TrialsTable from "@/components/trials/TrialList/TrialsTable";
+import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
+import { TrialsTable } from "@/components/trials/TrialList/TrialsTable";
 import { TrialCard } from "@/components/trials/TrialList/TrialCard";
 import { useTrials } from "@/hooks/useTrials";
 
-export default function TrialsList() {
+export const TrialsList = () => {
   const navigate = useNavigate();
   const { data: trials = [], isLoading } = useTrials();
   const [modalOpen, setModalOpen] = useState(false);
@@ -101,4 +101,4 @@ export default function TrialsList() {
       />
     </>
   );
-}
+};

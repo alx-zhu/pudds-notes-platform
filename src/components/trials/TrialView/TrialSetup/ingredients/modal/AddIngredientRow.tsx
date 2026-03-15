@@ -10,27 +10,27 @@ interface AddIngredientRowProps {
   suggestions: string[];
 }
 
-export function AddIngredientRow({
+export const AddIngredientRow = ({
   onAdd,
   onPendingChange,
   suggestions,
-}: AddIngredientRowProps) {
+}: AddIngredientRowProps) => {
   const [ingredient, setIngredient] = useState("");
   const [pctStr, setPctStr] = useState("");
 
-  function handleIngredientChange(val: string) {
+  const handleIngredientChange = (val: string) => {
     setIngredient(val);
     onPendingChange(val);
-  }
+  };
 
-  function commit() {
+  const commit = () => {
     if (!ingredient.trim()) return;
     const pct = Math.max(0, Math.min(100, Number(pctStr) || 0));
     onAdd(ingredient, pct);
     setIngredient("");
     setPctStr("");
     onPendingChange("");
-  }
+  };
 
   return (
     <div className="flex items-center gap-3">
@@ -75,4 +75,4 @@ export function AddIngredientRow({
       </Button>
     </div>
   );
-}
+};
