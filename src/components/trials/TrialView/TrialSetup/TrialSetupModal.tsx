@@ -18,16 +18,12 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
-  IngredientRow,
-  AddIngredientRow,
-} from "@/components/trials/TrialView/TrialSetup/IngredientRow";
-import {
   useCreateTrialWithSetup,
   useUpdateTrialSetup,
 } from "@/hooks/useTrials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
-import type { TrialSetup, Variable } from "@/types/trial";
+import type { TrialSetup } from "@/types/trial";
 
 interface Props {
   open: boolean;
@@ -59,32 +55,6 @@ export default function TrialSetupModal({
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  function updateVariable(id: string, ingredient: string, percentage: number) {
-    setDraft((d) => ({
-      ...d,
-      variables: d.variables.map((v) =>
-        v.id === id ? { ...v, ingredient, percentage } : v,
-      ),
-    }));
-  }
-
-  function removeVariable(id: string) {
-    setDraft((d) => ({
-      ...d,
-      variables: d.variables.filter((v) => v.id !== id),
-    }));
-  }
-
-  function addVariable(ingredient: string, percentage: number) {
-    if (!ingredient.trim()) return;
-    const newVar: Variable = {
-      id: crypto.randomUUID(),
-      ingredient,
-      percentage,
-    };
-    setDraft((d) => ({ ...d, variables: [...d.variables, newVar] }));
-  }
-
   function handleSave() {
     if (trialId) {
       updateMutation.mutate(draft, {
@@ -105,7 +75,7 @@ export default function TrialSetupModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-md flex flex-col p-0 gap-0 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 border-b border-border shrink-0">
           <DialogTitle>
@@ -118,8 +88,8 @@ export default function TrialSetupModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 min-h-0">
+        {/* Body */}
+        <div className="px-6 py-6 flex flex-col gap-6">
           {/* Date */}
           <div className="flex flex-col gap-2">
             <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -211,52 +181,6 @@ export default function TrialSetupModal({
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-          </div>
-
-          {/* Variables */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Ingredients
-              </Label>
-              {draft.variables.length > 0 && (
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {draft.variables.length} added
-                </span>
-              )}
-            </div>
-
-            <div className="rounded-xl bg-muted/30 ring-1 ring-border/40 p-3">
-              {/* Column headers */}
-              <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 px-1 pb-2 mb-2 border-b border-border/30">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Name
-                </span>
-                <span className="text-xs font-medium text-muted-foreground">
-                  %
-                </span>
-                <span />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                {draft.variables.length === 0 ? (
-                  <p className="text-sm text-muted-foreground/50 py-2 px-1">
-                    No ingredients yet
-                  </p>
-                ) : (
-                  draft.variables.map((v) => (
-                    <IngredientRow
-                      key={v.id}
-                      ingredient={v.ingredient}
-                      percentage={v.percentage}
-                      onChange={(ing, pct) => updateVariable(v.id, ing, pct)}
-                      onRemove={() => removeVariable(v.id)}
-                    />
-                  ))
-                )}
-                <AddIngredientRow onAdd={(ing, pct) => addVariable(ing, pct)} />
-              </div>
-            </div>
           </div>
         </div>
 

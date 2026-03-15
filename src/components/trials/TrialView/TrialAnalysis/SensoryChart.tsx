@@ -10,7 +10,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { useTrials } from "@/hooks/useTrials";
+import { useSensoryComparison } from "@/hooks/useTrials";
+import type { SensoryComparisonParams } from "@/hooks/useTrials";
 import { SENSORY_METRICS } from "@/config/trial.config";
 import type { PartialSensoryMetrics } from "@/types/trial";
 
@@ -76,43 +77,28 @@ function ChartTooltip({
 }
 
 interface Props {
-  trialId: string;
+  comparison: SensoryComparisonParams;
   logMetrics: PartialSensoryMetrics;
   hasData: boolean;
   onAddData: () => void;
 }
 
 export default function SensoryChart({
-  trialId,
+  comparison,
   logMetrics,
   hasData,
   onAddData,
 }: Props) {
-  const { data: allTrials = [] } = useTrials();
+  const { averages } = useSensoryComparison(comparison);
 
   const chartData = useMemo(() => {
     if (!hasData) return [];
-    const otherLogs = allTrials
-      .filter((t) => t.id !== trialId)
-      .flatMap((t) => t.analysisLogs);
-    return SENSORY_METRICS.map((metric) => {
-      const current = logMetrics[metric.key] ?? 0;
-      const otherVals = otherLogs
-        .map((log) => log.metrics[metric.key])
-        .filter((v): v is number => v != null && v >= 1);
-      const avg =
-        otherVals.length > 0
-          ? Math.round(
-              (otherVals.reduce((s, v) => s + v, 0) / otherVals.length) * 10,
-            ) / 10
-          : 0;
-      return {
-        name: METRIC_SHORT[metric.key] ?? metric.label,
-        current,
-        average: avg,
-      };
-    });
-  }, [hasData, logMetrics, allTrials, trialId]);
+    return SENSORY_METRICS.map((metric) => ({
+      name: METRIC_SHORT[metric.key] ?? metric.label,
+      current: logMetrics[metric.key] ?? 0,
+      average: averages[metric.key],
+    }));
+  }, [hasData, logMetrics, averages]);
 
   if (!hasData) {
     return (

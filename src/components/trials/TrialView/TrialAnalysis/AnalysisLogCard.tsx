@@ -134,7 +134,13 @@ export default function AnalysisLogCard({ trialId }: Props) {
                 label={getLogLabel(activeLog)}
               />
               <SensoryChart
-                trialId={trialId}
+                comparison={{
+                  excludeTrialId: trialId,
+                  processingType: trial?.setup?.processingType,
+                  flavor: trial?.setup?.flavor,
+                  thermalProcessingType: activeLog.thermalProcessingType,
+                  storageTime: activeLog.storageTime,
+                }}
                 logMetrics={activeLog.metrics}
                 hasData={hasAnyMetric}
                 onAddData={() => openEditModal(activeLog)}

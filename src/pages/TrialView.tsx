@@ -3,6 +3,7 @@ import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import TrialSetupCard from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
+import IngredientsCard from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import AnalysisLogCard from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
@@ -118,9 +119,10 @@ export default function TrialView() {
             gridTemplateColumns: "minmax(320px, 380px) 1fr",
           }}
         >
-          {/* Left column: Setup only, sticky */}
-          <div className="sticky top-0">
+          {/* Left column: Setup + Ingredients, sticky */}
+          <div className="sticky top-0 flex flex-col gap-5">
             <TrialSetupCard trialId={trial.id} />
+            <IngredientsCard trialId={trial.id} />
           </div>
 
           {/* Right column: unified category view */}

@@ -144,7 +144,7 @@ export default function TrialSetupCard({ trialId }: Props) {
         </CardHeader>
 
         {/* Content */}
-        <CardContent className="p-0 pb-2">
+        <CardContent className="p-0">
           {setup ? (
             <div>
               {/* Property table — alternating subtle backgrounds */}
@@ -183,81 +183,6 @@ export default function TrialSetupCard({ trialId }: Props) {
                     ) : null;
                   })()}
                 </div>
-              </div>
-
-              {/* Ingredients section */}
-              <div className="border-t border-border/40">
-                {setup.variables.length === 0 ? (
-                  <div className="px-5 py-3">
-                    <p className="text-sm text-muted-foreground/60">
-                      No ingredients added
-                    </p>
-                  </div>
-                ) : (
-                  (() => {
-                    const totalPct = setup.variables.reduce(
-                      (sum, v) => sum + v.percentage,
-                      0,
-                    );
-                    const maxPct = Math.max(
-                      ...setup.variables.map((v) => v.percentage),
-                      1,
-                    );
-                    return (
-                      <div className="px-5 py-3 gap-3 flex flex-col">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">
-                            Ingredients
-                          </span>
-                          <span className="text-xs text-muted-foreground/60">
-                            {setup.variables.length} item
-                            {setup.variables.length !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-                        {/* Ingredients list surface */}
-                        <div className="rounded-xl ring-1 ring-border/40 p-3 bg-muted/30">
-                          <div className="flex flex-col gap-3">
-                            {setup.variables.map((v) => {
-                              const barPct = Math.min(
-                                (v.percentage / maxPct) * 100,
-                                100,
-                              );
-                              return (
-                                <div key={v.id}>
-                                  <div className="flex items-baseline justify-between gap-3 mb-1">
-                                    <span className="text-xs font-medium text-foreground truncate">
-                                      {v.ingredient}
-                                    </span>
-                                    <span className="text-xs tabular-nums font-semibold text-foreground shrink-0">
-                                      {v.percentage}%
-                                    </span>
-                                  </div>
-                                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-blue-400 rounded-full transition-all duration-300"
-                                      style={{ width: `${barPct}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border/30">
-                            <span className="text-xs text-muted-foreground">
-                              Total
-                            </span>
-                            <span
-                              className={`text-xs font-semibold tabular-nums ${totalPct === 100 ? "text-emerald-600" : totalPct > 100 ? "text-red-500" : "text-amber-600"}`}
-                            >
-                              {totalPct}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
               </div>
             </div>
           ) : (

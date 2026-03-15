@@ -1,0 +1,181 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { IngredientRow } from "@/components/trials/TrialView/TrialSetup/ingredients/modal/IngredientRow";
+import { AddIngredientRow } from "@/components/trials/TrialView/TrialSetup/ingredients/modal/AddIngredientRow";
+import { IngredientsPieChart } from "@/components/trials/TrialView/TrialSetup/ingredients/shared/IngredientsPieChart";
+import {
+  useUpdateTrialSetup,
+  useAllIngredientSuggestions,
+} from "@/hooks/useTrials";
+import type { TrialSetup, Variable } from "@/types/trial";
+
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  trialId: string;
+  setup: TrialSetup;
+}
+
+export default function IngredientsModal({
+  open,
+  onOpenChange,
+  trialId,
+  setup,
+}: Props) {
+  const [variables, setVariables] = useState<Variable[]>(setup.variables);
+  const [pendingIngredient, setPendingIngredient] = useState("");
+  const [showPendingError, setShowPendingError] = useState(false);
+
+  const updateMutation = useUpdateTrialSetup(trialId);
+  const suggestions = useAllIngredientSuggestions();
+
+  function updateVariable(id: string, ingredient: string, percentage: number) {
+    setVariables((vs) =>
+      vs.map((v) => (v.id === id ? { ...v, ingredient, percentage } : v)),
+    );
+  }
+
+  function removeVariable(id: string) {
+    setVariables((vs) => vs.filter((v) => v.id !== id));
+  }
+
+  function addVariable(ingredient: string, percentage: number) {
+    if (!ingredient.trim()) return;
+    setVariables((vs) => [
+      ...vs,
+      { id: crypto.randomUUID(), ingredient, percentage },
+    ]);
+    setShowPendingError(false);
+  }
+
+  const total = variables.reduce((sum, v) => sum + v.percentage, 0);
+  const roundedTotal = Math.round(total * 10) / 10;
+  const exceeds100 = roundedTotal > 100;
+
+  function handleSave() {
+    if (exceeds100) return;
+    if (pendingIngredient.trim()) {
+      setShowPendingError(true);
+      return;
+    }
+    updateMutation.mutate(
+      { ...setup, variables },
+      { onSuccess: () => onOpenChange(false) },
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-5xl h-155 flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-border shrink-0">
+          <DialogTitle>Ingredients</DialogTitle>
+          <DialogDescription>
+            Add or edit the ingredients for this trial.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Left: ingredient list */}
+          <div className="flex-1 flex flex-col border-r border-border/40">
+            {/* Scrollable ingredient rows */}
+            <div className="flex-1 px-6 py-6 overflow-y-auto">
+              <div className="rounded-xl bg-muted/30 ring-1 ring-border/40 p-3">
+                {/* Column headers */}
+                <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 px-1 pb-2 mb-2 border-b border-border/30">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Name
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    %
+                  </span>
+                  <span />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {variables.length === 0 ? (
+                    <p className="text-sm text-muted-foreground/50 py-2 px-1">
+                      No ingredients yet
+                    </p>
+                  ) : (
+                    variables.map((v) => (
+                      <IngredientRow
+                        key={v.id}
+                        ingredient={v.ingredient}
+                        percentage={v.percentage}
+                        onChange={(ing, pct) => updateVariable(v.id, ing, pct)}
+                        onRemove={() => removeVariable(v.id)}
+                        suggestions={suggestions}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Add ingredient — pinned at bottom */}
+            <div className="shrink-0 px-6 py-4 border-t border-border/40 bg-background">
+              {showPendingError && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                  You have an unsubmitted ingredient — press{" "}
+                  <span className="font-semibold">Add</span> to add it first.
+                </p>
+              )}
+              <AddIngredientRow
+                onAdd={addVariable}
+                onPendingChange={(val) => {
+                  setPendingIngredient(val);
+                  if (!val.trim()) setShowPendingError(false);
+                }}
+                suggestions={suggestions}
+              />
+            </div>
+          </div>
+
+          {/* Right: pie chart */}
+          <div className="flex-1 px-6 py-6 flex flex-col items-center justify-center overflow-hidden">
+            {variables.length > 0 ? (
+              <IngredientsPieChart variables={variables} />
+            ) : (
+              <p className="text-sm text-muted-foreground/50 text-center">
+                Add ingredients to see the chart
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="border-t border-border shrink-0 px-6 py-4 flex flex-col gap-3">
+          {exceeds100 && (
+            <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              Ingredients total {roundedTotal}% — must not exceed 100% to save.
+            </p>
+          )}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={handleSave}
+              disabled={updateMutation.isPending || exceeds100}
+            >
+              {updateMutation.isPending ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
