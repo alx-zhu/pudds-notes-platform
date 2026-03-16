@@ -1,4 +1,4 @@
-import type { Trial, TrialSetup, AnalysisLog, PartialSensoryMetrics } from "@/types/trial";
+import type { Trial, TrialSetup, AnalysisLog, PartialSensoryMetrics, PartialSensoryComments } from "@/types/trial";
 import type { ThermalProcessingType, StorageTime } from "@/config/trial.config";
 import { simulateApiCall } from "./client";
 
@@ -9,6 +9,7 @@ export interface AnalysisLogInput {
   storageTime: StorageTime;
   photos?: string[];
   metrics: PartialSensoryMetrics;
+  comments?: PartialSensoryComments;
 }
 
 const readStorage = (): Trial[] => {

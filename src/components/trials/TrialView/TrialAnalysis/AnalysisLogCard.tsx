@@ -11,20 +11,10 @@ import { AnalysisLogModal } from "./AnalysisLogModal";
 import { TrialImage } from "./TrialImage";
 import { SensoryChart } from "./SensoryChart";
 import { isLogComplete } from "@/lib/completion";
+import { getLogLabel } from "@/lib/analysisLog";
 import { useTrial } from "@/hooks/useTrials";
-import { THERMAL_PROCESSING_TYPES, STORAGE_TIMES } from "@/config/trial.config";
 import type { AnalysisLog } from "@/types/trial";
 import { cn } from "@/lib/utils";
-
-const getLogLabel = (log: AnalysisLog): string => {
-  const thermal =
-    THERMAL_PROCESSING_TYPES.find((t) => t.value === log.thermalProcessingType)
-      ?.label ?? log.thermalProcessingType;
-  const storage =
-    STORAGE_TIMES.find((s) => s.value === log.storageTime)?.label ??
-    log.storageTime;
-  return `${thermal} · ${storage}`;
-};
 
 interface Props {
   trialId: string;

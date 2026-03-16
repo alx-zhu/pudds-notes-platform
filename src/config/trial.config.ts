@@ -57,6 +57,31 @@ export const SENSORY_METRICS = [
   { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "On a scale from 1-5, rate how much you liked the color." },
 ] as const;
 
+export const SENSORY_METRIC_GROUPS = [
+  {
+    label: "Taste & Flavor",
+    keys: [
+      "tasteRating",
+      "sweetnessIntensity",
+      "sweetnessRating",
+      "flavorIntensity",
+      "aftertasteIntensity",
+    ] as SensoryMetricKey[],
+  },
+  {
+    label: "Texture",
+    keys: [
+      "thicknessIntensity",
+      "textureIntensity",
+      "textureRating",
+    ] as SensoryMetricKey[],
+  },
+  {
+    label: "Appearance",
+    keys: ["colorRating"] as SensoryMetricKey[],
+  },
+];
+
 export const INGREDIENT_CHART_COLORS = [
   "#60a5fa", // blue-400
   "#f59e0b", // amber-400

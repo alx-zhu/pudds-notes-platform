@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
+import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/CommentsCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { computeCompletion } from "@/lib/completion";
@@ -128,6 +129,7 @@ export const TrialView = () => {
           {/* Right column: unified category view */}
           <div className="flex flex-col gap-5">
             <AnalysisLogCard trialId={trial.id} />
+            <CommentsCard trialId={trial.id} />
           </div>
         </div>
       </div>

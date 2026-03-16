@@ -20,6 +20,7 @@ export interface TrialSetup {
 }
 
 export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
+export type PartialSensoryComments = Partial<Record<SensoryMetricKey, string>>;
 
 export interface AnalysisLog {
   id: string;
@@ -27,6 +28,7 @@ export interface AnalysisLog {
   storageTime: StorageTime;
   photos?: string[];
   metrics: PartialSensoryMetrics;
+  comments?: PartialSensoryComments;
   createdAt: string;
   updatedAt: string;
 }
