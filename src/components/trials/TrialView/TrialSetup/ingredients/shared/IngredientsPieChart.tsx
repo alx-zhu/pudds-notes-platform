@@ -1,21 +1,12 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { INGREDIENT_CHART_COLORS } from "@/config/trial.config";
 import type { Variable } from "@/types/trial";
-
-const SLICE_COLORS = [
-  "#60a5fa", // blue-400
-  "#f59e0b", // amber-400
-  "#34d399", // emerald-400
-  "#a78bfa", // violet-400
-  "#f87171", // rose-400
-  "#22d3ee", // cyan-400
-  "#fb923c", // orange-400
-  "#4ade80", // green-400
-];
 
 const UNDEFINED_COLOR = "#e5e7eb"; // gray-200
 
 interface Props {
   variables: Variable[];
+  showLegend?: boolean;
 }
 
 interface TooltipProps {
@@ -34,7 +25,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
   );
 };
 
-export const IngredientsPieChart = ({ variables }: Props) => {
+export const IngredientsPieChart = ({ variables, showLegend = true }: Props) => {
   const total = variables.reduce((sum, v) => sum + v.percentage, 0);
   const roundedTotal = Math.round(total * 10) / 10;
 
@@ -42,7 +33,7 @@ export const IngredientsPieChart = ({ variables }: Props) => {
     ...variables.map((v, i) => ({
       name: v.ingredient || `Ingredient ${i + 1}`,
       value: v.percentage,
-      color: SLICE_COLORS[i % SLICE_COLORS.length],
+      color: INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length],
       isUndefined: false,
     })),
     ...(roundedTotal < 100
@@ -82,24 +73,26 @@ export const IngredientsPieChart = ({ variables }: Props) => {
       </div>
 
       {/* Legend */}
-      <div className="shrink-0 flex flex-wrap justify-center gap-x-3 gap-y-1.5">
-        {data.map((entry, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span
-              className="h-2 w-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span
-              className={`text-xs ${entry.isUndefined ? "text-muted-foreground/60 italic" : "text-foreground"}`}
-            >
-              {entry.name}
-            </span>
-            <span className="text-xs tabular-nums text-muted-foreground">
-              {entry.value}%
-            </span>
-          </div>
-        ))}
-      </div>
+      {showLegend && (
+        <div className="shrink-0 flex flex-wrap justify-center gap-x-3 gap-y-1.5">
+          {data.map((entry, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span
+                className={`text-xs ${entry.isUndefined ? "text-muted-foreground/60 italic" : "text-foreground"}`}
+              >
+                {entry.name}
+              </span>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {entry.value}%
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

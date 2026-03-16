@@ -150,6 +150,8 @@ const AnalysisLogForm = ({
     } else {
       setThermalType(v);
       setActiveLogId(undefined);
+      setPhotos([]);
+      setMetrics({});
     }
   };
 
@@ -160,6 +162,8 @@ const AnalysisLogForm = ({
     } else {
       setStorageTime(v);
       setActiveLogId(undefined);
+      setPhotos([]);
+      setMetrics({});
     }
   };
 
@@ -210,7 +214,7 @@ const AnalysisLogForm = ({
   return (
     <>
       {/* Header */}
-      <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+      <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
         <div className="flex items-center gap-2.5">
           <DialogTitle>
             {isEditing ? "Edit Analysis Log" : "New Analysis Log"}
@@ -229,9 +233,9 @@ const AnalysisLogForm = ({
       </DialogHeader>
 
       {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5 min-h-0">
-        {/* Dropdowns row */}
-        <div className="grid grid-cols-2 gap-4">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {/* Selectors */}
+        <div className="px-6 pb-5 grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-muted-foreground">
               Thermal Processing
@@ -276,22 +280,22 @@ const AnalysisLogForm = ({
           </div>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex gap-1 p-1 rounded-lg bg-muted/50">
+        {/* Tab bar */}
+        <div className="flex gap-6 px-6 border-b border-border">
           <button
             type="button"
             onClick={() => setActiveTab("photo")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-md transition-all cursor-pointer",
+              "flex items-center gap-1.5 text-sm font-medium pb-2.5 border-b-2 -mb-px transition-colors cursor-pointer",
               activeTab === "photo"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            <ImageIcon size={13} />
+            <ImageIcon size={14} />
             Photos
             {photoCount > 0 && (
-              <span className="text-[10px] tabular-nums text-muted-foreground">
+              <span className="text-xs tabular-nums text-muted-foreground">
                 {photoCount}
               </span>
             )}
@@ -300,16 +304,16 @@ const AnalysisLogForm = ({
             type="button"
             onClick={() => setActiveTab("sensory")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-md transition-all cursor-pointer",
+              "flex items-center gap-1.5 text-sm font-medium pb-2.5 border-b-2 -mb-px transition-colors cursor-pointer",
               activeTab === "sensory"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            <BarChart3 size={13} />
+            <BarChart3 size={14} />
             Sensory Evaluation
             {ratedCount > 0 && (
-              <span className="text-[10px] tabular-nums text-muted-foreground">
+              <span className="text-xs tabular-nums text-muted-foreground">
                 {ratedCount}/{SENSORY_METRICS.length}
               </span>
             )}
@@ -318,7 +322,7 @@ const AnalysisLogForm = ({
 
         {/* Tab content */}
         {activeTab === "photo" ? (
-          <div className="flex flex-col gap-3">
+          <div className="px-6 py-5 bg-muted/50">
             <input
               type="file"
               accept="image/*"
@@ -334,13 +338,13 @@ const AnalysisLogForm = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-square max-w-50 mx-auto rounded-xl border-2 border-dashed border-border/60 bg-muted/20 hover:bg-muted/40 hover:border-border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload"
+                className="w-full aspect-square max-w-50 mx-auto rounded-xl border-2 border-dashed border-border hover:bg-muted hover:border-border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload"
               >
                 <Camera
                   size={18}
-                  className="text-muted-foreground/50 group-hover/upload:text-muted-foreground transition-colors"
+                  className="text-muted-foreground group-hover/upload:text-foreground transition-colors"
                 />
-                <p className="text-xs text-muted-foreground/50 group-hover/upload:text-muted-foreground transition-colors">
+                <p className="text-xs text-muted-foreground group-hover/upload:text-foreground transition-colors">
                   Add photos
                 </p>
               </button>
@@ -351,7 +355,7 @@ const AnalysisLogForm = ({
                     <img
                       src={src}
                       alt={`Photo ${i + 1}`}
-                      className="w-full h-full object-cover rounded-xl ring-1 ring-border/40"
+                      className="w-full h-full object-cover rounded-lg"
                     />
                     <button
                       type="button"
@@ -365,13 +369,13 @@ const AnalysisLogForm = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-border/60 bg-muted/20 hover:bg-muted/40 hover:border-border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group/add"
+                  className="aspect-square rounded-lg border-2 border-dashed border-border hover:bg-muted flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group/add"
                 >
                   <Plus
                     size={16}
-                    className="text-muted-foreground/50 group-hover/add:text-muted-foreground transition-colors"
+                    className="text-muted-foreground group-hover/add:text-foreground transition-colors"
                   />
-                  <span className="text-[10px] text-muted-foreground/50 group-hover/add:text-muted-foreground transition-colors">
+                  <span className="text-[10px] text-muted-foreground group-hover/add:text-foreground transition-colors">
                     Add
                   </span>
                 </button>
@@ -379,19 +383,12 @@ const AnalysisLogForm = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="px-6 py-2 divide-y divide-border/40 bg-muted/50">
             {SENSORY_METRICS.map((metric) => {
-              const hasValue =
-                metrics[metric.key] != null && (metrics[metric.key] ?? 0) >= 1;
               return (
                 <div
                   key={metric.key}
-                  className={cn(
-                    "rounded-xl px-4 py-3 flex items-start justify-between gap-6 transition-colors",
-                    hasValue
-                      ? "bg-blue-50/50 ring-1 ring-blue-100"
-                      : "bg-muted/40 ring-1 ring-border/30",
-                  )}
+                  className="py-3 flex items-start justify-between gap-6"
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <p className="text-sm font-medium text-foreground">

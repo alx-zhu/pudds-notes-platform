@@ -57,6 +57,17 @@ export const SENSORY_METRICS = [
   { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "On a scale from 1-5, rate how much you liked the color." },
 ] as const;
 
+export const INGREDIENT_CHART_COLORS = [
+  "#60a5fa", // blue-400
+  "#f59e0b", // amber-400
+  "#34d399", // emerald-400
+  "#a78bfa", // violet-400
+  "#f87171", // rose-400
+  "#22d3ee", // cyan-400
+  "#fb923c", // orange-400
+  "#4ade80", // green-400
+];
+
 // Derived types (consumed by types/trial.ts)
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];
 export type Flavor = (typeof FLAVORS)[number]["value"];
