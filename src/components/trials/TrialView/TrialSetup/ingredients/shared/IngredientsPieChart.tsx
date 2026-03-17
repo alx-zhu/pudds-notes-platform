@@ -30,12 +30,14 @@ export const IngredientsPieChart = ({ variables, showLegend = true }: Props) => 
   const roundedTotal = Math.round(total * 10) / 10;
 
   const data = [
-    ...variables.map((v, i) => ({
-      name: v.ingredient || `Ingredient ${i + 1}`,
-      value: v.percentage,
-      color: INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length],
-      isUndefined: false,
-    })),
+    ...[...variables]
+      .sort((a, b) => b.percentage - a.percentage)
+      .map((v, i) => ({
+        name: v.ingredient || `Ingredient ${i + 1}`,
+        value: v.percentage,
+        color: INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length],
+        isUndefined: false,
+      })),
     ...(roundedTotal < 100
       ? [
           {

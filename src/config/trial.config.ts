@@ -7,7 +7,7 @@
 export const PROCESSING_TYPES = [
   {
     value: "shelftop",
-    label: "Shelftop",
+    label: "Benchtop",
     color: "bg-sky-100 text-sky-800",
     activeClass: "data-[state=on]:bg-sky-100 data-[state=on]:text-sky-800 data-[state=on]:shadow-sm",
   },
@@ -52,7 +52,7 @@ export const SENSORY_METRICS = [
   { key: "flavorIntensity", label: "Flavor Intensity", max: 5, description: "On a scale from 1-5, rate how intense the flavor of the product was. (References provided)" },
   { key: "aftertasteIntensity", label: "Aftertaste Intensity", max: 5, description: "On a scale from 1-5, rate how much of an aftertaste the product had. (References provided)" },
   { key: "thicknessIntensity", label: "Thickness Intensity", max: 5, description: "On a scale from 1-5, rate how thick the product was. (References provided)" },
-  { key: "textureIntensity", label: "Texture Intensity", max: 6, description: "On a scale from 1-6, rate how smooth the product was. (References provided)" },
+  { key: "textureIntensity", label: "Texture Intensity", max: 5, description: "On a scale from 1-5, rate how smooth the product was. (References provided)" },
   { key: "textureRating", label: "Texture Rating", max: 5, description: "On a scale from 1-5, rate how much you liked the texture of the product." },
   { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "On a scale from 1-5, rate how much you liked the color." },
 ] as const;

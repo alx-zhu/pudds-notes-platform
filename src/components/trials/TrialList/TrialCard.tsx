@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { format, parseISO } from "date-fns";
 import { FlaskConical } from "lucide-react";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
 import { CardTabToggle } from "@/components/trials/shared/CardTabToggle";
@@ -8,6 +9,7 @@ import { CardIngredientsInfo } from "./CardIngredientsInfo";
 import { CardSensoryInfo } from "./CardSensoryInfo";
 import { computeCompletion } from "@/lib/completion";
 import type { Trial, AnalysisLog } from "@/types/trial";
+import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import type { SensoryMetricKey } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +42,19 @@ export const TrialCard = ({
   const [activeTab, setActiveTab] = useState<TabValue>("setup");
   const completion = computeCompletion(trial);
 
+  const displayName = useMemo(() => {
+    if (trial.name) return trial.name;
+    const setup = trial.setup;
+    if (setup) {
+      const parts = [
+        FLAVORS.find((f) => f.value === setup.flavor)?.label,
+        PROCESSING_TYPES.find((p) => p.value === setup.processingType)?.label,
+      ].filter(Boolean).join(" ");
+      return parts ? `${parts} — ${format(parseISO(setup.date), "MMM d, yyyy")}` : `Trial #${trial.trialNumber}`;
+    }
+    return `Trial #${trial.trialNumber}`;
+  }, [trial]);
+
   const logPhotos = trial.analysisLogs
     .map((log) => log.photos?.[0])
     .filter((p): p is string => p != null);
@@ -68,7 +83,7 @@ export const TrialCard = ({
               <FlaskConical size={10} className="text-primary" />
             </div>
             <h3 className="text-xs font-semibold text-foreground truncate">
-              {trial.name || `Trial #${trial.trialNumber}`}
+              {displayName}
             </h3>
           </div>
           <span
