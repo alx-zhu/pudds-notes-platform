@@ -59,12 +59,16 @@ export const createTrial = async (): Promise<Trial> => {
   return simulateApiCall(trial);
 };
 
-export const createTrialWithSetup = async (setup: TrialSetup): Promise<Trial> => {
+export const createTrialWithSetup = async (
+  setup: TrialSetup,
+  name?: string,
+): Promise<Trial> => {
   const data = readStorage();
   const now = new Date().toISOString();
   const trial: Trial = {
     id: crypto.randomUUID(),
     trialNumber: nextTrialNumber(data),
+    name: name || undefined,
     setup,
     analysisLogs: [],
     createdAt: now,

@@ -28,8 +28,8 @@ export const IngredientsCard = ({ trialId }: Props) => {
         <CardHeader className="py-3 px-5 space-y-0 border-b shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 rounded bg-violet-100 flex items-center justify-center">
-                <Layers size={11} className="text-violet-600" />
+              <div className="h-5 w-5 rounded bg-orange-100 flex items-center justify-center">
+                <Layers size={11} className="text-orange-600" />
               </div>
               <span className="text-sm font-semibold text-foreground">
                 Ingredients

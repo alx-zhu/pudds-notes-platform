@@ -38,7 +38,8 @@ export const useCreateTrial = () => {
 export const useCreateTrialWithSetup = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (setup: TrialSetup) => api.createTrialWithSetup(setup),
+    mutationFn: ({ setup, name }: { setup: TrialSetup; name?: string }) =>
+      api.createTrialWithSetup(setup, name),
     onSuccess: () => qc.invalidateQueries({ queryKey: trialKeys.all }),
   });
 };

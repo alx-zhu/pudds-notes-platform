@@ -23,8 +23,6 @@ import {
   useUpdateTrialSetup,
   useUpdateTrialName,
 } from "@/hooks/useTrials";
-import { useQueryClient } from "@tanstack/react-query";
-import * as api from "@/api/trials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
 import type { TrialSetup } from "@/types/trial";
@@ -60,7 +58,6 @@ export const TrialSetupModal = ({
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
   const updateNameMutation = useUpdateTrialName(trialId ?? "");
-  const qc = useQueryClient();
   const isPending =
     createMutation.isPending ||
     updateMutation.isPending ||
@@ -79,17 +76,15 @@ export const TrialSetupModal = ({
         },
       });
     } else {
-      createMutation.mutate(draft, {
-        onSuccess: async (trial) => {
-          const trimmedName = nameDraft.trim();
-          if (trimmedName) {
-            await api.updateTrialName(trial.id, trimmedName);
-            qc.invalidateQueries({ queryKey: ["trials"] });
-          }
-          onOpenChange(false);
-          onSuccess?.(trial.id);
+      createMutation.mutate(
+        { setup: draft, name: nameDraft.trim() || undefined },
+        {
+          onSuccess: (trial) => {
+            onOpenChange(false);
+            onSuccess?.(trial.id);
+          },
         },
-      });
+      );
     }
   };
 
