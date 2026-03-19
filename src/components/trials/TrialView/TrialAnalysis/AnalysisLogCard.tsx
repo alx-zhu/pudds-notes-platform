@@ -26,6 +26,7 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<AnalysisLog | undefined>();
+  const [editingTab, setEditingTab] = useState<"photo" | "sensory">("photo");
 
   const logs = trial?.analysisLogs ?? [];
   const doneCount = logs.filter(isLogComplete).length;
@@ -41,11 +42,13 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
 
   const openCreateModal = () => {
     setEditingLog(undefined);
+    setEditingTab("photo");
     setModalOpen(true);
   };
 
-  const openEditModal = (log: AnalysisLog) => {
+  const openEditModal = (log: AnalysisLog, tab: "photo" | "sensory" = "photo") => {
     setEditingLog(log);
+    setEditingTab(tab);
     setModalOpen(true);
   };
 
@@ -122,6 +125,7 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
               <TrialImage
                 photos={activeLog.photos}
                 label={getLogLabel(activeLog)}
+                onAddPhoto={() => openEditModal(activeLog, "photo")}
               />
               <SensoryChart
                 comparison={{
@@ -133,7 +137,7 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
                 }}
                 logMetrics={activeLog.metrics}
                 hasData={hasAnyMetric}
-                onAddData={() => openEditModal(activeLog)}
+                onAddData={() => openEditModal(activeLog, "sensory")}
               />
             </div>
           ) : (
@@ -170,6 +174,7 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
         trialId={trialId}
         existingLog={editingLog}
         allLogs={logs}
+        initialTab={editingTab}
       />
     </>
   );

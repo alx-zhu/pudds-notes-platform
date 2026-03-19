@@ -21,7 +21,7 @@ export const TrialsList = () => {
   const navigate = useNavigate();
   const { data: trials = [], isLoading } = useTrials();
   const [modalOpen, setModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<TrialFilters>(EMPTY_FILTERS);
 
@@ -33,7 +33,9 @@ export const TrialsList = () => {
   const activeFilterCount = countActiveFilters(filters);
 
   const hasSensoryFilters = Object.keys(filters.sensoryRanges).length > 0;
-  const activeMetricKeys = Object.keys(filters.sensoryRanges) as SensoryMetricKey[];
+  const activeMetricKeys = Object.keys(
+    filters.sensoryRanges,
+  ) as SensoryMetricKey[];
 
   return (
     <>
@@ -69,11 +71,11 @@ export const TrialsList = () => {
           variant="outline"
           size="sm"
         >
-          <ToggleGroupItem value="table" aria-label="Table view">
-            <List size={14} />
-          </ToggleGroupItem>
           <ToggleGroupItem value="cards" aria-label="Card view">
             <LayoutGrid size={14} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="table" aria-label="Table view">
+            <List size={14} />
           </ToggleGroupItem>
         </ToggleGroup>
         <div className="ml-auto flex items-center gap-2">
@@ -137,7 +139,7 @@ export const TrialsList = () => {
                   />
                 ))}
                 <Card
-                  className="border-2 border-dashed cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-center min-h-[160px]"
+                  className="border-2 border-dashed cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-center min-h-40"
                   onClick={() => setModalOpen(true)}
                 >
                   <CardContent className="p-4 flex flex-col items-center gap-1 text-muted-foreground">

@@ -45,7 +45,7 @@ export const IngredientsCard = ({ trialId }: Props) => {
 
         <CardContent className="p-0 pb-2">
           {variables.length > 0 ? (
-            <div className="px-5 py-3 h-64">
+            <div className="px-5 py-3 h-100">
               <IngredientsPieChart variables={variables} />
             </div>
           ) : (

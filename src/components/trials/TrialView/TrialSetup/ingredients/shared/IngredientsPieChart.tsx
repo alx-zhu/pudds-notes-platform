@@ -42,7 +42,7 @@ export const IngredientsPieChart = ({ variables, showLegend = true }: Props) => 
       ? [
           {
             name: "Undefined",
-            value: 100 - roundedTotal,
+            value: Math.round((100 - roundedTotal) * 1000) / 1000,
             color: UNDEFINED_COLOR,
             isUndefined: true,
           },
@@ -76,24 +76,26 @@ export const IngredientsPieChart = ({ variables, showLegend = true }: Props) => 
 
       {/* Legend */}
       {showLegend && (
-        <div className="shrink-0 flex flex-wrap justify-center gap-x-3 gap-y-1.5">
-          {data.map((entry, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <span
-                className="h-2 w-2 rounded-full shrink-0"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span
-                className={`text-xs ${entry.isUndefined ? "text-muted-foreground/60 italic" : "text-foreground"}`}
-              >
-                {entry.name}
-              </span>
-              <span className="text-xs tabular-nums text-muted-foreground">
-                {entry.value}%
-              </span>
-            </div>
-          ))}
-        </div>
+        <table className="shrink-0 w-full text-xs border-collapse">
+          <tbody>
+            {data.map((entry, i) => (
+              <tr key={i} className="border-t border-border/50 first:border-t-0">
+                <td className="py-1 pr-2 w-4">
+                  <span
+                    className="block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                </td>
+                <td className={`py-1 pr-3 ${entry.isUndefined ? "text-muted-foreground/60 italic" : "text-foreground"}`}>
+                  {entry.name}
+                </td>
+                <td className="py-1 tabular-nums text-muted-foreground text-right">
+                  {parseFloat(entry.value.toFixed(3))}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

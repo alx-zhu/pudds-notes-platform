@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 interface Props {
   photos?: string[];
   label: string;
+  onAddPhoto?: () => void;
 }
 
-export const TrialImage = ({ photos = [], label }: Props) => {
+export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const hasPhotos = photos.length > 0;
   const clampedIndex = Math.min(activeIndex, photos.length - 1);
@@ -19,7 +20,9 @@ export const TrialImage = ({ photos = [], label }: Props) => {
         hasPhotos
           ? "ring-1 ring-border/40"
           : "border-2 border-dashed border-border/60 bg-muted/20",
+        !hasPhotos && onAddPhoto && "cursor-pointer hover:bg-muted/40 transition-colors",
       )}
+      onClick={!hasPhotos && onAddPhoto ? onAddPhoto : undefined}
     >
       {hasPhotos ? (
         <>

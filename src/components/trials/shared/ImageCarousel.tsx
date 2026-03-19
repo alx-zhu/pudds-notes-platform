@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   photos: string[];
+  labels?: string[];
   className?: string;
 }
 
-export const ImageCarousel = ({ photos, className }: Props) => {
+export const ImageCarousel = ({ photos, labels, className }: Props) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const hasPhotos = photos.length > 0;
   const clampedIndex = Math.min(activeIndex, Math.max(photos.length - 1, 0));
@@ -35,6 +36,13 @@ export const ImageCarousel = ({ photos, className }: Props) => {
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
       />
+
+      {/* Storage label badge */}
+      {labels?.[clampedIndex] && (
+        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium leading-tight">
+          {labels[clampedIndex]}
+        </div>
+      )}
 
       {/* Left arrow */}
       {clampedIndex > 0 && (

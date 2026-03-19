@@ -5,7 +5,6 @@ import {
   X,
   ImageIcon,
   BarChart3,
-  Plus,
   ChevronRight,
   MessageSquare,
 } from "lucide-react";
@@ -64,6 +63,7 @@ interface Props {
   trialId: string;
   existingLog?: AnalysisLog;
   allLogs?: AnalysisLog[];
+  initialTab?: Tab;
 }
 
 export const AnalysisLogModal = ({
@@ -72,6 +72,7 @@ export const AnalysisLogModal = ({
   trialId,
   existingLog,
   allLogs = [],
+  initialTab,
 }: Props) => {
   const formKey = existingLog?.id ?? "new";
 
@@ -85,6 +86,7 @@ export const AnalysisLogModal = ({
             existingLog={existingLog}
             allLogs={allLogs}
             onClose={() => onOpenChange(false)}
+            initialTab={initialTab}
           />
         )}
       </DialogContent>
@@ -111,11 +113,13 @@ const AnalysisLogForm = ({
   existingLog,
   allLogs,
   onClose,
+  initialTab,
 }: {
   trialId: string;
   existingLog?: AnalysisLog;
   allLogs: AnalysisLog[];
   onClose: () => void;
+  initialTab?: Tab;
 }) => {
   // On open: if no existingLog, check if a log already exists for the default selectors
   const initialLog = useMemo(() => {
@@ -147,7 +151,7 @@ const AnalysisLogForm = ({
   );
   const [expandedMetric, setExpandedMetric] =
     useState<SensoryMetricKey | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("photo");
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? "photo");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -363,53 +367,45 @@ const AnalysisLogForm = ({
                 e.target.value = "";
               }}
             />
-            {photos.length === 0 ? (
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((src, i) => (
+                <div key={i} className="relative aspect-square group/photo">
+                  <img
+                    src={src}
+                    alt={`Photo ${i + 1}`}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <X size={10} className="text-white" />
+                  </button>
+                </div>
+              ))}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-square max-w-50 mx-auto rounded-xl border-2 border-dashed border-border hover:bg-muted hover:border-border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group/upload"
+                className={cn(
+                  "rounded-xl border-2 border-dashed border-border hover:bg-muted flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer group/add",
+                  photos.length === 0 ? "col-span-3 py-10" : "aspect-square",
+                )}
               >
                 <Camera
-                  size={18}
-                  className="text-muted-foreground group-hover/upload:text-foreground transition-colors"
+                  size={photos.length === 0 ? 20 : 16}
+                  className="text-muted-foreground group-hover/add:text-foreground transition-colors"
                 />
-                <p className="text-xs text-muted-foreground group-hover/upload:text-foreground transition-colors">
-                  Add photos
-                </p>
-              </button>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {photos.map((src, i) => (
-                  <div key={i} className="relative aspect-square group/photo">
-                    <img
-                      src={src}
-                      alt={`Photo ${i + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
-                      className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <X size={10} className="text-white" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-lg border-2 border-dashed border-border hover:bg-muted flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group/add"
+                <span
+                  className={cn(
+                    "text-muted-foreground group-hover/add:text-foreground transition-colors",
+                    photos.length === 0 ? "text-sm" : "text-[10px]",
+                  )}
                 >
-                  <Plus
-                    size={16}
-                    className="text-muted-foreground group-hover/add:text-foreground transition-colors"
-                  />
-                  <span className="text-[10px] text-muted-foreground group-hover/add:text-foreground transition-colors">
-                    Add
-                  </span>
-                </button>
-              </div>
-            )}
+                  {photos.length === 0 ? "Add photos" : "Add"}
+                </span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="px-6 py-2 bg-muted/50">

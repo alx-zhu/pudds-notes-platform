@@ -102,20 +102,17 @@ export const SensoryChart = ({
 
   if (!hasData) {
     return (
-      <div className="h-full min-h-90 flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40">
+      <div
+        className="h-full min-h-90 flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40 cursor-pointer hover:bg-muted/40 transition-colors"
+        onClick={onAddData}
+      >
         <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
           <BarChart2 size={18} className="text-muted-foreground" />
         </div>
         <p className="text-sm text-muted-foreground text-center">
           No evaluation yet
         </p>
-        <button
-          type="button"
-          onClick={onAddData}
-          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
-        >
-          Add sensory data
-        </button>
+        <p className="text-xs font-medium text-primary">Add sensory data</p>
       </div>
     );
   }
