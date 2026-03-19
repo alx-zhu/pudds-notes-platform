@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rating Form — Side Sheet Wireframe</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #E8E8E4;
+      --surface:    #FFFFFF;
+      --border:     #E4E4E0;
+      --text-main:  #1A1A18;
+      --text-muted: #6E6E6A;
+      --accent:     #2563EB;
+      --accent-bg:  #EFF6FF;
+      --success:    #16A34A;
+      --sheet-w:    500px;
+      --radius:     10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Fake app background ─────────────────────────────────────── */
+    .app-bg {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      padding: 24px;
+      gap: 16px;
+    }
+    .app-bar {
+      height: 48px; background: var(--surface);
+      border-radius: 10px; border: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 16px; gap: 12px;
+    }
+    .app-bar-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .app-bar-line { height: 8px; background: var(--border); border-radius: 4px; }
+    .app-body { flex: 1; display: flex; gap: 16px; }
+    .app-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; flex: 1;
+      padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .app-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .app-panel-title { font-size: 15px; font-weight: 600; }
+    .app-panel-sub { font-size: 12px; color: var(--text-muted); }
+    .fake-btn {
+      padding: 6px 14px; border-radius: 6px;
+      background: var(--accent); color: #fff;
+      font-size: 12px; font-weight: 600; border: none; cursor: pointer;
+    }
+    .fake-row {
+      height: 32px; background: var(--bg); border-radius: 6px;
+    }
+    .fake-row.short { width: 60%; }
+    .fake-row.shorter { width: 40%; }
+    .fake-tag {
+      display: inline-block; padding: 3px 10px; border-radius: 99px;
+      background: var(--accent-bg); color: var(--accent);
+      font-size: 11px; font-weight: 600;
+    }
+    .app-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;
+    }
+
+    /* ─── Scrim ───────────────────────────────────────────────────── */
+    .scrim {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(1px);
+    }
+
+    /* ─── Sheet ───────────────────────────────────────────────────── */
+    .sheet {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: var(--sheet-w);
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 32px rgba(0,0,0,.10);
+    }
+
+    /* Sheet header */
+    .sheet-header {
+      padding: 18px 24px 0;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+    .sheet-top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .sheet-title { font-size: 15px; font-weight: 700; }
+    .sheet-close {
+      width: 28px; height: 28px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted); font-size: 16px;
+      line-height: 1;
+    }
+    .sheet-close:hover { background: var(--bg); }
+    .sheet-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+
+    /* Progress row */
+    .progress-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .progress-bar {
+      flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent); border-radius: 99px;
+      width: 0%; transition: width .35s ease;
+    }
+    .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+    /* Sheet body — scrollable */
+    .sheet-body {
+      flex: 1; overflow-y: auto;
+      padding: 4px 0;
+    }
+    /* Custom scrollbar */
+    .sheet-body::-webkit-scrollbar { width: 4px; }
+    .sheet-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* Sheet footer */
+    .sheet-footer {
+      flex-shrink: 0;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px;
+    }
+    .btn-primary {
+      flex: 1; padding: 9px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      border: none; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary {
+      padding: 9px 16px; border-radius: 8px;
+      background: var(--surface); color: var(--text-muted);
+      border: 1px solid var(--border); font-size: 14px; cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--bg); color: var(--text-main); }
+
+    /* ─── Question Row (condensed) ────────────────────────────────── */
+    .q-row {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .q-row:last-child { border-bottom: none; }
+    .q-row:hover { background: #FAFAF9; }
+    .q-row.is-answered { border-left: 3px solid var(--success); padding-left: 21px; }
+
+    /* Top line: number + title + answered badge */
+    .q-top {
+      display: flex; align-items: baseline;
+      justify-content: space-between; gap: 8px;
+      margin-bottom: 6px;
+    }
+    .q-num {
+      font-size: 11px; font-weight: 700; color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .q-title {
+      flex: 1; font-size: 13px; font-weight: 600; color: var(--text-main);
+    }
+    .q-answered-badge {
+      font-size: 11px; color: var(--success); font-weight: 600;
+      display: none; flex-shrink: 0;
+    }
+    .is-answered .q-answered-badge { display: block; }
+
+    /* Rating buttons — compact pill row */
+    .rating-row {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .r-btn {
+      position: relative;
+    }
+    .r-btn input { display: none; }
+    .r-btn label {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--border);
+      font-size: 13px; font-weight: 700; color: var(--text-muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .r-btn label:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .r-btn input:checked + label {
+      border-color: var(--accent); background: var(--accent); color: #fff;
+    }
+
+    /* Tooltip on hover */
+    .r-btn label::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A18; color: #fff;
+      font-size: 11px; font-weight: 500;
+      padding: 4px 8px; border-radius: 5px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+    }
+    .r-btn label:hover::after { opacity: 1; }
+
+    /* Scale end labels */
+    .scale-labels {
+      display: flex; justify-content: space-between;
+      margin-top: 5px; font-size: 10px; color: var(--text-muted);
+      padding: 0 2px;
+    }
+
+    /* Expandable description */
+    .q-expand-row {
+      display: flex; gap: 10px; margin-top: 8px;
+    }
+    .expand-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: var(--text-muted); cursor: pointer;
+      background: none; border: none; padding: 0; font-family: inherit;
+    }
+    .expand-btn:hover { color: var(--accent); }
+    .expand-btn svg { transition: transform .2s; }
+    .expand-btn.open svg { transform: rotate(180deg); }
+    .expand-btn.comment-btn { margin-left: auto; }
+
+    /* Collapsible panels */
+    .collapsible { max-height: 0; overflow: hidden; transition: max-height .28s ease; }
+    .collapsible.open { max-height: 300px; }
+
+    .desc-body {
+      margin-top: 8px; padding: 10px 12px;
+      background: #F8FAFC; border: 1px solid var(--border);
+      border-radius: 7px; font-size: 12px; color: var(--text-muted); line-height: 1.6;
+    }
+    .desc-opts {
+      display: flex; flex-direction: column; gap: 5px; margin-top: 8px;
+    }
+    .desc-opt {
+      display: flex; gap: 8px; align-items: baseline;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .desc-opt-score { font-weight: 700; color: var(--accent); min-width: 10px; }
+
+    .comment-body {
+      margin-top: 8px;
+    }
+    .comment-body textarea {
+      width: 100%; padding: 8px 10px;
+      border: 1.5px solid var(--border); border-radius: 7px;
+      font-family: inherit; font-size: 12px; color: var(--text-main);
+      resize: none; height: 60px;
+    }
+    .comment-body textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .comment-body textarea::placeholder { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Fake app in the background ─────────────────────────────── -->
+  <div class="app-bg">
+    <div class="app-bar">
+      <div class="app-bar-dot"></div>
+      <div class="app-bar-line" style="width:80px"></div>
+      <div class="app-bar-line" style="width:60px; margin-left:16px"></div>
+      <div class="app-bar-line" style="width:60px"></div>
+      <div class="app-bar-line" style="width:60px"></div>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <div class="app-bar-dot"></div>
+        <div class="app-bar-dot" style="background:#D1D5DB"></div>
+      </div>
+    </div>
+    <div class="app-body">
+      <div class="app-panel" style="max-width:220px; flex:0 0 220px;">
+        <div class="app-label">Trials</div>
+        <div class="fake-row short"></div>
+        <div class="fake-row shorter" style="background:#DBEAFE"></div>
+        <div class="fake-row short"></div>
+        <div class="fake-row shorter"></div>
+        <div class="fake-row short"></div>
+      </div>
+      <div class="app-panel">
+        <div class="app-panel-header">
+          <div>
+            <div class="app-panel-title">Trial #24 — Batch A</div>
+            <div class="app-panel-sub">Started Mar 12 · In review</div>
+          </div>
+          <button class="fake-btn" onclick="document.querySelector('.sheet').style.display='flex'">+ Evaluate</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin:4px 0;">
+          <span class="fake-tag">Sensory</span>
+          <span class="fake-tag" style="background:#F0FDF4;color:#16A34A;">Active</span>
+        </div>
+        <div class="fake-row"></div>
+        <div class="fake-row short"></div>
+        <div class="fake-row"></div>
+        <div class="fake-row shorter"></div>
+        <div class="fake-row"></div>
+        <div class="fake-row short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Scrim ───────────────────────────────────────────────────── -->
+  <div class="scrim" onclick="document.querySelector('.sheet').style.display='none'"></div>
+
+  <!-- ─── Side Sheet ──────────────────────────────────────────────── -->
+  <div class="sheet" id="sheet">
+
+    <!-- Header -->
+    <div class="sheet-header">
+      <div class="sheet-top-row">
+        <div class="sheet-title">Sensory Evaluation</div>
+        <div class="sheet-close" onclick="document.querySelector('.sheet').style.display='none'">×</div>
+      </div>
+      <div class="sheet-meta">Trial #24 — Batch A &nbsp;·&nbsp; Rate each category 1–5</div>
+      <div class="progress-row">
+        <div class="progress-bar"><div class="progress-fill" id="pfill"></div></div>
+        <div class="progress-label" id="plabel">0 / 9</div>
+      </div>
+    </div>
+
+    <!-- Scrollable question list -->
+    <div class="sheet-body" id="q-list"></div>
+
+    <!-- Footer -->
+    <div class="sheet-footer">
+      <button class="btn-secondary">Save draft</button>
+      <button class="btn-primary" id="submit-btn">Submit evaluation</button>
+    </div>
+
+  </div>
+
+  <script>
+    const questions = [
+      {
+        title: "Overall Satisfaction",
+        desc: "Consider the full arc of your experience — first impression through daily use.",
+        opts: ["Very dissatisfied","Below average","Acceptable","Satisfied — minor issues","Delighted — exceeded expectations"]
+      },
+      {
+        title: "Aroma",
+        desc: "Evaluate intensity, pleasantness, and typicity of aroma at room temperature and when warmed.",
+        opts: ["Off-aromas dominant","Weak or absent aroma","Neutral, unremarkable","Pleasant, good typicity","Outstanding, complex aroma"]
+      },
+      {
+        title: "Flavor Profile",
+        desc: "Rate balance, complexity, and characteristic flavor notes across the whole palate.",
+        opts: ["Significant off-flavors","Flat or one-dimensional","Acceptable, limited complexity","Good balance and depth","Exceptional, layered complexity"]
+      },
+      {
+        title: "Texture & Mouthfeel",
+        desc: "Consider body, creaminess, astringency, and finish length.",
+        opts: ["Harsh or unpleasant","Thin or watery","Adequate, unremarkable","Full-bodied, pleasant","Luxurious, perfectly balanced"]
+      },
+      {
+        title: "Appearance",
+        desc: "Visual clarity, color consistency, and presentation in the glass or vessel.",
+        opts: ["Defects clearly visible","Below expected standard","Acceptable appearance","Attractive, true to type","Visually perfect"]
+      },
+      {
+        title: "Consistency",
+        desc: "How consistent was this batch compared to the target profile or prior batches?",
+        opts: ["Significantly off-target","Notable deviations","Minor variations","Closely matches target","Indistinguishable from target"]
+      },
+      {
+        title: "Aftertaste / Finish",
+        desc: "Length, pleasantness, and quality of the aftertaste once the sample is consumed.",
+        opts: ["Unpleasant lingering off-notes","Short or negligible finish","Adequate, neutral finish","Long, pleasant finish","Exceptional, memorable finish"]
+      },
+      {
+        title: "Process Quality",
+        desc: "Overall impression of how well the production process was controlled and executed.",
+        opts: ["Severe process issues evident","Notable quality control gaps","Acceptable execution","Well-controlled process","Exemplary process execution"]
+      },
+      {
+        title: "Likelihood to Approve",
+        desc: "Would you approve this batch for release? This is your overall net signal.",
+        opts: ["Would reject immediately","Would not approve","Borderline — needs review","Would approve with minor notes","Would approve with full confidence"]
+      },
+    ];
+
+    const answers = new Array(questions.length).fill(null);
+    const labels = ["Poor","Fair","Good","Very Good","Excellent"];
+    const list = document.getElementById("q-list");
+
+    questions.forEach((q, i) => {
+      const row = document.createElement("div");
+      row.className = "q-row";
+      row.id = `qrow-${i}`;
+
+      const ratingBtns = [1,2,3,4,5].map(s => `
+        <div class="r-btn">
+          <input type="radio" name="q${i}" id="q${i}s${s}" value="${s}" />
+          <label for="q${i}s${s}" data-tip="${s} — ${q.opts[s-1]}">${s}</label>
+        </div>`).join("");
+
+      const descOpts = q.opts.map((o, idx) => `
+        <div class="desc-opt">
+          <span class="desc-opt-score">${idx+1}</span>
+          <span>${o}</span>
+        </div>`).join("");
+
+      row.innerHTML = `
+        <div class="q-top">
+          <span class="q-num">${i+1}.</span>
+          <span class="q-title">${q.title}</span>
+          <span class="q-answered-badge">✓ Rated</span>
+        </div>
+        <div class="rating-row">${ratingBtns}</div>
+        <div class="scale-labels"><span>Poor</span><span>Excellent</span></div>
+        <div class="q-expand-row">
+          <button class="expand-btn desc-btn" data-target="desc-${i}">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1.5 3.5L5 7L8.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Details
+          </button>
+          <button class="expand-btn comment-btn" data-target="note-${i}">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1.5 3.5L5 7L8.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Add note
+          </button>
+        </div>
+        <div class="collapsible" id="desc-${i}">
+          <div class="desc-body">
+            <div>${q.desc}</div>
+            <div class="desc-opts">${descOpts}</div>
+          </div>
+        </div>
+        <div class="collapsible" id="note-${i}">
+          <div class="comment-body">
+            <textarea placeholder="Notes for ${q.title.toLowerCase()}…"></textarea>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(row);
+    });
+
+    /* Toggle panels */
+    list.addEventListener("click", e => {
+      const btn = e.target.closest(".expand-btn");
+      if (!btn) return;
+      const target = document.getElementById(btn.dataset.target);
+      const open = target.classList.toggle("open");
+      btn.classList.toggle("open", open);
+      if (open && target.querySelector("textarea")) {
+        target.querySelector("textarea").focus();
+      }
+      // Update button text
+      if (btn.classList.contains("comment-btn")) {
+        btn.childNodes[2].textContent = open ? " Hide note" : " Add note";
+      } else {
+        btn.childNodes[2].textContent = open ? " Hide" : " Details";
+      }
+    });
+
+    /* Rating selection */
+    function updateProgress() {
+      const n = answers.filter(a => a !== null).length;
+      document.getElementById("pfill").style.width = `${(n/9)*100}%`;
+      document.getElementById("plabel").textContent = `${n} / 9`;
+    }
+
+    list.addEventListener("change", e => {
+      if (e.target.type !== "radio") return;
+      const name = e.target.name; // "q0"…
+      const i = parseInt(name.replace("q",""));
+      answers[i] = parseInt(e.target.value);
+      document.getElementById(`qrow-${i}`).classList.add("is-answered");
+      updateProgress();
+    });
+
+    /* Submit */
+    document.getElementById("submit-btn").addEventListener("click", () => {
+      const missing = answers.filter(a => a === null).length;
+      if (missing) {
+        alert(`${missing} question(s) still need a rating.`);
+      } else {
+        alert("Submitted! (Wireframe demo)");
+      }
+    });
+  </script>
+</body>
+</html>

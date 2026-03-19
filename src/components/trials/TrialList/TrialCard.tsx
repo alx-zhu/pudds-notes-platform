@@ -87,14 +87,14 @@ export const TrialCard = ({
       </div>
 
       {/* Metadata */}
-      <div className="p-3 flex flex-col gap-2">
+      <div className="px-3 pt-2.5 pb-3 flex flex-col gap-2">
         {/* Title row */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="h-4.5 w-4.5 rounded bg-primary/10 flex items-center justify-center shrink-0">
-              <FlaskConical size={10} className="text-primary" />
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-5 w-5 rounded bg-primary/10 flex items-center justify-center shrink-0">
+              <FlaskConical size={12} className="text-primary" />
             </div>
-            <h3 className="text-xs font-semibold text-foreground truncate">
+            <h3 className="text-[13px] font-semibold text-foreground truncate leading-tight">
               {displayName}
             </h3>
           </div>
@@ -119,7 +119,7 @@ export const TrialCard = ({
         />
 
         {/* Tab content area — parent controls height, children fill it */}
-        <div className="h-30">
+        <div className="h-[104px]">
           {activeTab === "setup" ? (
             trial.setup ? (
               <CardSetupInfo setup={trial.setup} />

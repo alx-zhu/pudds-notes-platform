@@ -2,6 +2,7 @@ import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -20,7 +21,10 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   useCreateTrialWithSetup,
   useUpdateTrialSetup,
+  useUpdateTrialName,
 } from "@/hooks/useTrials";
+import { useQueryClient } from "@tanstack/react-query";
+import * as api from "@/api/trials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
 import type { TrialSetup } from "@/types/trial";
@@ -31,6 +35,7 @@ interface Props {
   /** If provided, editing an existing trial. If absent, creating a new one. */
   trialId?: string;
   initialSetup?: TrialSetup;
+  initialName?: string;
   onSuccess?: (trialId: string) => void;
 }
 
@@ -46,25 +51,41 @@ export const TrialSetupModal = ({
   onOpenChange,
   trialId,
   initialSetup,
+  initialName,
   onSuccess,
 }: Props) => {
   const [draft, setDraft] = useState<TrialSetup>(initialSetup ?? DEFAULT_SETUP);
+  const [nameDraft, setNameDraft] = useState<string>(initialName ?? "");
 
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const updateNameMutation = useUpdateTrialName(trialId ?? "");
+  const qc = useQueryClient();
+  const isPending =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    updateNameMutation.isPending;
 
   const handleSave = () => {
     if (trialId) {
       updateMutation.mutate(draft, {
         onSuccess: () => {
-          onOpenChange(false);
-          onSuccess?.(trialId);
+          updateNameMutation.mutate(nameDraft.trim() || undefined, {
+            onSuccess: () => {
+              onOpenChange(false);
+              onSuccess?.(trialId);
+            },
+          });
         },
       });
     } else {
       createMutation.mutate(draft, {
-        onSuccess: (trial) => {
+        onSuccess: async (trial) => {
+          const trimmedName = nameDraft.trim();
+          if (trimmedName) {
+            await api.updateTrialName(trial.id, trimmedName);
+            qc.invalidateQueries({ queryKey: ["trials"] });
+          }
           onOpenChange(false);
           onSuccess?.(trial.id);
         },
@@ -89,6 +110,19 @@ export const TrialSetupModal = ({
 
         {/* Body */}
         <div className="px-6 py-6 flex flex-col gap-6">
+          {/* Trial Name */}
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Trial Name (Optional)
+            </Label>
+            <Input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              placeholder="e.g. Chocolate Benchtop Batch 2"
+              className="h-9 bg-muted border-0"
+            />
+          </div>
+
           {/* Date */}
           <div className="flex flex-col gap-2">
             <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

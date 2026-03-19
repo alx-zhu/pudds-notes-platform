@@ -28,7 +28,7 @@ export const CardTabToggle = <T extends string>({
           onChange(option.value);
         }}
         className={cn(
-          "text-[10px] font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer",
+          "text-[11px] font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer",
           option.value === value
             ? "bg-background text-foreground shadow-sm"
             : "text-muted-foreground hover:text-foreground",

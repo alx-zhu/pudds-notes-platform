@@ -1,0 +1,1861 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sensory Eval — Design Exploration</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #e8e8e8;
+        color: #1a1a1a;
+        min-height: 100vh;
+      }
+
+      /* ─── Top Nav ─── */
+      .top-nav {
+        background: #fff;
+        border-bottom: 1px solid #e2e2e2;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .nav-tab {
+        padding: 14px 18px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #888;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        white-space: nowrap;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .nav-tab:hover { color: #333; }
+      .nav-tab.active { color: #111; border-bottom-color: #111; }
+      .nav-label {
+        padding: 14px 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #bbb;
+        margin-right: 12px;
+      }
+
+      /* ─── Page wrapper ─── */
+      .page { display: none; padding: 48px 32px; }
+      .page.active { display: block; }
+      .page-label {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 8px;
+      }
+      .page-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 6px;
+      }
+      .page-desc {
+        text-align: center;
+        font-size: 14px;
+        color: #888;
+        margin-bottom: 40px;
+        max-width: 540px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+      }
+
+      /* ─── Modal shell ─── */
+      .modal {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+        width: 540px;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+      .modal-header {
+        padding: 24px 24px 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+      .modal-title { font-size: 18px; font-weight: 700; color: #111; }
+      .modal-subtitle { font-size: 13px; color: #888; margin-top: 4px; }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 8px;
+        background: #e8f0fe;
+        color: #3b5bdb;
+      }
+      .close-btn {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: #f2f2f2;
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: #666;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      /* Selectors row */
+      .selectors-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 20px 24px 0;
+      }
+      .selector-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .selector {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #e2e2e2;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #111;
+        background: #fff;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+      }
+
+      /* Tab strip */
+      .tab-strip {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid #ebebeb;
+        padding: 0 24px;
+        margin-top: 20px;
+      }
+      .tab-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #888;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.15s;
+      }
+      .tab-btn.active { color: #111; border-bottom-color: #111; font-weight: 600; }
+      .tab-count {
+        font-size: 11px;
+        color: #aaa;
+        font-weight: 400;
+      }
+      .tab-btn.active .tab-count { color: #666; }
+
+      /* Modal footer */
+      .modal-footer {
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #f0f0f0;
+      }
+      .btn-delete {
+        padding: 8px 14px;
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: #dc2626;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-cancel {
+        padding: 8px 16px;
+        border: 1px solid #e2e2e2;
+        background: #fff;
+        color: #555;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .btn-primary {
+        padding: 8px 20px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .footer-right { display: flex; gap: 8px; }
+
+
+      /* ══════════════════════════════════════════
+         OPTION A — Stepped Wizard
+      ══════════════════════════════════════════ */
+
+      .wizard-body { padding: 0; }
+
+      .wizard-progress {
+        padding: 20px 24px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .wizard-steps {
+        display: flex;
+        gap: 4px;
+        flex: 1;
+      }
+      .wizard-step-dot {
+        flex: 1;
+        height: 3px;
+        background: #e8e8e8;
+        border-radius: 99px;
+        transition: background 0.2s;
+      }
+      .wizard-step-dot.done { background: #111; }
+      .wizard-step-dot.active { background: #6366f1; }
+      .wizard-step-label {
+        font-size: 12px;
+        color: #888;
+        white-space: nowrap;
+      }
+
+      .wizard-section {
+        padding: 20px 24px;
+      }
+      .wizard-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 16px;
+      }
+
+      .wizard-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .wizard-metric {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: #fafafa;
+        border: 1px solid #ebebeb;
+        border-radius: 10px;
+        transition: border-color 0.15s;
+      }
+      .wizard-metric:hover { border-color: #d0d0d0; }
+      .wizard-metric.rated {
+        background: #fafafa;
+        border-color: #d0d0d0;
+      }
+      .wizard-metric-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #222;
+      }
+      .wizard-rating-row {
+        display: flex;
+        gap: 6px;
+      }
+      .wizard-rating-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1.5px solid #e0e0e0;
+        background: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        color: #444;
+        cursor: pointer;
+        transition: all 0.12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .wizard-rating-btn:hover { border-color: #999; background: #f5f5f5; }
+      .wizard-rating-btn.selected {
+        background: #111;
+        border-color: #111;
+        color: #fff;
+      }
+
+      .wizard-nav {
+        padding: 0 24px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .btn-ghost {
+        padding: 10px 18px;
+        background: none;
+        border: 1px solid #e2e2e2;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        cursor: pointer;
+      }
+      .btn-next {
+        padding: 10px 20px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .wizard-summary {
+        font-size: 12px;
+        color: #aaa;
+      }
+
+
+      /* ══════════════════════════════════════════
+         OPTION B — One Metric at a Time (Focus Mode)
+      ══════════════════════════════════════════ */
+
+      .focus-body { padding: 0; }
+
+      .focus-progress-bar {
+        height: 3px;
+        background: #e8e8e8;
+      }
+      .focus-progress-fill {
+        height: 100%;
+        background: #111;
+        width: 33%;
+        transition: width 0.3s;
+        border-radius: 0 99px 99px 0;
+      }
+
+      .focus-card {
+        padding: 32px 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .focus-category-chip {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #888;
+        background: #f2f2f2;
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+      .focus-metric-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 8px;
+      }
+      .focus-metric-hint {
+        font-size: 13px;
+        color: #aaa;
+        margin-bottom: 36px;
+      }
+
+      .focus-rating-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 28px;
+      }
+      .focus-rating-btn {
+        width: 68px;
+        height: 68px;
+        border-radius: 14px;
+        border: 2px solid #e0e0e0;
+        background: #fafafa;
+        font-size: 22px;
+        font-weight: 700;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.12s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+      }
+      .focus-rating-btn:hover {
+        border-color: #bbb;
+        background: #f0f0f0;
+        transform: scale(1.04);
+      }
+      .focus-rating-btn.selected {
+        background: #111;
+        border-color: #111;
+        color: #fff;
+        transform: scale(1.06);
+      }
+      .focus-rating-label {
+        font-size: 9px;
+        font-weight: 500;
+        opacity: 0.5;
+        letter-spacing: 0.5px;
+      }
+      .focus-rating-btn.selected .focus-rating-label { opacity: 0.6; color: #fff; }
+
+      .focus-rating-scale {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 380px;
+        font-size: 11px;
+        color: #bbb;
+        margin-top: -20px;
+        margin-bottom: 24px;
+        padding: 0 4px;
+      }
+
+      .focus-skip {
+        font-size: 13px;
+        color: #bbb;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .focus-skip:hover { color: #888; }
+
+      .focus-nav {
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #f0f0f0;
+      }
+      .focus-dots {
+        display: flex;
+        gap: 5px;
+      }
+      .focus-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .focus-dot.done { background: #111; }
+      .focus-dot.current { background: #6366f1; width: 18px; border-radius: 99px; }
+
+
+      /* ══════════════════════════════════════════
+         OPTION C — Scrolling with Big Segmented Controls
+      ══════════════════════════════════════════ */
+
+      .scroll-body {
+        max-height: 420px;
+        overflow-y: auto;
+        padding: 8px 0;
+      }
+      .scroll-body::-webkit-scrollbar { width: 4px; }
+      .scroll-body::-webkit-scrollbar-track { background: transparent; }
+      .scroll-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 99px; }
+
+      .scroll-category {
+        padding: 0 24px;
+        margin-bottom: 4px;
+      }
+      .scroll-category-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0 10px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 4px;
+      }
+      .scroll-category-name {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #bbb;
+      }
+      .scroll-category-progress {
+        font-size: 11px;
+        color: #bbb;
+      }
+
+      .scroll-metric-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 0;
+        border-bottom: 1px solid #f7f7f7;
+      }
+      .scroll-metric-row:last-child { border-bottom: none; }
+      .scroll-metric-name {
+        font-size: 14px;
+        color: #222;
+        font-weight: 500;
+      }
+      .scroll-metric-name.rated { color: #111; }
+
+      .segmented {
+        display: flex;
+        background: #f2f2f2;
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
+      }
+      .seg-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: #888;
+        cursor: pointer;
+        transition: all 0.12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .seg-btn:hover { color: #333; background: rgba(255,255,255,0.6); }
+      .seg-btn.selected {
+        background: #fff;
+        color: #111;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+      }
+
+
+      /* ══════════════════════════════════════════
+         OPTION D — Kanban / Category Cards
+      ══════════════════════════════════════════ */
+
+      .kanban-body {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 420px;
+        overflow-y: auto;
+      }
+      .kanban-body::-webkit-scrollbar { width: 4px; }
+      .kanban-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 99px; }
+
+      .kanban-card {
+        border: 1px solid #ebebeb;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: border-color 0.15s;
+      }
+      .kanban-card:hover { border-color: #d0d0d0; }
+      .kanban-card-header {
+        padding: 12px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #ebebeb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .kanban-card-title {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #999;
+      }
+      .kanban-card-count {
+        font-size: 12px;
+        color: #bbb;
+      }
+      .kanban-card-count .done { color: #16a34a; font-weight: 600; }
+
+      .kanban-metrics {
+        padding: 8px 16px;
+      }
+      .kanban-metric-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .kanban-metric-row:last-child { border-bottom: none; }
+      .kanban-metric-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #444;
+      }
+
+      .large-rating-row {
+        display: flex;
+        gap: 4px;
+      }
+      .large-rating-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1.5px solid #e8e8e8;
+        background: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .large-rating-btn:hover { border-color: #aaa; background: #f5f5f5; }
+      .large-rating-btn.selected {
+        background: #111;
+        border-color: #111;
+        color: #fff;
+      }
+
+
+      /* ─── Legend/comparison ─── */
+      .comparison-note {
+        text-align: center;
+        font-size: 12px;
+        color: #bbb;
+        margin-top: -28px;
+        margin-bottom: 32px;
+      }
+
+      .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .option-wrapper { }
+      .option-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .option-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 6px;
+        text-align: center;
+      }
+      .option-desc {
+        font-size: 13px;
+        color: #777;
+        line-height: 1.5;
+        text-align: center;
+        margin-bottom: 20px;
+        max-width: 360px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .pros-cons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+        max-width: 540px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .pros, .cons {
+        background: #fff;
+        border: 1px solid #ebebeb;
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+      .pros-title, .cons-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .pros-title { color: #16a34a; }
+      .cons-title { color: #dc2626; }
+      .pros ul, .cons ul {
+        list-style: none;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #555;
+      }
+      .pros ul li::before { content: "✓  "; color: #16a34a; font-weight: 700; }
+      .cons ul li::before { content: "✗  "; color: #dc2626; font-weight: 700; }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 48px 0;
+      }
+
+      .top-header {
+        background: #fff;
+        border-bottom: 1px solid #e2e2e2;
+        padding: 20px 32px;
+        margin-bottom: 0;
+      }
+      .top-header-title { font-size: 20px; font-weight: 700; color: #111; }
+      .top-header-sub { font-size: 13px; color: #888; margin-top: 4px; }
+
+
+      /* ══════════════════════════════════════════
+         OPTION E — C + expandable detail panel
+      ══════════════════════════════════════════ */
+
+      .e-scroll-body {
+        max-height: 440px;
+        overflow-y: auto;
+        padding: 4px 0 8px;
+      }
+      .e-scroll-body::-webkit-scrollbar { width: 4px; }
+      .e-scroll-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 99px; }
+
+      /* Category section */
+      .e-category { padding: 0 20px; }
+      .e-category-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 4px 8px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 2px;
+      }
+      .e-category-name {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #c0c0c0;
+      }
+      .e-category-progress { font-size: 11px; color: #c0c0c0; }
+      .e-category-progress .e-done { color: #16a34a; font-weight: 600; }
+
+      /* Each metric row */
+      .e-metric {
+        border-radius: 10px;
+        margin: 3px 0;
+        overflow: hidden;
+        border: 1px solid transparent;
+        transition: border-color 0.15s;
+      }
+      .e-metric.open {
+        border-color: #e8e8e8;
+        background: #fafafa;
+      }
+
+      /* Row header — always visible */
+      .e-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px 9px 4px;
+        border-radius: 10px;
+      }
+      .e-metric.open .e-row {
+        border-radius: 10px 10px 0 0;
+        padding-bottom: 9px;
+      }
+
+      /* Clickable left side: expand toggle */
+      .e-expand-trigger {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        flex: 1;
+        min-width: 0;
+        padding: 2px 4px;
+        border-radius: 6px;
+        transition: background 0.12s;
+      }
+      .e-expand-trigger:hover { background: #f0f0f0; }
+      .e-metric.open .e-expand-trigger:hover { background: #ececec; }
+
+      .e-chevron {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        color: #ccc;
+        transition: transform 0.2s, color 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        line-height: 1;
+      }
+      .e-metric.open .e-chevron { transform: rotate(90deg); color: #888; }
+
+      .e-metric-name-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .e-metric.open .e-metric-name-text { font-weight: 600; }
+
+      /* Note indicator dot — shown when a comment exists */
+      .e-has-comment {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #6366f1;
+        flex-shrink: 0;
+      }
+
+      /* Right side: segmented control — always visible, always interactive */
+      .e-segmented {
+        display: flex;
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+      .e-seg-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: #888;
+        cursor: pointer;
+        transition: all 0.12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .e-seg-btn:hover { color: #333; background: rgba(255,255,255,0.7); }
+      .e-seg-btn.selected {
+        background: #fff;
+        color: #111;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      }
+
+      /* Detail panel — shown on expand */
+      .e-detail-panel {
+        display: none;
+        padding: 10px 14px 14px 28px;
+        border-top: 1px solid #efefef;
+      }
+      .e-metric.open .e-detail-panel { display: block; }
+
+      .e-description {
+        font-size: 12px;
+        color: #999;
+        line-height: 1.55;
+        margin-bottom: 12px;
+      }
+
+      .e-note-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #bbb;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+      }
+      .e-note-input {
+        width: 100%;
+        min-height: 58px;
+        padding: 9px 11px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #333;
+        background: #fff;
+        resize: none;
+        font-family: inherit;
+        line-height: 1.5;
+        transition: border-color 0.15s;
+        outline: none;
+      }
+      .e-note-input::placeholder { color: #ccc; }
+      .e-note-input:focus { border-color: #aaa; }
+    </style>
+  </head>
+  <body>
+
+    <div class="top-header">
+      <div class="top-header-title">Sensory Evaluation — Design Exploration</div>
+      <div class="top-header-sub">5 design directions for the Edit Analysis Log form. Toggle tabs to compare.</div>
+    </div>
+
+    <nav class="top-nav">
+      <span class="nav-label">Option</span>
+      <div class="nav-tab active" onclick="showPage('a', this)">A — Stepped Wizard</div>
+      <div class="nav-tab" onclick="showPage('b', this)">B — Focus Mode</div>
+      <div class="nav-tab" onclick="showPage('c', this)">C — Segmented Rows</div>
+      <div class="nav-tab" onclick="showPage('d', this)">D — Category Cards</div>
+      <div class="nav-tab" onclick="showPage('e', this)">E — Expandable Rows ★</div>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════
+         PAGE A: Stepped Wizard
+    ══════════════════════════════════════════ -->
+    <div class="page active" id="page-a">
+      <div class="page-label">Option A</div>
+      <div class="page-title">Stepped Wizard</div>
+      <div class="page-desc">Break the 9 metrics into 3 focused steps — one per category. Users complete each section before advancing. Reduces cognitive load by hiding what's not relevant right now.</div>
+
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Analysis Log <span class="badge">EXISTING</span></div>
+            <div class="modal-subtitle">Update thermal processing, storage time, and sensory data.</div>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label>Thermal Processing</label>
+            <select class="selector"><option>Thermomix</option></select>
+          </div>
+          <div class="selector-group">
+            <label>Storage Time</label>
+            <select class="selector"><option>Immediate</option></select>
+          </div>
+        </div>
+
+        <div class="wizard-body">
+          <div class="wizard-progress" style="margin-top:20px">
+            <div class="wizard-steps">
+              <div class="wizard-step-dot done"></div>
+              <div class="wizard-step-dot active"></div>
+              <div class="wizard-step-dot"></div>
+            </div>
+            <div class="wizard-step-label">Step 2 of 3</div>
+          </div>
+
+          <div class="wizard-section">
+            <div class="wizard-section-title">Texture — rate each attribute</div>
+            <div class="wizard-metrics">
+
+              <div class="wizard-metric rated">
+                <div class="wizard-metric-name">Thickness Intensity</div>
+                <div class="wizard-rating-row">
+                  <button class="wizard-rating-btn">1</button>
+                  <button class="wizard-rating-btn">2</button>
+                  <button class="wizard-rating-btn">3</button>
+                  <button class="wizard-rating-btn selected">4</button>
+                  <button class="wizard-rating-btn">5</button>
+                </div>
+              </div>
+
+              <div class="wizard-metric rated">
+                <div class="wizard-metric-name">Texture Intensity</div>
+                <div class="wizard-rating-row">
+                  <button class="wizard-rating-btn">1</button>
+                  <button class="wizard-rating-btn">2</button>
+                  <button class="wizard-rating-btn">3</button>
+                  <button class="wizard-rating-btn">4</button>
+                  <button class="wizard-rating-btn selected">5</button>
+                </div>
+              </div>
+
+              <div class="wizard-metric">
+                <div class="wizard-metric-name">Texture Rating</div>
+                <div class="wizard-rating-row">
+                  <button class="wizard-rating-btn">1</button>
+                  <button class="wizard-rating-btn">2</button>
+                  <button class="wizard-rating-btn">3</button>
+                  <button class="wizard-rating-btn">4</button>
+                  <button class="wizard-rating-btn">5</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="wizard-nav">
+            <button class="btn-ghost">← Back</button>
+            <div class="wizard-summary">2 of 3 rated</div>
+            <button class="btn-next">Next: Appearance →</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-delete">🗑 Delete</button>
+          <div class="footer-right">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Update Log</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <div class="pros-title">Strengths</div>
+          <ul>
+            <li>Least overwhelming view</li>
+            <li>Clear sense of progress</li>
+            <li>Natural guided flow</li>
+            <li>Easy to see what's left</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <div class="cons-title">Trade-offs</div>
+          <ul>
+            <li>Can't jump between sections</li>
+            <li>More taps to complete</li>
+            <li>Reviewing all data requires scrolling</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         PAGE B: Focus Mode
+    ══════════════════════════════════════════ -->
+    <div class="page" id="page-b">
+      <div class="page-label">Option B</div>
+      <div class="page-title">Focus Mode — One at a Time</div>
+      <div class="page-desc">Rate one metric at a time with large, thumb-friendly buttons. Auto-advances after each selection. Perfect for hands-occupied lab use — minimal reading, maximum speed.</div>
+
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Analysis Log <span class="badge">EXISTING</span></div>
+            <div class="modal-subtitle">Update thermal processing, storage time, and sensory data.</div>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label>Thermal Processing</label>
+            <select class="selector"><option>Thermomix</option></select>
+          </div>
+          <div class="selector-group">
+            <label>Storage Time</label>
+            <select class="selector"><option>Immediate</option></select>
+          </div>
+        </div>
+
+        <div class="tab-strip">
+          <button class="tab-btn">📷 Photos <span class="tab-count">3</span></button>
+          <button class="tab-btn active">Sensory Evaluation <span class="tab-count">3/9</span></button>
+        </div>
+
+        <div class="focus-body">
+          <div class="focus-progress-bar">
+            <div class="focus-progress-fill" style="width:33%"></div>
+          </div>
+
+          <div class="focus-card">
+            <div class="focus-category-chip">Texture</div>
+            <div class="focus-metric-name">Texture Intensity</div>
+            <div class="focus-metric-hint">How intense is the overall texture?</div>
+
+            <div class="focus-rating-row">
+              <button class="focus-rating-btn">
+                <span>1</span>
+                <span class="focus-rating-label">LOW</span>
+              </button>
+              <button class="focus-rating-btn">
+                <span>2</span>
+                <span class="focus-rating-label"></span>
+              </button>
+              <button class="focus-rating-btn selected">
+                <span>3</span>
+                <span class="focus-rating-label">MID</span>
+              </button>
+              <button class="focus-rating-btn">
+                <span>4</span>
+                <span class="focus-rating-label"></span>
+              </button>
+              <button class="focus-rating-btn">
+                <span>5</span>
+                <span class="focus-rating-label">HIGH</span>
+              </button>
+            </div>
+            <div class="focus-rating-scale">
+              <span>Low</span>
+              <span>High</span>
+            </div>
+
+            <button class="focus-skip">Skip this metric</button>
+          </div>
+
+          <div class="focus-nav">
+            <button class="btn-ghost">← Back</button>
+            <div class="focus-dots">
+              <div class="focus-dot done"></div>
+              <div class="focus-dot done"></div>
+              <div class="focus-dot done"></div>
+              <div class="focus-dot current"></div>
+              <div class="focus-dot"></div>
+              <div class="focus-dot"></div>
+              <div class="focus-dot"></div>
+              <div class="focus-dot"></div>
+              <div class="focus-dot"></div>
+            </div>
+            <button class="btn-next">Next →</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-delete">🗑 Delete</button>
+          <div class="footer-right">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Update Log</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <div class="pros-title">Strengths</div>
+          <ul>
+            <li>Maximum focus per metric</li>
+            <li>Huge tap targets</li>
+            <li>Ideal one-handed in lab</li>
+            <li>Scale labels aid accuracy</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <div class="cons-title">Trade-offs</div>
+          <ul>
+            <li>Most taps to complete</li>
+            <li>Hard to see all data at once</li>
+            <li>Editing past metrics requires back-nav</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         PAGE C: Segmented Row Controls
+    ══════════════════════════════════════════ -->
+    <div class="page" id="page-c">
+      <div class="page-label">Option C</div>
+      <div class="page-title">Segmented Row Controls</div>
+      <div class="page-desc">All 9 metrics shown in a clean scrollable list. Each row has a compact iOS-style segmented control that is larger and cleaner than the current dot buttons. Familiar, fast, and scannable.</div>
+
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Analysis Log <span class="badge">EXISTING</span></div>
+            <div class="modal-subtitle">Update thermal processing, storage time, and sensory data.</div>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label>Thermal Processing</label>
+            <select class="selector"><option>Thermomix</option></select>
+          </div>
+          <div class="selector-group">
+            <label>Storage Time</label>
+            <select class="selector"><option>Immediate</option></select>
+          </div>
+        </div>
+
+        <div class="tab-strip">
+          <button class="tab-btn">📷 Photos <span class="tab-count">3</span></button>
+          <button class="tab-btn active">Sensory Evaluation <span class="tab-count">9/9</span></button>
+        </div>
+
+        <div class="scroll-body">
+
+          <div class="scroll-category">
+            <div class="scroll-category-header">
+              <div class="scroll-category-name">Taste &amp; Flavor</div>
+              <div class="scroll-category-progress">5/5</div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Taste Rating</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn selected">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Sweetness Intensity</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn">3</button>
+                <button class="seg-btn selected">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Sweetness Rating</div>
+              <div class="segmented">
+                <button class="seg-btn selected">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Flavor Intensity</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn selected">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Aftertaste Intensity</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn selected">2</button>
+                <button class="seg-btn">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="scroll-category">
+            <div class="scroll-category-header">
+              <div class="scroll-category-name">Texture</div>
+              <div class="scroll-category-progress">3/3</div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Thickness Intensity</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn">3</button>
+                <button class="seg-btn selected">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Texture Intensity</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn selected">5</button>
+              </div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Texture Rating</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn selected">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="scroll-category">
+            <div class="scroll-category-header">
+              <div class="scroll-category-name">Appearance</div>
+              <div class="scroll-category-progress">1/1</div>
+            </div>
+            <div class="scroll-metric-row">
+              <div class="scroll-metric-name rated">Color Rating</div>
+              <div class="segmented">
+                <button class="seg-btn">1</button>
+                <button class="seg-btn">2</button>
+                <button class="seg-btn selected">3</button>
+                <button class="seg-btn">4</button>
+                <button class="seg-btn">5</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-delete">🗑 Delete</button>
+          <div class="footer-right">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Update Log</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <div class="pros-title">Strengths</div>
+          <ul>
+            <li>Fewest taps to complete</li>
+            <li>All data visible at once</li>
+            <li>Easy to edit any metric</li>
+            <li>Familiar pattern (iOS segments)</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <div class="cons-title">Trade-offs</div>
+          <ul>
+            <li>Still requires scrolling</li>
+            <li>Segments slightly smaller than ideal</li>
+            <li>Less guided than wizard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         PAGE D: Category Cards
+    ══════════════════════════════════════════ -->
+    <div class="page" id="page-d">
+      <div class="page-label">Option D</div>
+      <div class="page-title">Category Cards</div>
+      <div class="page-desc">Each sensory category gets its own visual card. Metrics are grouped inside. Large, clearly bordered buttons. The card header shows completion status at a glance, making it easy to see what's done.</div>
+
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Analysis Log <span class="badge">EXISTING</span></div>
+            <div class="modal-subtitle">Update thermal processing, storage time, and sensory data.</div>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label>Thermal Processing</label>
+            <select class="selector"><option>Thermomix</option></select>
+          </div>
+          <div class="selector-group">
+            <label>Storage Time</label>
+            <select class="selector"><option>Immediate</option></select>
+          </div>
+        </div>
+
+        <div class="tab-strip">
+          <button class="tab-btn">📷 Photos <span class="tab-count">3</span></button>
+          <button class="tab-btn active">Sensory Evaluation <span class="tab-count">7/9</span></button>
+        </div>
+
+        <div class="kanban-body">
+
+          <div class="kanban-card">
+            <div class="kanban-card-header">
+              <div class="kanban-card-title">Taste &amp; Flavor</div>
+              <div class="kanban-card-count"><span class="done">5</span>/5 rated</div>
+            </div>
+            <div class="kanban-metrics">
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Taste Rating</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn selected">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Sweetness Intensity</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn selected">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Sweetness Rating</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn selected">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Flavor Intensity</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn selected">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Aftertaste Intensity</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn selected">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-card">
+            <div class="kanban-card-header">
+              <div class="kanban-card-title">Texture</div>
+              <div class="kanban-card-count"><span class="done">2</span>/3 rated</div>
+            </div>
+            <div class="kanban-metrics">
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Thickness Intensity</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn selected">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Texture Intensity</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn selected">5</button>
+                </div>
+              </div>
+              <div class="kanban-metric-row" style="opacity:0.4">
+                <div class="kanban-metric-name">Texture Rating</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-card" style="opacity:0.5">
+            <div class="kanban-card-header">
+              <div class="kanban-card-title">Appearance</div>
+              <div class="kanban-card-count">0/1 rated</div>
+            </div>
+            <div class="kanban-metrics">
+              <div class="kanban-metric-row">
+                <div class="kanban-metric-name">Color Rating</div>
+                <div class="large-rating-row">
+                  <button class="large-rating-btn">1</button>
+                  <button class="large-rating-btn">2</button>
+                  <button class="large-rating-btn">3</button>
+                  <button class="large-rating-btn">4</button>
+                  <button class="large-rating-btn">5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-delete">🗑 Delete</button>
+          <div class="footer-right">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Update Log</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <div class="pros-title">Strengths</div>
+          <ul>
+            <li>Strong visual grouping</li>
+            <li>Completion per-category at a glance</li>
+            <li>Unrated items clearly visible (faded)</li>
+            <li>No scrolling for most categories</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <div class="cons-title">Trade-offs</div>
+          <ul>
+            <li>Can feel slightly denser</li>
+            <li>Buttons slightly smaller than B</li>
+            <li>Needs scroll for all 3 cards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         PAGE E: Expandable Rows — C base + optional detail
+    ══════════════════════════════════════════ -->
+    <div class="page" id="page-e">
+      <div class="page-label">Option E — Recommended</div>
+      <div class="page-title">Expandable Rows</div>
+      <div class="page-desc">Segmented controls are always visible — rate anything in one click. Click a metric name to optionally expand it for a description and note field. No extra taps required for experienced users.</div>
+
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Edit Analysis Log <span class="badge">EXISTING</span></div>
+            <div class="modal-subtitle">Update thermal processing, storage time, and sensory data.</div>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+
+        <div class="selectors-row">
+          <div class="selector-group">
+            <label>Thermal Processing</label>
+            <select class="selector"><option>Thermomix</option></select>
+          </div>
+          <div class="selector-group">
+            <label>Storage Time</label>
+            <select class="selector"><option>Immediate</option></select>
+          </div>
+        </div>
+
+        <div class="tab-strip">
+          <button class="tab-btn">📷 Photos <span class="tab-count">3</span></button>
+          <button class="tab-btn active">Sensory Evaluation <span class="tab-count">7/9</span></button>
+        </div>
+
+        <div class="e-scroll-body">
+
+          <!-- TASTE & FLAVOR -->
+          <div class="e-category">
+            <div class="e-category-header">
+              <div class="e-category-name">Taste &amp; Flavor</div>
+              <div class="e-category-progress"><span class="e-done">5</span>/5</div>
+            </div>
+
+            <!-- Row: name+chevron (expand trigger) | segmented (always interactive) -->
+
+            <div class="e-metric open" id="e-taste-rating">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-taste-rating')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Taste Rating</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Overall quality of the taste experience — from unpleasant (1) to excellent (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-sweetness-intensity">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-sweetness-intensity')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Sweetness Intensity</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Perceived strength of sweetness — from barely detectable (1) to overwhelming (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-sweetness-rating">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-sweetness-rating')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Sweetness Rating</span>
+                  <span class="e-has-comment" title="Has a note"></span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn selected" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Quality of the sweetness — from off or unbalanced (1) to perfectly balanced (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…">Slightly cloying at room temp</textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-flavor-intensity">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-flavor-intensity')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Flavor Intensity</span>
+                  <span class="e-has-comment" title="Has a note"></span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Strength of overall flavor profile — from faint (1) to very strong (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…">Fruit notes more prominent after 30s</textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-aftertaste">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-aftertaste')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Aftertaste Intensity</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Persistence and strength of lingering flavors after swallowing — from none (1) to very strong (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEXTURE -->
+          <div class="e-category">
+            <div class="e-category-header">
+              <div class="e-category-name">Texture</div>
+              <div class="e-category-progress"><span class="e-done">2</span>/3</div>
+            </div>
+
+            <div class="e-metric" id="e-thickness">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-thickness')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Thickness Intensity</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Perceived viscosity or thickness in the mouth — from watery (1) to very thick (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-texture-intensity">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-texture-intensity')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Texture Intensity</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn selected" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Strength of textural sensation — from smooth and subtle (1) to rough or highly pronounced (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+
+            <div class="e-metric" id="e-texture-rating">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-texture-rating')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Texture Rating</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Overall quality of the texture experience — from unpleasant (1) to ideal (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- APPEARANCE -->
+          <div class="e-category">
+            <div class="e-category-header">
+              <div class="e-category-name">Appearance</div>
+              <div class="e-category-progress">0/1</div>
+            </div>
+
+            <div class="e-metric" id="e-color-rating">
+              <div class="e-row">
+                <div class="e-expand-trigger" onclick="toggleMetric('e-color-rating')">
+                  <span class="e-chevron">›</span>
+                  <span class="e-metric-name-text">Color Rating</span>
+                </div>
+                <div class="e-segmented">
+                  <button class="e-seg-btn" onclick="eRate(this)">1</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">2</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">3</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">4</button>
+                  <button class="e-seg-btn" onclick="eRate(this)">5</button>
+                </div>
+              </div>
+              <div class="e-detail-panel">
+                <div class="e-description">Visual appeal of color and consistency — from off or undesirable (1) to ideal (5).</div>
+                <div class="e-note-label">Note</div>
+                <textarea class="e-note-input" placeholder="Add a note about this rating…"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end e-scroll-body -->
+
+        <div class="modal-footer">
+          <button class="btn-delete">🗑 Delete</button>
+          <div class="footer-right">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-primary">Update Log</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pros-cons">
+        <div class="pros">
+          <div class="pros-title">Strengths</div>
+          <ul>
+            <li>Rate anything in one click</li>
+            <li>All 9 metrics always visible</li>
+            <li>Description + note on demand</li>
+            <li>Zero extra taps for experienced users</li>
+            <li>Note dot visible without expanding</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <div class="cons-title">Trade-offs</div>
+          <ul>
+            <li>Expanded panel shifts layout</li>
+            <li>Segmented slightly smaller than Focus Mode</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <script>
+      function showPage(id, tabEl) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('page-' + id).classList.add('active');
+        tabEl.classList.add('active');
+      }
+
+      function toggleMetric(id) {
+        const el = document.getElementById(id);
+        const isOpen = el.classList.contains('open');
+        el.closest('.e-scroll-body').querySelectorAll('.e-metric.open').forEach(m => {
+          if (m !== el) m.classList.remove('open');
+        });
+        el.classList.toggle('open', !isOpen);
+        if (!isOpen) {
+          setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+        }
+      }
+
+      function eRate(btn) {
+        btn.closest('.e-segmented').querySelectorAll('.e-seg-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      }
+    </script>
+  </body>
+</html>

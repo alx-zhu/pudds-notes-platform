@@ -14,27 +14,27 @@ export const CardSetupInfo = ({ setup }: Props) => {
   const flavorConfig = FLAVORS.find((f) => f.value === setup.flavor);
 
   return (
-    <div className="h-full flex flex-col justify-start divide-y divide-border/30">
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-[11px] text-muted-foreground">Date</span>
-        <span className="text-[11px] font-medium text-foreground">
+    <div className="h-full flex flex-col justify-start divide-y divide-border/40">
+      <div className="flex items-center justify-between px-1 py-1.5">
+        <span className="text-xs text-muted-foreground">Date</span>
+        <span className="text-xs font-medium text-foreground whitespace-nowrap">
           {format(parseISO(setup.date), "MMM d, yyyy")}
         </span>
       </div>
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-[11px] text-muted-foreground">Processing</span>
+      <div className="flex items-center justify-between px-1 py-1.5">
+        <span className="text-xs text-muted-foreground">Processing</span>
         {processingConfig && (
           <Badge
-            className={`${processingConfig.color} text-[10px] font-medium`}
+            className={`${processingConfig.color} text-[11px] font-medium`}
           >
             {processingConfig.label}
           </Badge>
         )}
       </div>
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-[11px] text-muted-foreground">Flavor</span>
+      <div className="flex items-center justify-between px-1 py-1.5">
+        <span className="text-xs text-muted-foreground">Flavor</span>
         {flavorConfig && (
-          <Badge className={`${flavorConfig.color} text-[10px] font-medium`}>
+          <Badge className={`${flavorConfig.color} text-[11px] font-medium`}>
             {flavorConfig.label}
           </Badge>
         )}

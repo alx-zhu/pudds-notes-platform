@@ -42,7 +42,7 @@ export const CardSensoryInfo = ({
 
         return (
           <div key={key} className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground w-18 truncate shrink-0">
+            <span className="text-[11px] text-muted-foreground w-18 truncate shrink-0">
               {metric.label}
             </span>
             <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -53,7 +53,7 @@ export const CardSensoryInfo = ({
                 }}
               />
             </div>
-            <span className="text-[10px] tabular-nums text-foreground w-5 text-right shrink-0">
+            <span className="text-[11px] tabular-nums text-foreground w-5 text-right shrink-0">
               {value != null ? value.toFixed(1) : "–"}
             </span>
           </div>

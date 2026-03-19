@@ -37,10 +37,10 @@ export const CardIngredientsInfo = ({ variables }: Props) => {
                   INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length],
               }}
             />
-            <span className="text-[10px] text-foreground truncate">
+            <span className="text-[11px] text-foreground truncate">
               {v.ingredient || `Ingredient ${i + 1}`}
             </span>
-            <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
+            <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">
               {v.percentage}%
             </span>
           </div>
