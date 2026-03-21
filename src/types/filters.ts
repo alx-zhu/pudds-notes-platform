@@ -1,8 +1,6 @@
 import type {
   ProcessingType,
   Flavor,
-  ThermalProcessingType,
-  StorageTime,
   SensoryMetricKey,
 } from "@/config/trial.config";
 
@@ -14,8 +12,8 @@ export interface SensoryRange {
 export interface TrialFilters {
   processingTypes: ProcessingType[];
   flavors: Flavor[];
-  thermalProcessingTypes: ThermalProcessingType[];
-  storageTimes: StorageTime[];
+  thermalProcessingTypes: string[];
+  storageTimeMinutes: number[];
   ingredients: string[];
   dateRange: {
     from: string | null; // ISO date string
@@ -28,7 +26,7 @@ export const EMPTY_FILTERS: TrialFilters = {
   processingTypes: [],
   flavors: [],
   thermalProcessingTypes: [],
-  storageTimes: [],
+  storageTimeMinutes: [],
   ingredients: [],
   dateRange: { from: null, to: null },
   sensoryRanges: {},

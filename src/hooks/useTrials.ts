@@ -5,8 +5,6 @@ import type { AnalysisLogInput } from "@/api/trials";
 import type {
   ProcessingType,
   Flavor,
-  ThermalProcessingType,
-  StorageTime,
   SensoryMetricKey,
 } from "@/config/trial.config";
 import { SENSORY_METRICS } from "@/config/trial.config";
@@ -128,10 +126,40 @@ export const useAllIngredientSuggestions = (): string[] => {
   }, [trials]);
 };
 
+export const useAllThermalProcessingTypeSuggestions = (): string[] => {
+  const { data: trials } = useTrials();
+  return useMemo(() => {
+    if (!trials) return [];
+    const seen = new Set<string>();
+    for (const trial of trials) {
+      for (const log of trial.analysisLogs) {
+        if (log.thermalProcessingType.trim()) {
+          seen.add(log.thermalProcessingType.trim());
+        }
+      }
+    }
+    return [...seen].sort((a, b) => a.localeCompare(b));
+  }, [trials]);
+};
+
+export const useAllStorageTimeSuggestions = (): number[] => {
+  const { data: trials } = useTrials();
+  return useMemo(() => {
+    if (!trials) return [];
+    const seen = new Set<number>();
+    for (const trial of trials) {
+      for (const log of trial.analysisLogs) {
+        seen.add(log.storageTimeMinutes);
+      }
+    }
+    return [...seen].sort((a, b) => a - b);
+  }, [trials]);
+};
+
 /**
  * Returns averaged sensory metrics from logs across other trials that share the
  * exact same setup type (processingType + flavor) AND log type
- * (thermalProcessingType + storageTime).
+ * (thermalProcessingType + storageTimeMinutes).
  *
  * This hook establishes the query contract for cross-trial comparison.
  * When migrating to Postgres, replace the internals with a dedicated
@@ -141,8 +169,8 @@ export interface SensoryComparisonParams {
   excludeTrialId: string;
   processingType?: ProcessingType;
   flavor?: Flavor;
-  thermalProcessingType: ThermalProcessingType;
-  storageTime: StorageTime;
+  thermalProcessingType: string;
+  storageTimeMinutes: number;
 }
 
 export interface SensoryComparisonResult {
@@ -169,7 +197,7 @@ export const useSensoryComparison = (
       .filter(
         (log) =>
           log.thermalProcessingType === params.thermalProcessingType &&
-          log.storageTime === params.storageTime,
+          log.storageTimeMinutes === params.storageTimeMinutes,
       );
 
     const averages = {} as Record<SensoryMetricKey, number>;
@@ -191,6 +219,6 @@ export const useSensoryComparison = (
     params.processingType,
     params.flavor,
     params.thermalProcessingType,
-    params.storageTime,
+    params.storageTimeMinutes,
   ]);
 };

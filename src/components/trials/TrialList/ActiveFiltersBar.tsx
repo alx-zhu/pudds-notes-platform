@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button";
 import {
   PROCESSING_TYPES,
   FLAVORS,
-  THERMAL_PROCESSING_TYPES,
-  STORAGE_TIMES,
   SENSORY_METRICS,
 } from "@/config/trial.config";
 import type { SensoryMetricKey } from "@/config/trial.config";
+import { formatStorageTime } from "@/lib/storageTime";
 import { EMPTY_FILTERS, type TrialFilters } from "@/types/filters";
 import { format, parseISO } from "date-fns";
 
@@ -63,7 +62,7 @@ export const ActiveFiltersBar = ({
   for (const val of filters.thermalProcessingTypes) {
     chips.push({
       key: `tp-${val}`,
-      label: `Thermal: ${lookupLabel(THERMAL_PROCESSING_TYPES, val)}`,
+      label: `Thermal: ${val}`,
       onRemove: () =>
         onFiltersChange({
           ...filters,
@@ -75,14 +74,16 @@ export const ActiveFiltersBar = ({
   }
 
   // Storage Times
-  for (const val of filters.storageTimes) {
+  for (const val of filters.storageTimeMinutes) {
     chips.push({
       key: `st-${val}`,
-      label: `Storage: ${lookupLabel(STORAGE_TIMES, val)}`,
+      label: `Storage: ${formatStorageTime(val)}`,
       onRemove: () =>
         onFiltersChange({
           ...filters,
-          storageTimes: filters.storageTimes.filter((v) => v !== val),
+          storageTimeMinutes: filters.storageTimeMinutes.filter(
+            (v) => v !== val,
+          ),
         }),
     });
   }
@@ -129,7 +130,7 @@ export const ActiveFiltersBar = ({
     const metric = SENSORY_METRICS.find((m) => m.key === key);
     chips.push({
       key: `sensory-${key}`,
-      label: `${metric?.label ?? key}: ${range.min}–${range.max}`,
+      label: `${metric?.label ?? key}: ${range.min}\u2013${range.max}`,
       onRemove: () => {
         const next = { ...filters.sensoryRanges };
         delete next[key as SensoryMetricKey];

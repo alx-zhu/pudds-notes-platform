@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera } from "lucide-react";
+import { Camera, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -25,12 +25,22 @@ export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
       onClick={!hasPhotos && onAddPhoto ? onAddPhoto : undefined}
     >
       {hasPhotos ? (
-        <>
+        <div className="group/img">
           <img
             src={photos[clampedIndex]}
             alt={label}
             className="absolute inset-0 w-full h-full object-cover"
           />
+
+          {onAddPhoto && (
+            <button
+              type="button"
+              onClick={onAddPhoto}
+              className="absolute top-2.5 right-2.5 h-7 w-7 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer hover:bg-black/70"
+            >
+              <Pencil size={12} className="text-white" />
+            </button>
+          )}
 
           {photos.length > 1 && (
             <div className="absolute bottom-2.5 inset-x-0 flex gap-1.5 justify-center px-3">
@@ -55,7 +65,7 @@ export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
               ))}
             </div>
           )}
-        </>
+        </div>
       ) : (
         <>
           <div className="h-12 w-12 rounded-xl bg-muted/60 flex items-center justify-center">

@@ -1,21 +1,68 @@
 import type { Trial, TrialSetup, AnalysisLog, PartialSensoryMetrics, PartialSensoryComments } from "@/types/trial";
-import type { ThermalProcessingType, StorageTime } from "@/config/trial.config";
 import { simulateApiCall } from "./client";
 
 const STORAGE_KEY = "pudds:trials";
 
 export interface AnalysisLogInput {
-  thermalProcessingType: ThermalProcessingType;
-  storageTime: StorageTime;
+  thermalProcessingType: string;
+  storageTimeMinutes: number;
   photos?: string[];
   metrics: PartialSensoryMetrics;
   comments?: PartialSensoryComments;
 }
 
+/* ── Legacy migration ────────────────────────────────────────────── */
+
+const LEGACY_STORAGE_MAP: Record<string, number> = {
+  immediate: 0,
+  "24h": 1440,
+  "3d": 4320,
+};
+
+const LEGACY_THERMAL_MAP: Record<string, string> = {
+  thermomix: "Thermomix",
+  "pressure-cook": "Pressure Cook",
+};
+
+interface LegacyAnalysisLog {
+  storageTime?: string;
+  storageTimeMinutes?: number;
+  thermalProcessingType: string;
+}
+
+const migrateTrials = (trials: Trial[]): { trials: Trial[]; migrated: boolean } => {
+  let migrated = false;
+  const result = trials.map((trial) => ({
+    ...trial,
+    analysisLogs: trial.analysisLogs.map((log) => {
+      const legacy = log as unknown as LegacyAnalysisLog;
+      if (typeof legacy.storageTime === "string" && legacy.storageTimeMinutes === undefined) {
+        migrated = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { storageTime: _legacyField, ...rest } = log as unknown as Record<string, unknown>;
+        return {
+          ...rest,
+          thermalProcessingType:
+            LEGACY_THERMAL_MAP[legacy.thermalProcessingType] ?? legacy.thermalProcessingType,
+          storageTimeMinutes: LEGACY_STORAGE_MAP[legacy.storageTime as string] ?? 0,
+        } as unknown as AnalysisLog;
+      }
+      return log;
+    }),
+  }));
+  return { trials: result, migrated };
+};
+
+/* ── Storage helpers ─────────────────────────────────────────────── */
+
 const readStorage = (): Trial[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Trial[]) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Trial[];
+    const { trials, migrated } = migrateTrials(parsed);
+    if (migrated) writeStorage(trials);
+    return trials;
   } catch {
     return [];
   }

@@ -9,7 +9,8 @@ import { CardIngredientsInfo } from "./CardIngredientsInfo";
 import { CardSensoryInfo } from "./CardSensoryInfo";
 import { computeCompletion } from "@/lib/completion";
 import type { Trial, AnalysisLog } from "@/types/trial";
-import { FLAVORS, PROCESSING_TYPES, THERMAL_PROCESSING_TYPES, STORAGE_TIMES } from "@/config/trial.config";
+import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
+import { getLogLabel, sortLogs } from "@/lib/analysisLog";
 import type { SensoryMetricKey } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
 
@@ -55,18 +56,14 @@ export const TrialCard = ({
     return `Trial #${trial.trialNumber}`;
   }, [trial]);
 
-  const STORAGE_ORDER: Record<string, number> = { "3d": 0, "24h": 1, "immediate": 2 };
-  const sortedLogs = [...trial.analysisLogs].sort(
-    (a, b) => (STORAGE_ORDER[a.storageTime] ?? 99) - (STORAGE_ORDER[b.storageTime] ?? 99),
-  );
+  const sortedLogs = sortLogs(trial.analysisLogs);
 
   const logPhotosWithLabels = sortedLogs
     .filter((log) => log.photos?.[0] != null)
-    .map((log) => {
-      const thermalLabel = THERMAL_PROCESSING_TYPES.find((t) => t.value === log.thermalProcessingType)?.label ?? log.thermalProcessingType;
-      const storageLabel = STORAGE_TIMES.find((s) => s.value === log.storageTime)?.label ?? log.storageTime;
-      return { src: log.photos![0], label: `${thermalLabel} · ${storageLabel}` };
-    });
+    .map((log) => ({
+      src: log.photos![0],
+      label: getLogLabel(log),
+    }));
 
   const logPhotos = logPhotosWithLabels.map((p) => p.src);
   const logLabels = logPhotosWithLabels.map((p) => p.label);

@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { Activity, Plus, Pencil } from "lucide-react";
+import { Activity, Plus, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AnalysisLogModal } from "./AnalysisLogModal";
+import { CreateLogModal } from "./CreateLogModal";
+import { PhotosModal } from "./PhotosModal";
+import { SensoryModal } from "./SensoryModal";
 import { TrialImage } from "./TrialImage";
 import { SensoryChart } from "./SensoryChart";
 import { isLogComplete } from "@/lib/completion";
-import { getLogLabel } from "@/lib/analysisLog";
-import { useTrial } from "@/hooks/useTrials";
+import { getLogLabel, sortLogs } from "@/lib/analysisLog";
+import { useTrial, useDeleteAnalysisLog } from "@/hooks/useTrials";
 import type { AnalysisLog } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
@@ -24,11 +25,13 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
 
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingLog, setEditingLog] = useState<AnalysisLog | undefined>();
-  const [editingTab, setEditingTab] = useState<"photo" | "sensory">("photo");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [photosLog, setPhotosLog] = useState<AnalysisLog | null>(null);
+  const [sensoryLog, setSensoryLog] = useState<AnalysisLog | null>(null);
 
-  const logs = trial?.analysisLogs ?? [];
+  const deleteMutation = useDeleteAnalysisLog(trialId);
+
+  const logs = sortLogs(trial?.analysisLogs ?? []);
   const doneCount = logs.filter(isLogComplete).length;
   const allDone = logs.length > 0 && doneCount === logs.length;
 
@@ -39,18 +42,6 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
   const hasAnyMetric = activeLog
     ? Object.values(activeLog.metrics).some((v) => v != null && v >= 1)
     : false;
-
-  const openCreateModal = () => {
-    setEditingLog(undefined);
-    setEditingTab("photo");
-    setModalOpen(true);
-  };
-
-  const openEditModal = (log: AnalysisLog, tab: "photo" | "sensory" = "photo") => {
-    setEditingLog(log);
-    setEditingTab(tab);
-    setModalOpen(true);
-  };
 
   return (
     <>
@@ -106,12 +97,12 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
                   )}
                 >
                   {getLogLabel(log)}
-                  {done && !active && " ✓"}
+                  {done && !active && " \u2713"}
                 </button>
               );
             })}
             <button
-              onClick={openCreateModal}
+              onClick={() => setCreateOpen(true)}
               className="text-xs font-medium px-2.5 py-1.5 rounded-lg cursor-pointer transition-all bg-muted text-muted-foreground hover:bg-muted/80 ring-1 ring-transparent hover:ring-border flex items-center gap-1"
             >
               <Plus size={12} />
@@ -119,63 +110,89 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
             </button>
           </div>
 
-          {/* Side-by-side: Image | Chart */}
+          {/* Active log content */}
           {activeLog ? (
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-4">
-              <TrialImage
-                photos={activeLog.photos}
-                label={getLogLabel(activeLog)}
-                onAddPhoto={() => openEditModal(activeLog, "photo")}
-              />
-              <SensoryChart
-                comparison={{
-                  excludeTrialId: trialId,
-                  processingType: trial?.setup?.processingType,
-                  flavor: trial?.setup?.flavor,
-                  thermalProcessingType: activeLog.thermalProcessingType,
-                  storageTime: activeLog.storageTime,
-                }}
-                logMetrics={activeLog.metrics}
-                hasData={hasAnyMetric}
-                onAddData={() => openEditModal(activeLog, "sensory")}
-              />
+            <div className="flex flex-col gap-4">
+              {/* Side-by-side: Image | Chart */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-4">
+                <TrialImage
+                  photos={activeLog.photos}
+                  label={getLogLabel(activeLog)}
+                  onAddPhoto={() => setPhotosLog(activeLog)}
+                />
+                <SensoryChart
+                  comparison={{
+                    excludeTrialId: trialId,
+                    processingType: trial?.setup?.processingType,
+                    flavor: trial?.setup?.flavor,
+                    thermalProcessingType: activeLog.thermalProcessingType,
+                    storageTimeMinutes: activeLog.storageTimeMinutes,
+                  }}
+                  logMetrics={activeLog.metrics}
+                  hasData={hasAnyMetric}
+                  onAddData={() => setSensoryLog(activeLog)}
+                />
+              </div>
+
+              {/* Delete action */}
+              <div className="flex items-center justify-center">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => deleteMutation.mutate(activeLog.id)}
+                  disabled={deleteMutation.isPending}
+                  className="gap-1.5 text-destructive hover:text-destructive"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 py-12 bg-muted/20 rounded-xl ring-1 ring-border/40">
               <p className="text-sm text-muted-foreground">
                 No analysis logs yet
               </p>
-              <Button size="sm" onClick={openCreateModal} className="gap-1.5">
+              <Button
+                size="sm"
+                onClick={() => setCreateOpen(true)}
+                className="gap-1.5"
+              >
                 <Plus size={14} />
                 Create First Log
               </Button>
             </div>
           )}
         </CardContent>
-
-        {activeLog && (
-          <CardFooter className="flex justify-center shrink-0">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => openEditModal(activeLog)}
-              className="gap-2"
-            >
-              <Pencil size={14} />
-              Edit Log
-            </Button>
-          </CardFooter>
-        )}
       </Card>
 
-      <AnalysisLogModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+      <CreateLogModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
         trialId={trialId}
-        existingLog={editingLog}
-        allLogs={logs}
-        initialTab={editingTab}
       />
+
+      {photosLog && (
+        <PhotosModal
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setPhotosLog(null);
+          }}
+          trialId={trialId}
+          log={photosLog}
+        />
+      )}
+
+      {sensoryLog && (
+        <SensoryModal
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setSensoryLog(null);
+          }}
+          trialId={trialId}
+          log={sensoryLog}
+        />
+      )}
     </>
   );
 };

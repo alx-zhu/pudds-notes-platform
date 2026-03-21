@@ -1,7 +1,5 @@
 import type {
   SensoryMetricKey,
-  ThermalProcessingType,
-  StorageTime,
   ProcessingType,
   Flavor,
 } from "@/config/trial.config";
@@ -24,8 +22,8 @@ export type PartialSensoryComments = Partial<Record<SensoryMetricKey, string>>;
 
 export interface AnalysisLog {
   id: string;
-  thermalProcessingType: ThermalProcessingType;
-  storageTime: StorageTime;
+  thermalProcessingType: string;
+  storageTimeMinutes: number;
   photos?: string[];
   metrics: PartialSensoryMetrics;
   comments?: PartialSensoryComments;

@@ -18,7 +18,7 @@ export const filterTrials = (
 
   const hasLogFilters =
     filters.thermalProcessingTypes.length > 0 ||
-    filters.storageTimes.length > 0 ||
+    filters.storageTimeMinutes.length > 0 ||
     Object.keys(filters.sensoryRanges).length > 0;
 
   return trials
@@ -66,8 +66,8 @@ export const filterTrials = (
             return false;
 
           if (
-            filters.storageTimes.length > 0 &&
-            !filters.storageTimes.includes(log.storageTime)
+            filters.storageTimeMinutes.length > 0 &&
+            !filters.storageTimeMinutes.includes(log.storageTimeMinutes)
           )
             return false;
 
@@ -93,7 +93,7 @@ export const countActiveFilters = (filters: TrialFilters): number => {
   count += filters.processingTypes.length;
   count += filters.flavors.length;
   count += filters.thermalProcessingTypes.length;
-  count += filters.storageTimes.length;
+  count += filters.storageTimeMinutes.length;
   count += filters.ingredients.length;
   if (filters.dateRange.from) count++;
   if (filters.dateRange.to) count++;

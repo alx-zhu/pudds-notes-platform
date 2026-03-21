@@ -1,12 +1,18 @@
-import { THERMAL_PROCESSING_TYPES, STORAGE_TIMES } from "@/config/trial.config";
+import { formatStorageTime } from "./storageTime";
 import type { AnalysisLog } from "@/types/trial";
 
 export const getLogLabel = (log: AnalysisLog): string => {
-  const thermal =
-    THERMAL_PROCESSING_TYPES.find((t) => t.value === log.thermalProcessingType)
-      ?.label ?? log.thermalProcessingType;
-  const storage =
-    STORAGE_TIMES.find((s) => s.value === log.storageTime)?.label ??
-    log.storageTime;
-  return `${thermal} · ${storage}`;
+  const storage = formatStorageTime(log.storageTimeMinutes);
+  return `${log.thermalProcessingType} · ${storage}`;
 };
+
+/**
+ * Sort logs by thermal processing type (alphabetical) then by storage time
+ * (descending — longest time first).
+ */
+export const sortLogs = (logs: AnalysisLog[]): AnalysisLog[] =>
+  [...logs].sort((a, b) => {
+    const typeCmp = a.thermalProcessingType.localeCompare(b.thermalProcessingType);
+    if (typeCmp !== 0) return typeCmp;
+    return b.storageTimeMinutes - a.storageTimeMinutes;
+  });

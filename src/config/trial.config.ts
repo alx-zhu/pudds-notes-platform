@@ -34,16 +34,6 @@ export const FLAVORS = [
   },
 ] as const;
 
-export const THERMAL_PROCESSING_TYPES = [
-  { value: "thermomix", label: "Thermomix" },
-  { value: "pressure-cook", label: "Pressure Cook" },
-] as const;
-
-export const STORAGE_TIMES = [
-  { value: "immediate", label: "Immediate" },
-  { value: "24h", label: "24 Hours" },
-  { value: "3d", label: "3 Days" },
-] as const;
 
 export const SENSORY_METRICS = [
   { key: "tasteRating", label: "Taste Rating", max: 5, description: "On a scale from 1-5, rate how much you liked the taste of the product." },
@@ -96,6 +86,4 @@ export const INGREDIENT_CHART_COLORS = [
 // Derived types (consumed by types/trial.ts)
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];
 export type Flavor = (typeof FLAVORS)[number]["value"];
-export type ThermalProcessingType = (typeof THERMAL_PROCESSING_TYPES)[number]["value"];
-export type StorageTime = (typeof STORAGE_TIMES)[number]["value"];
 export type SensoryMetricKey = (typeof SENSORY_METRICS)[number]["key"];

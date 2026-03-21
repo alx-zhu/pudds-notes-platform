@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { BarChart2 } from "lucide-react";
+import { BarChart2, Pencil } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -118,7 +118,14 @@ export const SensoryChart = ({
   }
 
   return (
-    <div className="bg-muted/20 rounded-xl ring-1 ring-border/40 p-3">
+    <div className="relative bg-muted/20 rounded-xl ring-1 ring-border/40 p-3 group/chart">
+      <button
+        type="button"
+        onClick={onAddData}
+        className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-lg bg-muted/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/chart:opacity-100 transition-opacity cursor-pointer hover:bg-muted ring-1 ring-border/40"
+      >
+        <Pencil size={12} className="text-foreground" />
+      </button>
       <ResponsiveContainer width="100%" height={360}>
         <BarChart
           layout="vertical"

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import {
-  PROCESSING_TYPES,
-  FLAVORS,
-  THERMAL_PROCESSING_TYPES,
-  STORAGE_TIMES,
-} from "@/config/trial.config";
-import { useAllIngredientSuggestions } from "@/hooks/useTrials";
+  useAllIngredientSuggestions,
+  useAllThermalProcessingTypeSuggestions,
+  useAllStorageTimeSuggestions,
+} from "@/hooks/useTrials";
+import { formatStorageTime } from "@/lib/storageTime";
 import type { TrialFilters } from "@/types/filters";
 import { Separator } from "@/components/ui/separator";
 import { CheckboxFilterSection } from "./CheckboxFilterSection";
@@ -23,12 +23,14 @@ export const FilterSidebar = ({
   onFiltersChange,
 }: FilterSidebarProps) => {
   const ingredients = useAllIngredientSuggestions();
+  const thermalSuggestions = useAllThermalProcessingTypeSuggestions();
+  const storageSuggestions = useAllStorageTimeSuggestions();
 
   const isSensoryEnabled =
     filters.processingTypes.length > 0 &&
     filters.flavors.length > 0 &&
     filters.thermalProcessingTypes.length > 0 &&
-    filters.storageTimes.length > 0;
+    filters.storageTimeMinutes.length > 0;
 
   // Clear sensory ranges when prerequisites are removed
   useEffect(() => {
@@ -39,6 +41,12 @@ export const FilterSidebar = ({
 
   const update = (patch: Partial<TrialFilters>) =>
     onFiltersChange({ ...filters, ...patch });
+
+  // Storage time uses number[] internally but CheckboxFilterSection expects string[]
+  const storageStringSelected = filters.storageTimeMinutes.map(String);
+  const handleStorageChange = (selected: string[]) => {
+    update({ storageTimeMinutes: selected.map(Number) });
+  };
 
   return (
     <aside className="w-64 shrink-0 border-r border-border overflow-y-auto bg-card">
@@ -72,30 +80,38 @@ export const FilterSidebar = ({
         />
 
         <Separator />
-        <CheckboxFilterSection
-          title="Thermal Processing"
-          options={THERMAL_PROCESSING_TYPES.map((t) => ({
-            value: t.value,
-            label: t.label,
-          }))}
-          selected={filters.thermalProcessingTypes}
-          onChange={(v) => update({ thermalProcessingTypes: v as typeof filters.thermalProcessingTypes })}
-          defaultOpen
-        />
+        {thermalSuggestions.length > 0 && (
+          <>
+            <CheckboxFilterSection
+              title="Thermal Processing"
+              options={thermalSuggestions.map((t) => ({
+                value: t,
+                label: t,
+              }))}
+              selected={filters.thermalProcessingTypes}
+              onChange={(v) => update({ thermalProcessingTypes: v })}
+              defaultOpen
+            />
+            <Separator />
+          </>
+        )}
 
-        <Separator />
-        <CheckboxFilterSection
-          title="Storage Time"
-          options={STORAGE_TIMES.map((s) => ({
-            value: s.value,
-            label: s.label,
-          }))}
-          selected={filters.storageTimes}
-          onChange={(v) => update({ storageTimes: v as typeof filters.storageTimes })}
-          defaultOpen
-        />
+        {storageSuggestions.length > 0 && (
+          <>
+            <CheckboxFilterSection
+              title="Storage Time"
+              options={storageSuggestions.map((m) => ({
+                value: String(m),
+                label: formatStorageTime(m),
+              }))}
+              selected={storageStringSelected}
+              onChange={handleStorageChange}
+              defaultOpen
+            />
+            <Separator />
+          </>
+        )}
 
-        <Separator />
         {ingredients.length > 0 && (
           <>
             <CheckboxFilterSection
