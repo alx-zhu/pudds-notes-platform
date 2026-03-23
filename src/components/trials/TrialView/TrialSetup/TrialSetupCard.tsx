@@ -57,14 +57,6 @@ export const TrialSetupCard = ({ trialId }: Props) => {
                 Trial Setup
               </span>
             </div>
-            {setup ? (
-              <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Complete
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">Not started</span>
-            )}
           </div>
         </CardHeader>
 

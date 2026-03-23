@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TrialSetup } from "@/types/trial";
-import type { AnalysisLogInput } from "@/api/trials";
+import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
 import type {
   ProcessingType,
   Flavor,
   SensoryMetricKey,
 } from "@/config/trial.config";
 import { SENSORY_METRICS } from "@/config/trial.config";
+import { averageEvaluationMetrics } from "@/lib/analysisLog";
 import * as api from "@/api/trials";
 
 export const trialKeys = {
@@ -85,6 +86,49 @@ export const useDeleteAnalysisLog = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (logId: string) => api.deleteAnalysisLog(trialId, logId),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useAddEvaluation = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ logId, input }: { logId: string; input: SensoryEvaluationInput }) =>
+      api.addEvaluation(trialId, logId, input),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useUpdateEvaluation = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      logId,
+      evalId,
+      input,
+    }: {
+      logId: string;
+      evalId: string;
+      input: Partial<SensoryEvaluationInput>;
+    }) => api.updateEvaluation(trialId, logId, evalId, input),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useDeleteEvaluation = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ logId, evalId }: { logId: string; evalId: string }) =>
+      api.deleteEvaluation(trialId, logId, evalId),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });
@@ -203,7 +247,7 @@ export const useSensoryComparison = (
     const averages = {} as Record<SensoryMetricKey, number>;
     for (const metric of SENSORY_METRICS) {
       const vals = matchingLogs
-        .map((log) => log.metrics[metric.key])
+        .map((log) => averageEvaluationMetrics(log.evaluations)[metric.key])
         .filter((v): v is number => v != null && v >= 1);
       averages[metric.key] =
         vals.length > 0

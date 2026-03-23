@@ -1,4 +1,4 @@
-import type { Trial, TrialSetup, AnalysisLog, PartialSensoryMetrics, PartialSensoryComments } from "@/types/trial";
+import type { Trial, TrialSetup, AnalysisLog, SensoryEvaluation, PartialSensoryMetrics, PartialSensoryComments } from "@/types/trial";
 import { simulateApiCall } from "./client";
 
 const STORAGE_KEY = "pudds:trials";
@@ -7,6 +7,10 @@ export interface AnalysisLogInput {
   thermalProcessingType: string;
   storageTimeMinutes: number;
   photos?: string[];
+}
+
+export interface SensoryEvaluationInput {
+  label: string;
   metrics: PartialSensoryMetrics;
   comments?: PartialSensoryComments;
 }
@@ -28,6 +32,9 @@ interface LegacyAnalysisLog {
   storageTime?: string;
   storageTimeMinutes?: number;
   thermalProcessingType: string;
+  metrics?: PartialSensoryMetrics;
+  comments?: PartialSensoryComments;
+  evaluations?: SensoryEvaluation[];
 }
 
 const migrateTrials = (trials: Trial[]): { trials: Trial[]; migrated: boolean } => {
@@ -35,19 +42,46 @@ const migrateTrials = (trials: Trial[]): { trials: Trial[]; migrated: boolean } 
   const result = trials.map((trial) => ({
     ...trial,
     analysisLogs: trial.analysisLogs.map((log) => {
+      let current = log as unknown as Record<string, unknown>;
       const legacy = log as unknown as LegacyAnalysisLog;
+
+      // Legacy storageTime string → storageTimeMinutes number
       if (typeof legacy.storageTime === "string" && legacy.storageTimeMinutes === undefined) {
         migrated = true;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { storageTime: _legacyField, ...rest } = log as unknown as Record<string, unknown>;
-        return {
+        const { storageTime: _legacyField, ...rest } = current;
+        current = {
           ...rest,
           thermalProcessingType:
             LEGACY_THERMAL_MAP[legacy.thermalProcessingType] ?? legacy.thermalProcessingType,
           storageTimeMinutes: LEGACY_STORAGE_MAP[legacy.storageTime as string] ?? 0,
-        } as unknown as AnalysisLog;
+        };
       }
-      return log;
+
+      // Legacy top-level metrics/comments → evaluations array
+      if (legacy.metrics !== undefined && legacy.evaluations === undefined) {
+        migrated = true;
+        const hasData = Object.values(legacy.metrics ?? {}).some(
+          (v) => v != null,
+        );
+        const { metrics: _m, comments: _c, ...rest } = current;
+        current = {
+          ...rest,
+          evaluations: hasData
+            ? [
+                {
+                  id: crypto.randomUUID(),
+                  label: "Evaluation 1",
+                  metrics: legacy.metrics ?? {},
+                  comments: legacy.comments ?? {},
+                  createdAt: (current.createdAt as string) ?? new Date().toISOString(),
+                  updatedAt: (current.updatedAt as string) ?? new Date().toISOString(),
+                },
+              ]
+            : [],
+        };
+      }
+
+      return current as unknown as AnalysisLog;
     }),
   }));
   return { trials: result, migrated };
@@ -152,7 +186,10 @@ export const addAnalysisLog = async (
   const now = new Date().toISOString();
   const newLog: AnalysisLog = {
     id: crypto.randomUUID(),
-    ...input,
+    thermalProcessingType: input.thermalProcessingType,
+    storageTimeMinutes: input.storageTimeMinutes,
+    photos: input.photos,
+    evaluations: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -216,6 +253,94 @@ export const updateTrialName = async (
     ...data[idx],
     name: name || undefined,
     updatedAt: new Date().toISOString(),
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(updated);
+};
+
+/* ── Evaluation CRUD ─────────────────────────────────────────────── */
+
+export const addEvaluation = async (
+  trialId: string,
+  logId: string,
+  input: SensoryEvaluationInput,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const newEval: SensoryEvaluation = {
+    id: crypto.randomUUID(),
+    ...input,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const updated: Trial = {
+    ...data[idx],
+    analysisLogs: data[idx].analysisLogs.map((log) =>
+      log.id === logId
+        ? { ...log, evaluations: [...log.evaluations, newEval], updatedAt: now }
+        : log,
+    ),
+    updatedAt: now,
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(updated);
+};
+
+export const updateEvaluation = async (
+  trialId: string,
+  logId: string,
+  evalId: string,
+  input: Partial<SensoryEvaluationInput>,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const updated: Trial = {
+    ...data[idx],
+    analysisLogs: data[idx].analysisLogs.map((log) =>
+      log.id === logId
+        ? {
+            ...log,
+            evaluations: log.evaluations.map((ev) =>
+              ev.id === evalId ? { ...ev, ...input, updatedAt: now } : ev,
+            ),
+            updatedAt: now,
+          }
+        : log,
+    ),
+    updatedAt: now,
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(updated);
+};
+
+export const deleteEvaluation = async (
+  trialId: string,
+  logId: string,
+  evalId: string,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const updated: Trial = {
+    ...data[idx],
+    analysisLogs: data[idx].analysisLogs.map((log) =>
+      log.id === logId
+        ? {
+            ...log,
+            evaluations: log.evaluations.filter((ev) => ev.id !== evalId),
+            updatedAt: now,
+          }
+        : log,
+    ),
+    updatedAt: now,
   };
   data[idx] = updated;
   writeStorage(data);

@@ -19,15 +19,17 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trialId: string;
+  initialThermalType?: string;
 }
 
-export const CreateLogModal = ({ open, onOpenChange, trialId }: Props) => {
+export const CreateLogModal = ({ open, onOpenChange, trialId, initialThermalType }: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md flex flex-col p-0 gap-0 overflow-hidden">
         {open && (
           <CreateLogForm
             trialId={trialId}
+            initialThermalType={initialThermalType}
             onClose={() => onOpenChange(false)}
           />
         )}
@@ -38,12 +40,14 @@ export const CreateLogModal = ({ open, onOpenChange, trialId }: Props) => {
 
 const CreateLogForm = ({
   trialId,
+  initialThermalType,
   onClose,
 }: {
   trialId: string;
+  initialThermalType?: string;
   onClose: () => void;
 }) => {
-  const [thermalType, setThermalType] = useState("");
+  const [thermalType, setThermalType] = useState(initialThermalType ?? "");
   const [storageTimeMinutes, setStorageTimeMinutes] = useState(0);
 
   const suggestions = useAllThermalProcessingTypeSuggestions();
@@ -58,8 +62,6 @@ const CreateLogForm = ({
         thermalProcessingType: thermalType.trim(),
         storageTimeMinutes,
         photos: [],
-        metrics: {},
-        comments: {},
       },
       { onSuccess: onClose },
     );

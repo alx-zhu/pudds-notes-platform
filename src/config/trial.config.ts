@@ -72,6 +72,15 @@ export const SENSORY_METRIC_GROUPS = [
   },
 ];
 
+export const EVAL_COLORS = [
+  "hsl(217, 91%, 60%)", // blue
+  "hsl(142, 71%, 45%)", // green
+  "hsl(25, 95%, 55%)",  // orange
+  "hsl(280, 87%, 65%)", // purple
+  "hsl(340, 82%, 60%)", // rose
+  "hsl(190, 85%, 45%)", // cyan
+];
+
 export const INGREDIENT_CHART_COLORS = [
   "#60a5fa", // blue-400
   "#f59e0b", // amber-400

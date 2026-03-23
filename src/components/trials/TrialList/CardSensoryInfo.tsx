@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { SENSORY_METRICS } from "@/config/trial.config";
 import type { SensoryMetricKey } from "@/config/trial.config";
 import type { AnalysisLog } from "@/types/trial";
+import { averageEvaluationMetrics } from "@/lib/analysisLog";
 
 interface CardSensoryInfoProps {
   matchingLogs: AnalysisLog[];
@@ -16,7 +17,7 @@ export const CardSensoryInfo = ({
     const result: Partial<Record<SensoryMetricKey, number>> = {};
     for (const key of activeMetricKeys) {
       const values = matchingLogs
-        .map((log) => log.metrics[key])
+        .map((log) => averageEvaluationMetrics(log.evaluations)[key])
         .filter((v): v is number => v != null);
       if (values.length > 0) {
         result[key] = values.reduce((sum, v) => sum + v, 0) / values.length;

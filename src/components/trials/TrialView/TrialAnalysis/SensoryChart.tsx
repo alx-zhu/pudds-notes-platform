@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { BarChart2, Pencil } from "lucide-react";
+import { BarChart2 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { useSensoryComparison } from "@/hooks/useTrials";
 import type { SensoryComparisonParams } from "@/hooks/useTrials";
-import { SENSORY_METRICS } from "@/config/trial.config";
+import { SENSORY_METRICS, EVAL_COLORS } from "@/config/trial.config";
 import type { PartialSensoryMetrics } from "@/types/trial";
 
 const METRIC_SHORT: Record<string, string> = {
@@ -28,8 +28,7 @@ const METRIC_SHORT: Record<string, string> = {
 };
 
 const CHART_COLORS = {
-  current: "hsl(217, 91%, 60%)",
-  average: "hsl(220, 14%, 70%)",
+  otherAvg: "hsl(220, 14%, 70%)",
   grid: "#e8e8ec",
   tick: "#8c8c96",
   cursor: "rgba(0, 0, 0, 0.1)",
@@ -44,10 +43,14 @@ const ChartTooltip = ({
   active,
   payload,
   label,
+  currentLabel,
+  barColor,
 }: {
   active?: boolean;
   payload?: TooltipPayload[];
   label?: string;
+  currentLabel?: string;
+  barColor: string;
 }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -58,14 +61,11 @@ const ChartTooltip = ({
           <span
             className="inline-block w-2 h-2 rounded-full shrink-0"
             style={{
-              background:
-                p.dataKey === "current"
-                  ? CHART_COLORS.current
-                  : CHART_COLORS.average,
+              background: p.dataKey === "current" ? barColor : CHART_COLORS.otherAvg,
             }}
           />
           <span className="text-muted-foreground">
-            {p.dataKey === "current" ? "This Log" : "Other Logs Avg"}:
+            {p.dataKey === "current" ? (currentLabel ?? "This Log") : "Other Logs Avg"}:
           </span>
           <span className="font-semibold text-foreground">
             {p.value != null ? p.value.toFixed(1) : "—"}
@@ -79,6 +79,8 @@ const ChartTooltip = ({
 interface Props {
   comparison: SensoryComparisonParams;
   logMetrics: PartialSensoryMetrics;
+  metricLabel?: string;
+  barColor?: string;
   hasData: boolean;
   onAddData: () => void;
 }
@@ -86,6 +88,8 @@ interface Props {
 export const SensoryChart = ({
   comparison,
   logMetrics,
+  metricLabel = "This Log",
+  barColor = EVAL_COLORS[0],
   hasData,
   onAddData,
 }: Props) => {
@@ -118,14 +122,7 @@ export const SensoryChart = ({
   }
 
   return (
-    <div className="relative bg-muted/20 rounded-xl ring-1 ring-border/40 p-3 group/chart">
-      <button
-        type="button"
-        onClick={onAddData}
-        className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-lg bg-muted/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/chart:opacity-100 transition-opacity cursor-pointer hover:bg-muted ring-1 ring-border/40"
-      >
-        <Pencil size={12} className="text-foreground" />
-      </button>
+    <div className="bg-muted/20 rounded-xl ring-1 ring-border/40 p-3">
       <ResponsiveContainer width="100%" height={360}>
         <BarChart
           layout="vertical"
@@ -156,26 +153,26 @@ export const SensoryChart = ({
             tickLine={false}
           />
           <Tooltip
-            content={<ChartTooltip />}
+            content={<ChartTooltip currentLabel={metricLabel} barColor={barColor} />}
             cursor={{ fill: CHART_COLORS.cursor }}
           />
           <Legend
             wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
             formatter={(value) =>
-              value === "current" ? "This Log" : "Other Logs Avg"
+              value === "current" ? metricLabel : "Other Logs Avg"
             }
           />
           <Bar
             dataKey="current"
             name="current"
-            fill={CHART_COLORS.current}
+            fill={barColor}
             radius={[0, 4, 4, 0]}
             barSize={10}
           />
           <Bar
             dataKey="average"
             name="average"
-            fill={CHART_COLORS.average}
+            fill={CHART_COLORS.otherAvg}
             radius={[0, 4, 4, 0]}
             barSize={10}
           />

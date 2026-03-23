@@ -1,5 +1,6 @@
 import type { Trial, AnalysisLog } from "@/types/trial";
 import type { TrialFilters } from "@/types/filters";
+import { averageEvaluationMetrics } from "@/lib/analysisLog";
 
 export interface FilteredTrial extends Trial {
   matchingLogs: AnalysisLog[];
@@ -71,8 +72,9 @@ export const filterTrials = (
           )
             return false;
 
+          const avgMetrics = averageEvaluationMetrics(log.evaluations);
           for (const [key, range] of Object.entries(filters.sensoryRanges)) {
-            const value = log.metrics[key as keyof typeof log.metrics];
+            const value = avgMetrics[key as keyof typeof avgMetrics];
             if (value == null || value < range.min || value > range.max)
               return false;
           }

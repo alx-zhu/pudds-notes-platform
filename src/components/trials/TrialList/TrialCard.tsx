@@ -7,12 +7,11 @@ import { CardTabToggle } from "@/components/trials/shared/CardTabToggle";
 import { CardSetupInfo } from "./CardSetupInfo";
 import { CardIngredientsInfo } from "./CardIngredientsInfo";
 import { CardSensoryInfo } from "./CardSensoryInfo";
-import { computeCompletion } from "@/lib/completion";
 import type { Trial, AnalysisLog } from "@/types/trial";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import { getLogLabel, sortLogs } from "@/lib/analysisLog";
 import type { SensoryMetricKey } from "@/config/trial.config";
-import { cn } from "@/lib/utils";
+
 
 type TabValue = "setup" | "ingredients" | "sensory";
 
@@ -41,8 +40,6 @@ export const TrialCard = ({
 }: TrialCardProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabValue>("setup");
-  const completion = computeCompletion(trial);
-
   const displayName = useMemo(() => {
     if (trial.name) return trial.name;
     const setup = trial.setup;
@@ -95,16 +92,6 @@ export const TrialCard = ({
               {displayName}
             </h3>
           </div>
-          <span
-            className={cn(
-              "h-2 w-2 rounded-full shrink-0",
-              completion.isFullyComplete
-                ? "bg-emerald-500"
-                : completion.completedSections > 0
-                  ? "bg-amber-500"
-                  : "bg-muted-foreground/30",
-            )}
-          />
         </div>
 
         {/* Tab toggle */}

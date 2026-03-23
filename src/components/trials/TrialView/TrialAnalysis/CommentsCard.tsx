@@ -25,19 +25,21 @@ export const CommentsCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const logs = trial?.analysisLogs ?? [];
 
-  const allComments: CommentEntry[] = logs.flatMap((log) => {
-    if (!log.comments) return [];
-    return Object.entries(log.comments)
-      .filter(([, value]) => value?.trim())
-      .map(([key, value]) => ({
-        logId: log.id,
-        logLabel: getLogLabel(log),
-        metricKey: key as SensoryMetricKey,
-        metricLabel:
-          SENSORY_METRICS.find((m) => m.key === key)?.label ?? key,
-        comment: value!,
-      }));
-  });
+  const allComments: CommentEntry[] = logs.flatMap((log) =>
+    log.evaluations.flatMap((ev) => {
+      if (!ev.comments) return [];
+      return Object.entries(ev.comments)
+        .filter(([, value]) => value?.trim())
+        .map(([key, value]) => ({
+          logId: log.id,
+          logLabel: `${getLogLabel(log)} · ${ev.label}`,
+          metricKey: key as SensoryMetricKey,
+          metricLabel:
+            SENSORY_METRICS.find((m) => m.key === key)?.label ?? key,
+          comment: value!,
+        }));
+    }),
+  );
 
   if (allComments.length === 0) return null;
 

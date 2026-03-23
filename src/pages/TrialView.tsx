@@ -8,8 +8,6 @@ import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/Ana
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/CommentsCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
-import { computeCompletion } from "@/lib/completion";
-import { cn } from "@/lib/utils";
 
 export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +30,6 @@ export const TrialView = () => {
     );
   }
 
-  const completion = computeCompletion(trial);
   const setup = trial.setup;
 
   // Build display name: custom name → generated from params → fallback
@@ -82,31 +79,6 @@ export const TrialView = () => {
                   {subtitle}
                 </p>
               )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
-                  completion.isFullyComplete
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                    : "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-                )}
-              >
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    completion.isFullyComplete
-                      ? "bg-emerald-500"
-                      : "bg-amber-500",
-                  )}
-                />
-                {completion.isFullyComplete
-                  ? "All complete"
-                  : `${completion.completedSections} of 2 complete`}
-              </div>
             </div>
           </div>
         </div>

@@ -20,13 +20,21 @@ export interface TrialSetup {
 export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
 export type PartialSensoryComments = Partial<Record<SensoryMetricKey, string>>;
 
+export interface SensoryEvaluation {
+  id: string;
+  label: string;
+  metrics: PartialSensoryMetrics;
+  comments?: PartialSensoryComments;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AnalysisLog {
   id: string;
   thermalProcessingType: string;
   storageTimeMinutes: number;
   photos?: string[];
-  metrics: PartialSensoryMetrics;
-  comments?: PartialSensoryComments;
+  evaluations: SensoryEvaluation[];
   createdAt: string;
   updatedAt: string;
 }
@@ -39,13 +47,4 @@ export interface Trial {
   analysisLogs: AnalysisLog[];
   createdAt: string;
   updatedAt: string;
-}
-
-export type CompletionStatus = "done" | "partial" | "not-started";
-
-export interface TrialCompletion {
-  setup: CompletionStatus;
-  analysisLogs: CompletionStatus;
-  completedSections: number;
-  isFullyComplete: boolean;
 }
