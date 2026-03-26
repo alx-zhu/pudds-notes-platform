@@ -3,31 +3,32 @@ import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IngredientCombobox } from "./IngredientCombobox";
+import type { Ingredient } from "@/types/ingredient";
 
 interface AddIngredientRowProps {
-  onAdd: (ingredient: string, percentage: number) => void;
-  onPendingChange: (ingredient: string) => void;
-  suggestions: string[];
+  onAdd: (ingredientName: string, percentage: number) => void;
+  onPendingChange: (ingredientName: string) => void;
+  ingredients: Ingredient[];
 }
 
 export const AddIngredientRow = ({
   onAdd,
   onPendingChange,
-  suggestions,
+  ingredients,
 }: AddIngredientRowProps) => {
-  const [ingredient, setIngredient] = useState("");
+  const [ingredientName, setIngredientName] = useState("");
   const [pctStr, setPctStr] = useState("");
 
   const handleIngredientChange = (val: string) => {
-    setIngredient(val);
+    setIngredientName(val);
     onPendingChange(val);
   };
 
   const commit = () => {
-    if (!ingredient.trim()) return;
+    if (!ingredientName.trim()) return;
     const pct = Math.max(0, Math.min(100, Number(pctStr) || 0));
-    onAdd(ingredient, pct);
-    setIngredient("");
+    onAdd(ingredientName, pct);
+    setIngredientName("");
     setPctStr("");
     onPendingChange("");
   };
@@ -36,9 +37,9 @@ export const AddIngredientRow = ({
     <div className="flex items-center gap-3">
       <div className="flex-1 min-w-0">
         <IngredientCombobox
-          value={ingredient}
+          value={ingredientName}
           onChange={handleIngredientChange}
-          suggestions={suggestions}
+          ingredients={ingredients}
           placeholder="Add ingredient..."
         />
       </div>
@@ -67,7 +68,7 @@ export const AddIngredientRow = ({
         type="button"
         size="sm"
         className="h-8 gap-1.5 shrink-0"
-        disabled={!ingredient.trim()}
+        disabled={!ingredientName.trim()}
         onClick={commit}
       >
         <Plus size={14} />

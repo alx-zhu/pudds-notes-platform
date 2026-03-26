@@ -20,7 +20,7 @@ export const IngredientsCard = ({ trialId }: Props) => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const setup = trial?.setup;
-  const variables = setup?.variables ?? [];
+  const ingredients = trial?.ingredients ?? [];
 
   return (
     <>
@@ -35,18 +35,18 @@ export const IngredientsCard = ({ trialId }: Props) => {
                 Ingredients
               </span>
             </div>
-            {variables.length > 0 && (
+            {ingredients.length > 0 && (
               <span className="text-xs text-muted-foreground/60">
-                {variables.length} item{variables.length !== 1 ? "s" : ""}
+                {ingredients.length} item{ingredients.length !== 1 ? "s" : ""}
               </span>
             )}
           </div>
         </CardHeader>
 
         <CardContent className="p-0 pb-2">
-          {variables.length > 0 ? (
+          {ingredients.length > 0 ? (
             <div className="px-5 py-3 h-100">
-              <IngredientsPieChart variables={variables} />
+              <IngredientsPieChart ingredients={ingredients} />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-4 px-6 py-8">
@@ -68,14 +68,14 @@ export const IngredientsCard = ({ trialId }: Props) => {
         <CardFooter className="flex justify-center shrink-0">
           <Button
             size="sm"
-            variant={variables.length > 0 ? "outline" : "default"}
+            variant={ingredients.length > 0 ? "outline" : "default"}
             onClick={() => setModalOpen(true)}
             disabled={!setup}
             className="gap-2"
             title={!setup ? "Complete trial setup first" : undefined}
           >
-            {variables.length > 0 ? <Pencil size={14} /> : <Plus size={14} />}
-            {variables.length > 0 ? "Edit Ingredients" : "Add Ingredients"}
+            {ingredients.length > 0 ? <Pencil size={14} /> : <Plus size={14} />}
+            {ingredients.length > 0 ? "Edit Ingredients" : "Add Ingredients"}
           </Button>
         </CardFooter>
       </Card>
@@ -85,7 +85,7 @@ export const IngredientsCard = ({ trialId }: Props) => {
           open={modalOpen}
           onOpenChange={setModalOpen}
           trialId={trialId}
-          setup={setup}
+          ingredients={ingredients}
           key={modalOpen ? "open" : "closed"}
         />
       )}

@@ -3,18 +3,12 @@ import type {
   ProcessingType,
   Flavor,
 } from "@/config/trial.config";
-
-export interface Variable {
-  id: string;
-  ingredient: string;
-  percentage: number;
-}
+import type { TrialIngredient } from "@/types/ingredient";
 
 export interface TrialSetup {
   date: string; // ISO string
   processingType: ProcessingType;
   flavor: Flavor;
-  variables: Variable[];
 }
 
 export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
@@ -39,7 +33,9 @@ export interface AnalysisLog {
   updatedAt: string;
 }
 
-export interface Trial {
+/* ── Data model (what's in localStorage / DB row) ───────────────── */
+
+export interface TrialRecord {
   id: string;
   trialNumber: number;
   name?: string;
@@ -47,4 +43,10 @@ export interface Trial {
   analysisLogs: AnalysisLog[];
   createdAt: string;
   updatedAt: string;
+}
+
+/* ── Frontend (resolved joins — what components consume) ────────── */
+
+export interface Trial extends TrialRecord {
+  ingredients: TrialIngredient[];
 }

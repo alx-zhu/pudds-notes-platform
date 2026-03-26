@@ -156,19 +156,6 @@ export const useDeleteTrial = () => {
   });
 };
 
-export const useAllIngredientSuggestions = (): string[] => {
-  const { data: trials } = useTrials();
-  return useMemo(() => {
-    if (!trials) return [];
-    const seen = new Set<string>();
-    for (const trial of trials) {
-      for (const v of trial.setup?.variables ?? []) {
-        if (v.ingredient.trim()) seen.add(v.ingredient.trim());
-      }
-    }
-    return [...seen].sort((a, b) => a.localeCompare(b));
-  }, [trials]);
-};
 
 export const useAllThermalProcessingTypeSuggestions = (): string[] => {
   const { data: trials } = useTrials();

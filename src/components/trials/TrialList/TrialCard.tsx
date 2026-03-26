@@ -116,7 +116,7 @@ export const TrialCard = ({
               </div>
             )
           ) : activeTab === "ingredients" ? (
-            <CardIngredientsInfo variables={trial.setup?.variables ?? []} />
+            <CardIngredientsInfo ingredients={trial.ingredients} />
           ) : (
             <CardSensoryInfo
               matchingLogs={matchingLogs ?? trial.analysisLogs}

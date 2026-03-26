@@ -10,63 +10,118 @@ import {
 import { IngredientRow } from "@/components/trials/TrialView/TrialSetup/ingredients/modal/IngredientRow";
 import { AddIngredientRow } from "@/components/trials/TrialView/TrialSetup/ingredients/modal/AddIngredientRow";
 import { IngredientsPieChart } from "@/components/trials/TrialView/TrialSetup/ingredients/shared/IngredientsPieChart";
-import {
-  useUpdateTrialSetup,
-  useAllIngredientSuggestions,
-} from "@/hooks/useTrials";
-import type { TrialSetup, Variable } from "@/types/trial";
+import { useIngredients, useCreateIngredient } from "@/hooks/useIngredients";
+import { useSaveTrialIngredients } from "@/hooks/useTrialIngredients";
+import type { TrialIngredient, Ingredient } from "@/types/ingredient";
+
+/** Local editing state for the modal */
+interface EditableIngredient {
+  ingredientId: string;
+  ingredientName: string;
+  percentage: number;
+  pinned?: boolean;
+}
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trialId: string;
-  setup: TrialSetup;
+  ingredients: TrialIngredient[];
 }
 
 export const IngredientsModal = ({
   open,
   onOpenChange,
   trialId,
-  setup,
+  ingredients: originalIngredients,
 }: Props) => {
-  const [variables, setVariables] = useState<Variable[]>(setup.variables);
+  const [editList, setEditList] = useState<EditableIngredient[]>(
+    originalIngredients.map((ti) => ({
+      ingredientId: ti.ingredient.id,
+      ingredientName: ti.ingredient.name,
+      percentage: ti.percentage,
+      pinned: ti.pinned,
+    })),
+  );
   const [pendingIngredient, setPendingIngredient] = useState("");
   const [showPendingError, setShowPendingError] = useState(false);
 
-  const updateMutation = useUpdateTrialSetup(trialId);
-  const suggestions = useAllIngredientSuggestions();
+  const { data: allIngredients = [] } = useIngredients();
+  const createIngredient = useCreateIngredient();
+  const { save, isPending } = useSaveTrialIngredients(trialId);
 
-  const updateVariable = (id: string, ingredient: string, percentage: number) => {
-    setVariables((vs) =>
-      vs.map((v) => (v.id === id ? { ...v, ingredient, percentage } : v)),
+  const updateRow = (
+    oldIngredientId: string,
+    newIngredientId: string,
+    ingredientName: string,
+    percentage: number,
+  ) => {
+    setEditList((list) =>
+      list.map((item) =>
+        item.ingredientId === oldIngredientId
+          ? { ...item, ingredientId: newIngredientId, ingredientName, percentage }
+          : item,
+      ),
     );
   };
 
-  const removeVariable = (id: string) => {
-    setVariables((vs) => vs.filter((v) => v.id !== id));
+  const removeRow = (ingredientId: string) => {
+    setEditList((list) =>
+      list.filter((item) => item.ingredientId !== ingredientId),
+    );
   };
 
-  const addVariable = (ingredient: string, percentage: number) => {
-    if (!ingredient.trim()) return;
-    setVariables((vs) => [
-      ...vs,
-      { id: crypto.randomUUID(), ingredient, percentage },
+  const addRow = async (ingredientName: string, percentage: number) => {
+    if (!ingredientName.trim()) return;
+
+    // Find existing ingredient or create a new one
+    let ingredient: Ingredient | undefined = allIngredients.find(
+      (i) => i.name.toLowerCase() === ingredientName.trim().toLowerCase(),
+    );
+
+    if (!ingredient) {
+      ingredient = await createIngredient.mutateAsync(ingredientName.trim());
+    }
+
+    // Prevent adding the same ingredient twice
+    if (editList.some((item) => item.ingredientId === ingredient.id)) return;
+
+    setEditList((list) => [
+      ...list,
+      {
+        ingredientId: ingredient.id,
+        ingredientName: ingredient.name,
+        percentage,
+      },
     ]);
     setShowPendingError(false);
   };
 
-  const total = variables.reduce((sum, v) => sum + v.percentage, 0);
+  const total = editList.reduce((sum, item) => sum + item.percentage, 0);
   const roundedTotal = Math.round(total * 10) / 10;
   const exceeds100 = roundedTotal > 100;
 
-  const handleSave = () => {
+  /** Convert edit list to TrialIngredient[] for the pie chart preview */
+  const previewIngredients: TrialIngredient[] = editList.map((item) => ({
+    ingredient: { id: item.ingredientId, name: item.ingredientName },
+    percentage: item.percentage,
+    pinned: item.pinned,
+  }));
+
+  const handleSave = async () => {
     if (exceeds100) return;
     if (pendingIngredient.trim()) {
       setShowPendingError(true);
       return;
     }
-    updateMutation.mutate(
-      { ...setup, variables },
+
+    await save(
+      originalIngredients,
+      editList.map((item) => ({
+        ingredientId: item.ingredientId,
+        percentage: item.percentage,
+        pinned: item.pinned,
+      })),
       { onSuccess: () => onOpenChange(false) },
     );
   };
@@ -99,19 +154,22 @@ export const IngredientsModal = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  {variables.length === 0 ? (
+                  {editList.length === 0 ? (
                     <p className="text-sm text-muted-foreground/50 py-2 px-1">
                       No ingredients yet
                     </p>
                   ) : (
-                    variables.map((v) => (
+                    editList.map((item) => (
                       <IngredientRow
-                        key={v.id}
-                        ingredient={v.ingredient}
-                        percentage={v.percentage}
-                        onChange={(ing, pct) => updateVariable(v.id, ing, pct)}
-                        onRemove={() => removeVariable(v.id)}
-                        suggestions={suggestions}
+                        key={item.ingredientId}
+                        ingredientId={item.ingredientId}
+                        ingredientName={item.ingredientName}
+                        percentage={item.percentage}
+                        onChange={(newId, name, pct) =>
+                          updateRow(item.ingredientId, newId, name, pct)
+                        }
+                        onRemove={() => removeRow(item.ingredientId)}
+                        ingredients={allIngredients}
                       />
                     ))
                   )}
@@ -128,20 +186,20 @@ export const IngredientsModal = ({
                 </p>
               )}
               <AddIngredientRow
-                onAdd={addVariable}
+                onAdd={addRow}
                 onPendingChange={(val) => {
                   setPendingIngredient(val);
                   if (!val.trim()) setShowPendingError(false);
                 }}
-                suggestions={suggestions}
+                ingredients={allIngredients}
               />
             </div>
           </div>
 
           {/* Right: pie chart */}
           <div className="flex-1 px-6 py-6 flex flex-col items-center justify-center overflow-hidden">
-            {variables.length > 0 ? (
-              <IngredientsPieChart variables={variables} />
+            {previewIngredients.length > 0 ? (
+              <IngredientsPieChart ingredients={previewIngredients} />
             ) : (
               <p className="text-sm text-muted-foreground/50 text-center">
                 Add ingredients to see the chart
@@ -169,9 +227,9 @@ export const IngredientsModal = ({
               size="sm"
               className="flex-1"
               onClick={handleSave}
-              disabled={updateMutation.isPending || exceeds100}
+              disabled={isPending || exceeds100}
             >
-              {updateMutation.isPending ? "Saving..." : "Save"}
+              {isPending ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>

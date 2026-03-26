@@ -99,17 +99,17 @@ export const columns = [
   }),
 
   columnHelper.display({
-    id: "variables",
+    id: "ingredients",
     header: "Ingredients",
     size: 180,
     minSize: 140,
     cell: ({ row }) => {
-      const vars = row.original.setup?.variables;
-      if (!vars || vars.length === 0) {
+      const ingredients = row.original.ingredients;
+      if (!ingredients || ingredients.length === 0) {
         return <span className="text-sm text-muted-foreground">—</span>;
       }
-      const text = vars
-        .map((v) => `${v.ingredient} ${v.percentage}%`)
+      const text = ingredients
+        .map((ti) => `${ti.ingredient.name} ${ti.percentage}%`)
         .join(", ");
       return (
         <span

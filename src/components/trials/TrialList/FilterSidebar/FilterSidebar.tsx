@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import {
-  useAllIngredientSuggestions,
   useAllThermalProcessingTypeSuggestions,
   useAllStorageTimeSuggestions,
 } from "@/hooks/useTrials";
+import { useIngredients } from "@/hooks/useIngredients";
 import { formatStorageTime } from "@/lib/storageTime";
 import type { TrialFilters } from "@/types/filters";
 import { Separator } from "@/components/ui/separator";
@@ -22,7 +22,7 @@ export const FilterSidebar = ({
   filters,
   onFiltersChange,
 }: FilterSidebarProps) => {
-  const ingredients = useAllIngredientSuggestions();
+  const { data: ingredients = [] } = useIngredients();
   const thermalSuggestions = useAllThermalProcessingTypeSuggestions();
   const storageSuggestions = useAllStorageTimeSuggestions();
 
@@ -116,7 +116,7 @@ export const FilterSidebar = ({
           <>
             <CheckboxFilterSection
               title="Ingredients"
-              options={ingredients.map((i) => ({ value: i, label: i }))}
+              options={ingredients.map((i) => ({ value: i.name, label: i.name }))}
               selected={filters.ingredients}
               onChange={(v) => update({ ingredients: v })}
             />

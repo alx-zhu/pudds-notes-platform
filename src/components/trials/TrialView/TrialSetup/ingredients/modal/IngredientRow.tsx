@@ -2,30 +2,43 @@ import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IngredientCombobox } from "./IngredientCombobox";
+import type { Ingredient } from "@/types/ingredient";
 
 // ── Regular (controlled) row ──────────────────────────────────────
 
 interface IngredientRowProps {
-  ingredient: string;
+  ingredientId: string;
+  ingredientName: string;
   percentage: number;
-  onChange: (ingredient: string, percentage: number) => void;
+  onChange: (ingredientId: string, ingredientName: string, percentage: number) => void;
   onRemove: () => void;
-  suggestions: string[];
+  ingredients: Ingredient[];
 }
 
 export const IngredientRow = ({
-  ingredient,
+  ingredientId,
+  ingredientName,
   percentage,
   onChange,
   onRemove,
-  suggestions,
+  ingredients,
 }: IngredientRowProps) => {
+  const resolveIngredient = (name: string): { id: string; name: string } => {
+    const match = ingredients.find(
+      (i) => i.name.toLowerCase() === name.trim().toLowerCase(),
+    );
+    return match ? { id: match.id, name: match.name } : { id: ingredientId, name };
+  };
+
   return (
     <div className="grid grid-cols-[1fr_5rem_2.5rem] gap-3 items-center">
       <IngredientCombobox
-        value={ingredient}
-        onChange={(val) => onChange(val, percentage)}
-        suggestions={suggestions}
+        value={ingredientName}
+        onChange={(val) => {
+          const resolved = resolveIngredient(val);
+          onChange(resolved.id, resolved.name, percentage);
+        }}
+        ingredients={ingredients}
         placeholder="Ingredient name"
       />
       <div className="relative">
@@ -34,7 +47,8 @@ export const IngredientRow = ({
           value={percentage === 0 ? "" : percentage}
           onChange={(e) =>
             onChange(
-              ingredient,
+              ingredientId,
+              ingredientName,
               Math.max(0, Math.min(100, Number(e.target.value) || 0)),
             )
           }

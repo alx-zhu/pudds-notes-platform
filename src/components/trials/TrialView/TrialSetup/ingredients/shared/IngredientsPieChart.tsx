@@ -1,11 +1,11 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { INGREDIENT_CHART_COLORS } from "@/config/trial.config";
-import type { Variable } from "@/types/trial";
+import type { TrialIngredient } from "@/types/ingredient";
 
 const UNDEFINED_COLOR = "#e5e7eb"; // gray-200
 
 interface Props {
-  variables: Variable[];
+  ingredients: TrialIngredient[];
   showLegend?: boolean;
 }
 
@@ -25,16 +25,16 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
   );
 };
 
-export const IngredientsPieChart = ({ variables, showLegend = true }: Props) => {
-  const total = variables.reduce((sum, v) => sum + v.percentage, 0);
+export const IngredientsPieChart = ({ ingredients, showLegend = true }: Props) => {
+  const total = ingredients.reduce((sum, ti) => sum + ti.percentage, 0);
   const roundedTotal = Math.round(total * 10) / 10;
 
   const data = [
-    ...[...variables]
+    ...[...ingredients]
       .sort((a, b) => b.percentage - a.percentage)
-      .map((v, i) => ({
-        name: v.ingredient || `Ingredient ${i + 1}`,
-        value: v.percentage,
+      .map((ti, i) => ({
+        name: ti.ingredient.name || `Ingredient ${i + 1}`,
+        value: ti.percentage,
         color: INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length],
         isUndefined: false,
       })),

@@ -41,7 +41,6 @@ const DEFAULT_SETUP: TrialSetup = {
   date: new Date().toISOString(),
   processingType: "shelftop",
   flavor: "chocolate",
-  variables: [],
 };
 
 export const TrialSetupModal = ({

@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import { StringCombobox } from "@/components/trials/shared/StringCombobox";
+import type { Ingredient } from "@/types/ingredient";
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
-  suggestions: string[];
+  ingredients: Ingredient[];
   placeholder?: string;
   className?: string;
 }
@@ -11,17 +13,24 @@ interface Props {
 export const IngredientCombobox = ({
   value,
   onChange,
-  suggestions,
+  ingredients,
   placeholder = "Select ingredient...",
   className,
-}: Props) => (
-  <StringCombobox
-    value={value}
-    onChange={onChange}
-    suggestions={suggestions}
-    placeholder={placeholder}
-    searchPlaceholder="Type to search or add..."
-    emptyMessage="No ingredients found."
-    className={className}
-  />
-);
+}: Props) => {
+  const suggestions = useMemo(
+    () => ingredients.map((i) => i.name),
+    [ingredients],
+  );
+
+  return (
+    <StringCombobox
+      value={value}
+      onChange={onChange}
+      suggestions={suggestions}
+      placeholder={placeholder}
+      searchPlaceholder="Type to search or add..."
+      emptyMessage="No ingredients found."
+      className={className}
+    />
+  );
+};

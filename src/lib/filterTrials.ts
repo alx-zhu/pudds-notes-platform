@@ -13,9 +13,10 @@ export const filterTrials = (
   const hasSetupFilters =
     filters.processingTypes.length > 0 ||
     filters.flavors.length > 0 ||
-    filters.ingredients.length > 0 ||
     filters.dateRange.from !== null ||
     filters.dateRange.to !== null;
+
+  const hasIngredientFilter = filters.ingredients.length > 0;
 
   const hasLogFilters =
     filters.thermalProcessingTypes.length > 0 ||
@@ -24,6 +25,15 @@ export const filterTrials = (
 
   return trials
     .map((trial): FilteredTrial | null => {
+      // Ingredient filter (ingredients are top-level, not nested in setup)
+      if (
+        hasIngredientFilter &&
+        !trial.ingredients.some((ti) =>
+          filters.ingredients.includes(ti.ingredient.name),
+        )
+      )
+        return null;
+
       // Trial-level filters require setup to exist
       if (hasSetupFilters) {
         if (!trial.setup) return null;
@@ -37,14 +47,6 @@ export const filterTrials = (
         if (
           filters.flavors.length > 0 &&
           !filters.flavors.includes(trial.setup.flavor)
-        )
-          return null;
-
-        if (
-          filters.ingredients.length > 0 &&
-          !trial.setup.variables.some((v) =>
-            filters.ingredients.includes(v.ingredient),
-          )
         )
           return null;
 
