@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Analysis Card Redesign — Progressive Disclosure</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: oklch(0.975 0.005 75);
+        --fg: oklch(0.15 0.01 60);
+        --card: #fff;
+        --primary: oklch(0.22 0.01 60);
+        --muted: oklch(0.955 0.008 75);
+        --muted-fg: oklch(0.50 0.01 60);
+        --border: oklch(0.91 0.008 75);
+        --border-subtle: oklch(0.94 0.006 75);
+        --emerald-500: #22c55e;
+        --emerald-100: #d1fae5;
+        --emerald-700: #15803d;
+        --amber-400: #fbbf24;
+        --amber-500: #f59e0b;
+        --amber-700: #b45309;
+        --blue-500: #3b82f6;
+        --blue-100: #dbeafe;
+        --blue-700: #1d4ed8;
+        --violet-100: #ede9fe;
+        --violet-600: #7c3aed;
+        --red-500: #ef4444;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-xs: 6px;
+        --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+      }
+
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;700&display=swap');
+
+      body {
+        font-family: var(--font);
+        background: oklch(0.88 0.005 75);
+        color: var(--fg);
+        min-height: 100vh;
+        padding: 40px 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 820px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      /* ─── Card base ─── */
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+
+      /* ══════════════════════════════════════
+         STATE 1: WITH DATA (filled card)
+         ══════════════════════════════════════ */
+
+      /* ── Timeline Section ── */
+      .timeline-section {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .timeline-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .timeline-group + .timeline-group {
+        margin-top: 16px;
+      }
+
+      .timeline-group-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .timeline-track {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .timeline-dot-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+      }
+
+      .timeline-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid;
+        transition: all 0.2s;
+      }
+
+      /* Unselected dots: outline only (unfilled) */
+      .timeline-dot.complete {
+        border-color: var(--emerald-500);
+        background: var(--card);
+      }
+
+      .timeline-dot.partial {
+        border-color: var(--amber-400);
+        background: var(--card);
+      }
+
+      .timeline-dot.empty {
+        border-color: rgba(0,0,0,0.15);
+        background: var(--card);
+      }
+
+      /* Active dot: filled + larger with prominent ring */
+      .timeline-dot.active {
+        width: 16px;
+        height: 16px;
+        box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+      }
+
+      .timeline-dot.active.complete {
+        background: var(--emerald-500);
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.25);
+      }
+
+      .timeline-dot.active.partial {
+        background: var(--amber-400);
+        box-shadow: 0 0 0 4px rgba(251,191,36,0.25);
+      }
+
+      .timeline-dot.active.empty {
+        background: rgba(0,0,0,0.15);
+        box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+      }
+
+      .timeline-dot-label {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        white-space: nowrap;
+      }
+
+      .timeline-dot-label.active {
+        font-weight: 700;
+        color: var(--fg);
+      }
+
+      .timeline-line {
+        height: 2px;
+        flex: 1;
+        min-width: 32px;
+        background: var(--border);
+        align-self: flex-start;
+        margin-top: 7px;
+        margin-left: -1px;
+        margin-right: -1px;
+      }
+
+      /* log-label is used inside hero-scores-header, keep it available */
+
+      /* ── Hero: Photo + Scores ── */
+      .hero-section {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-photo {
+        padding: 20px 0 20px 24px;
+      }
+
+      .hero-photo-img {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: var(--radius-sm);
+        background: var(--muted);
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .hero-photo-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .hero-photo-img:hover .photo-overlay {
+        opacity: 1;
+      }
+
+      .photo-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: var(--radius-sm);
+        opacity: 0;
+        transition: opacity 0.2s;
+        gap: 5px;
+      }
+
+      .hero-scores {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .hero-scores-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .hero-scores-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hero-scores-title .icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--blue-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .hero-scores-title span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .log-label {
+        font-size: 11px;
+        color: var(--muted-fg);
+        font-weight: 500;
+      }
+
+      .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+      }
+
+      .score-item {
+        padding: 0 16px;
+        border-left: 1px solid var(--border);
+      }
+
+      .score-item:first-child {
+        padding-left: 0;
+        border-left: none;
+      }
+
+      .score-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted-fg);
+        margin-bottom: 4px;
+      }
+
+      .score-value {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+      }
+
+      .score-number {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .score-denom {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted-fg);
+      }
+
+      .score-bar {
+        margin-top: 8px;
+        height: 3px;
+        background: var(--muted);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .score-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease-out;
+      }
+
+      .score-bar-fill.taste { background: var(--emerald-500); }
+      .score-bar-fill.texture { background: var(--blue-500); }
+      .score-bar-fill.color { background: var(--amber-500); }
+      .score-bar-fill.overall { background: var(--fg); opacity: 0.6; }
+
+      .score-number.taste { color: var(--emerald-700); }
+      .score-number.texture { color: var(--blue-700); }
+      .score-number.color { color: var(--amber-700); }
+
+      /* ── Breakdown Section ── */
+      .breakdown-section {
+        padding: 0;
+      }
+
+      .breakdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px 0;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .breakdown-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .breakdown-header-left .icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .breakdown-header-left span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .breakdown-chevron {
+        font-size: 14px;
+        color: var(--muted-fg);
+        transition: transform 0.2s;
+      }
+
+      .breakdown-chevron.open {
+        transform: rotate(180deg);
+      }
+
+      .breakdown-content {
+        padding: 14px 24px 20px;
+      }
+
+      /* ── Eval Pill Bar ── */
+      .eval-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 6px;
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+
+      .eval-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--muted-fg);
+        transition: all 0.15s;
+        border: none;
+        background: none;
+      }
+
+      .eval-pill:hover {
+        background: rgba(255,255,255,0.6);
+        color: var(--fg);
+      }
+
+      .eval-pill.active {
+        background: var(--card);
+        color: var(--fg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+      }
+
+      .eval-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .eval-pill .edit-icon {
+        margin-left: 2px;
+        opacity: 0;
+        transition: opacity 0.15s;
+        font-size: 10px;
+        color: var(--muted-fg);
+      }
+
+      .eval-pill.active .edit-icon,
+      .eval-pill:hover .edit-icon {
+        opacity: 1;
+      }
+
+      .eval-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        cursor: pointer;
+        border: none;
+        background: none;
+        margin-left: auto;
+      }
+
+      .eval-add-btn:hover {
+        color: var(--fg);
+        background: rgba(255,255,255,0.6);
+      }
+
+      /* ── Chart placeholder ── */
+      .chart-area {
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        padding: 20px;
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chart-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chart-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        width: 80px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      .chart-bar-bg {
+        flex: 1;
+        height: 18px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .chart-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--blue-500);
+      }
+
+      .chart-bar-ghost {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.06);
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted-fg);
+      }
+
+      .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .chart-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      /* ── Card Footer (log-level actions) ── */
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        border-top: 1px solid var(--border);
+        background: oklch(0.985 0.003 75);
+      }
+
+      .card-footer-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--fg);
+        transition: all 0.15s;
+      }
+
+      .btn:hover {
+        background: var(--muted);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .btn-primary:hover {
+        opacity: 0.9;
+      }
+
+      .btn-ghost {
+        border: none;
+        background: none;
+        color: var(--muted-fg);
+        padding: 6px 8px;
+      }
+
+      .btn-ghost:hover {
+        color: var(--fg);
+        background: var(--muted);
+      }
+
+      .btn-destructive-ghost {
+        border: none;
+        background: none;
+        color: var(--muted-fg);
+        padding: 6px 8px;
+      }
+
+      .btn-destructive-ghost:hover {
+        color: var(--red-500);
+        background: rgba(239,68,68,0.08);
+      }
+
+      /* ══════════════════════════════════════
+         STATE 2: EMPTY STATE (no evaluations)
+         ══════════════════════════════════════ */
+
+      .empty-scores-grid .score-number {
+        color: var(--muted-fg);
+        opacity: 0.4;
+      }
+
+      .empty-scores-grid .score-bar-fill {
+        width: 0% !important;
+      }
+
+      .empty-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        margin-top: 4px;
+      }
+
+      /* ══════════════════════════════════════
+         STATE 3: FULLY EMPTY (no logs at all)
+         ══════════════════════════════════════ */
+
+      .empty-state {
+        padding: 48px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .empty-state-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 4px;
+      }
+
+      .empty-state-text {
+        font-size: 13px;
+        color: var(--muted-fg);
+        text-align: center;
+      }
+
+      /* ── Annotations ── */
+      .annotation {
+        background: oklch(0.97 0.015 250);
+        border: 1px solid oklch(0.88 0.04 250);
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: oklch(0.30 0.03 250);
+      }
+
+      .annotation strong {
+        font-weight: 600;
+      }
+
+      .annotation ul {
+        margin-top: 6px;
+        padding-left: 16px;
+      }
+
+      .annotation li {
+        margin-bottom: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- ═══════════════════════════════════════════
+           ANNOTATION: Design Rationale
+           ═══════════════════════════════════════════ -->
+      <div class="annotation">
+        <strong>Design: Progressive Disclosure Analysis Card (v3)</strong><br>
+        The card is split into three tiers of information density:
+        <ul>
+          <li><strong>Timeline</strong> — selects which storage time to view. Active dot is filled + larger with ring. Unselected dots are outline-only (unfilled) for clear distinction.</li>
+          <li><strong>Hero (Photo + Scores)</strong> — answers "how good is this pudding?" at a glance. Photo on left (200px, 1:1), scores on right with title + 4-column grid. Clicking photo opens full-size modal (hover shows "View Full Size" overlay).</li>
+          <li><strong>Score Breakdown</strong> — collapsible section answers "what drove these scores?" with eval pills and chart. Each eval pill has an inline edit icon.</li>
+        </ul>
+        Actions are co-located with what they modify:
+        <ul>
+          <li>Card footer: "+ Add Log" and "Delete Log" (separated, clear hierarchy)</li>
+          <li>Photo: in the hero section next to scores. Click opens full-size photo modal (hover shows overlay). Empty state shows "Add Photo" placeholder.</li>
+          <li>Eval pills: inline edit icon per pill, "+ Add" at end of row</li>
+          <li>Eval delete: inside the edit sheet (not a standalone button)</li>
+        </ul>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 1: CARD WITH DATA
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 1 — With evaluation data</div>
+
+      <div class="card">
+
+        <!-- ── Timeline ── -->
+        <div class="timeline-section">
+          <div class="timeline-group">
+            <div class="timeline-group-label">Thermomix</div>
+            <div class="timeline-track">
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot complete"></div>
+                <div class="timeline-dot-label">Immediate</div>
+              </div>
+              <div class="timeline-line"></div>
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot partial"></div>
+                <div class="timeline-dot-label">1 day</div>
+              </div>
+              <div class="timeline-line"></div>
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot complete"></div>
+                <div class="timeline-dot-label">3 days</div>
+              </div>
+              <div class="timeline-line"></div>
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot complete active" style="margin-top: -1px"></div>
+                <div class="timeline-dot-label active">5 days</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Hero: Photo + Scores ── -->
+        <div class="hero-section">
+          <div class="hero-photo">
+            <div class="hero-photo-img">
+              <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=400&fit=crop" alt="Pudding sample" />
+              <div class="photo-overlay">&#x1F50D; View Full Size</div>
+            </div>
+          </div>
+
+          <div class="hero-scores">
+            <div class="hero-scores-header">
+              <div class="hero-scores-title">
+                <div class="icon">&#x1f4ca;</div>
+                <span>Sensory Scores</span>
+              </div>
+              <div class="log-label">Thermomix &middot; 5 days</div>
+            </div>
+
+            <div class="scores-grid">
+              <div class="score-item">
+                <div class="score-label">Taste</div>
+                <div class="score-value">
+                  <span class="score-number taste">2.8</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill taste" style="width: 56%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Texture</div>
+                <div class="score-value">
+                  <span class="score-number texture">2.1</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill texture" style="width: 42%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Color</div>
+                <div class="score-value">
+                  <span class="score-number color">2.5</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill color" style="width: 50%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Overall</div>
+                <div class="score-value">
+                  <span class="score-number">2.5</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill overall" style="width: 50%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Score Breakdown (collapsible) ── -->
+        <div class="breakdown-section">
+          <div class="breakdown-header">
+            <div class="breakdown-header-left">
+              <div class="icon" style="background: var(--violet-100);">&#x1f50d;</div>
+              <span>Score Breakdown</span>
+            </div>
+            <div class="breakdown-chevron open">&#x25BC;</div>
+          </div>
+
+          <div class="breakdown-content">
+            <!-- Eval selector pills -->
+            <div class="eval-bar">
+              <button class="eval-pill active">All</button>
+              <button class="eval-pill">
+                <span class="dot" style="background: #3b82f6"></span>
+                Nolan
+                <span class="edit-icon">&#x270E;</span>
+              </button>
+              <button class="eval-pill">
+                <span class="dot" style="background: #22c55e"></span>
+                Sarah
+                <span class="edit-icon">&#x270E;</span>
+              </button>
+              <button class="eval-add-btn">+ Add</button>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-area">
+              <div class="chart-row">
+                <div class="chart-label">Taste Rat.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 45%"></div>
+                  <div class="chart-bar-fill" style="width: 40%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Sweet. Int.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 50%"></div>
+                  <div class="chart-bar-fill" style="width: 55%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Sweet. Rat.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 58%"></div>
+                  <div class="chart-bar-fill" style="width: 65%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Flavor Int.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 55%"></div>
+                  <div class="chart-bar-fill" style="width: 60%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Aftertaste</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 70%"></div>
+                  <div class="chart-bar-fill" style="width: 80%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Thickness</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 65%"></div>
+                  <div class="chart-bar-fill" style="width: 75%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Texture Int.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 48%"></div>
+                  <div class="chart-bar-fill" style="width: 52%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Texture Rat.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 52%"></div>
+                  <div class="chart-bar-fill" style="width: 58%"></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Color Rat.</div>
+                <div class="chart-bar-bg">
+                  <div class="chart-bar-ghost" style="width: 55%"></div>
+                  <div class="chart-bar-fill" style="width: 50%"></div>
+                </div>
+              </div>
+
+              <div class="chart-legend">
+                <div class="chart-legend-item">
+                  <div class="chart-legend-dot" style="background: rgba(0,0,0,0.1)"></div>
+                  Other Logs Avg
+                </div>
+                <div class="chart-legend-item">
+                  <div class="chart-legend-dot" style="background: var(--blue-500)"></div>
+                  This Log
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card Footer: Log-level actions ── -->
+        <div class="card-footer">
+          <div class="card-footer-left">
+            <button class="btn btn-primary">+ Add Log</button>
+          </div>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 2: LOG EXISTS BUT NO EVALUATIONS
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 2 — Log exists, no evaluations yet (empty score state)</div>
+
+      <div class="card">
+
+        <!-- ── Timeline ── -->
+        <div class="timeline-section">
+          <div class="timeline-group">
+            <div class="timeline-group-label">Thermomix</div>
+            <div class="timeline-track">
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot empty active" style="margin-top: -1px"></div>
+                <div class="timeline-dot-label active">Immediate</div>
+              </div>
+              <div class="timeline-line"></div>
+              <div class="timeline-dot-wrapper">
+                <div class="timeline-dot empty"></div>
+                <div class="timeline-dot-label">1 day</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Hero: Photo + Empty Scores ── -->
+        <div class="hero-section">
+          <div class="hero-photo">
+            <div class="hero-photo-img" style="display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px;">
+              <span style="font-size: 24px; opacity: 0.3;">&#x1F4F7;</span>
+              <span style="font-size: 11px; color: var(--muted-fg);">Add Photo</span>
+            </div>
+          </div>
+
+          <div class="hero-scores">
+            <div class="hero-scores-header">
+              <div class="hero-scores-title">
+                <div class="icon">&#x1f4ca;</div>
+                <span>Sensory Scores</span>
+              </div>
+              <div class="log-label">Thermomix &middot; Immediate</div>
+            </div>
+
+            <div class="scores-grid empty-scores-grid">
+              <div class="score-item">
+                <div class="score-label">Taste</div>
+                <div class="score-value">
+                  <span class="score-number">&mdash;</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill taste" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Texture</div>
+                <div class="score-value">
+                  <span class="score-number">&mdash;</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill texture" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Color</div>
+                <div class="score-value">
+                  <span class="score-number">&mdash;</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill color" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="score-item">
+                <div class="score-label">Overall</div>
+                <div class="score-value">
+                  <span class="score-number">&mdash;</span>
+                  <span class="score-denom">/ 5</span>
+                </div>
+                <div class="score-bar">
+                  <div class="score-bar-fill overall" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-cta">
+              <button class="btn btn-primary">+ Add Evaluation</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card Footer ── -->
+        <div class="card-footer">
+          <div class="card-footer-left">
+            <button class="btn btn-primary">+ Add Log</button>
+          </div>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 3: NO LOGS AT ALL
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 3 — No logs at all</div>
+
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">&#x1F4CB;</div>
+          <div class="empty-state-text">
+            No analysis logs yet.<br>
+            Create your first log to start tracking sensory evaluations.
+          </div>
+          <button class="btn btn-primary" style="margin-top: 4px;">+ Create First Log</button>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>

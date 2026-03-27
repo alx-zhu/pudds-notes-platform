@@ -13,6 +13,7 @@ import type { EvalView } from "../Sensory/SensoryEvalBar";
 import { EVAL_COLORS } from "@/config/trial.config";
 import { getLogLabel, sortLogs, averageEvaluationMetrics, hasEvaluationData } from "@/lib/analysisLog";
 import { useTrial, useDeleteAnalysisLog, useDeleteEvaluation } from "@/hooks/useTrials";
+import { SensoryScores } from "../SensoryScores";
 import type { AnalysisLog, SensoryEvaluation } from "@/types/trial";
 
 interface Props {
@@ -53,7 +54,7 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
   }, [logs]);
 
   const activeLog = logs.find((l) => l.id === selectedLogId) ?? (logs.length > 0 ? logs[0] : null);
-  const evaluations = activeLog?.evaluations ?? [];
+  const evaluations = useMemo(() => activeLog?.evaluations ?? [], [activeLog]);
   const hasData = hasEvaluationData(evaluations);
 
   const selectedEvalIndex = selectedEvalView !== "all"
@@ -130,6 +131,12 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
             />
           )}
         </CardHeader>
+
+        {activeLog && evaluations.length > 0 && (
+          <div className="px-5 py-4 border-b">
+            <SensoryScores evaluations={evaluations} />
+          </div>
+        )}
 
         <CardContent className="p-5 flex flex-col gap-3">
           {activeLog ? (

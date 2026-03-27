@@ -142,6 +142,56 @@ export const INGREDIENT_CHART_COLORS = [
   "#4ade80", // green-400
 ];
 
+/**
+ * Ideal target values for each sensory metric.
+ * Scores are calculated based on distance from these ideals.
+ */
+export const SENSORY_IDEAL_SCORES: Record<SensoryMetricKey, number> = {
+  tasteRating: 5,
+  sweetnessIntensity: 3.5,
+  sweetnessRating: 5,
+  flavorIntensity: 4,
+  aftertasteIntensity: 1,
+  thicknessIntensity: 3,
+  textureIntensity: 1,
+  textureRating: 5,
+  colorRating: 5,
+};
+
+/**
+ * Score category groupings with the metric keys that compose each score.
+ * Maps to the three scored dimensions + overall.
+ */
+export const SENSORY_SCORE_CATEGORIES = [
+  {
+    key: "taste" as const,
+    label: "Taste",
+    metricKeys: [
+      "tasteRating",
+      "sweetnessIntensity",
+      "sweetnessRating",
+      "flavorIntensity",
+      "aftertasteIntensity",
+    ] as SensoryMetricKey[],
+  },
+  {
+    key: "texture" as const,
+    label: "Texture",
+    metricKeys: [
+      "thicknessIntensity",
+      "textureIntensity",
+      "textureRating",
+    ] as SensoryMetricKey[],
+  },
+  {
+    key: "color" as const,
+    label: "Color",
+    metricKeys: ["colorRating"] as SensoryMetricKey[],
+  },
+] as const;
+
+export type ScoreCategoryKey = (typeof SENSORY_SCORE_CATEGORIES)[number]["key"];
+
 // Derived types (consumed by types/trial.ts)
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];
 export type Flavor = (typeof FLAVORS)[number]["value"];
