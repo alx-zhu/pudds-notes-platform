@@ -16,10 +16,10 @@ export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
   return (
     <div
       className={cn(
-        "relative w-full h-full min-h-90 rounded-xl overflow-hidden flex flex-col items-center justify-center gap-3",
+        "relative w-full h-full min-h-[320px] overflow-hidden flex flex-col items-center justify-center gap-3",
         hasPhotos
-          ? "ring-1 ring-border/40"
-          : "border-2 border-dashed border-border/60 bg-muted/20",
+          ? ""
+          : "bg-muted/20",
         !hasPhotos && onAddPhoto && "cursor-pointer hover:bg-muted/40 transition-colors",
       )}
       onClick={!hasPhotos && onAddPhoto ? onAddPhoto : undefined}

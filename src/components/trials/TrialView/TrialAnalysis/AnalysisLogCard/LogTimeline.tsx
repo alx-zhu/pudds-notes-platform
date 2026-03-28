@@ -26,47 +26,45 @@ export const LogTimeline = ({ groups, activeLogId, onSelect }: LogTimelineProps)
   <div className="flex flex-col gap-4 pt-3">
     {groups.map(({ thermalType, logs }) => (
       <div key={thermalType} className="flex flex-col gap-2">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
           {thermalType}
         </span>
 
-        <div className="flex items-start pl-4">
+        <div className="flex items-start">
           {logs.map((log, i) => {
             const state = getDotState(log);
             const isSelected = activeLogId === log.id;
             return (
               <Fragment key={log.id}>
                 {i > 0 && (
-                  <div className="h-[2px] w-16 shrink-0 bg-border self-start mt-[9px] -mx-px" />
+                  /* Line: flex-1 so it stretches, min-w-8, vertically centered on 14px dot */
+                  <div className="h-[2px] flex-1 min-w-8 bg-border self-start mt-[7px] -mx-px" />
                 )}
                 <button
                   onClick={() => onSelect(log.id)}
-                  className="group relative z-10 flex flex-col items-center cursor-pointer w-5 shrink-0 overflow-visible"
+                  className="group relative z-10 flex flex-col items-center cursor-pointer shrink-0 overflow-visible"
                 >
                   <div
                     className={cn(
-                      "w-5 h-5 rounded-full transition-all border-2 bg-card",
-                      state === "complete" && "border-emerald-500",
-                      state === "partial" && "border-amber-400",
-                      state === "empty" && "border-muted-foreground/30",
-                      !isSelected && "group-hover:scale-110",
+                      "rounded-full border-2 transition-all",
+                      /* Inactive: 14px. Active: 18px (shifted up 2px to keep line aligned) */
+                      isSelected ? "w-[18px] h-[18px] -mt-[2px]" : "w-3.5 h-3.5",
+                      /* Unselected: outline only, white fill */
+                      !isSelected && state === "complete" && "border-emerald-500 bg-card group-hover:scale-110",
+                      !isSelected && state === "partial" && "border-amber-400 bg-card group-hover:scale-110",
+                      !isSelected && state === "empty" && "border-muted-foreground/25 bg-card group-hover:scale-110",
+                      /* Selected: filled solid with colored ring */
+                      isSelected && state === "complete" && "border-emerald-500 bg-emerald-500 ring-[3px] ring-emerald-500/20",
+                      isSelected && state === "partial" && "border-amber-400 bg-amber-400 ring-[3px] ring-amber-400/20",
+                      isSelected && state === "empty" && "border-muted-foreground/25 bg-muted-foreground/25 ring-[3px] ring-muted-foreground/10",
                     )}
-                  >
-                    <div
-                      className={cn(
-                        "w-full h-full rounded-full transition-all",
-                        isSelected && state === "complete" && "bg-emerald-500",
-                        isSelected && state === "partial" && "bg-amber-400",
-                        isSelected && state === "empty" && "bg-muted-foreground/30",
-                      )}
-                    />
-                  </div>
+                  />
                   <span
                     className={cn(
                       "mt-1.5 text-[11px] whitespace-nowrap transition-colors",
                       isSelected
-                        ? "text-foreground font-medium"
-                        : "text-muted-foreground group-hover:text-foreground",
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground font-medium group-hover:text-foreground",
                     )}
                   >
                     {formatStorageTime(log.storageTimeMinutes)}

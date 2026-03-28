@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Analysis Card v7 — Photo + Vertical Scores</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: oklch(0.975 0.005 75);
+        --fg: oklch(0.15 0.01 60);
+        --card: #fff;
+        --primary: oklch(0.22 0.01 60);
+        --muted: oklch(0.955 0.008 75);
+        --muted-fg: oklch(0.50 0.01 60);
+        --border: oklch(0.91 0.008 75);
+        --emerald-500: #22c55e;
+        --emerald-100: #dcfce7;
+        --emerald-700: #15803d;
+        --amber-500: #f59e0b;
+        --amber-100: #fef3c7;
+        --amber-700: #b45309;
+        --blue-500: #3b82f6;
+        --blue-100: #dbeafe;
+        --blue-700: #1d4ed8;
+        --violet-100: #ede9fe;
+        --violet-600: #7c3aed;
+        --red-500: #ef4444;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-xs: 6px;
+        --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+      }
+
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;700&display=swap');
+
+      body {
+        font-family: var(--font);
+        background: oklch(0.88 0.005 75);
+        color: var(--fg);
+        min-height: 100vh;
+        padding: 40px 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+
+      .annotation {
+        background: oklch(0.97 0.015 250);
+        border: 1px solid oklch(0.88 0.04 250);
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: oklch(0.30 0.03 250);
+      }
+      .annotation strong { font-weight: 600; }
+      .annotation ul { margin-top: 6px; padding-left: 16px; }
+      .annotation li { margin-bottom: 3px; }
+
+      /* ── Card Header ── */
+      .card-header {
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-header-left .icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: var(--violet-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+
+      .card-header-left span {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* ── Timeline ── */
+      .timeline-section {
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .timeline-group-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      .timeline-track {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .timeline-dot-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+      }
+
+      .timeline-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid;
+        background: var(--card);
+        transition: all 0.15s;
+      }
+
+      .timeline-dot.complete { border-color: var(--emerald-500); }
+      .timeline-dot.partial { border-color: var(--amber-500); }
+      .timeline-dot.empty { border-color: rgba(0,0,0,0.15); }
+
+      .timeline-dot.active {
+        width: 18px;
+        height: 18px;
+        margin-top: -2px;
+      }
+      .timeline-dot.active.complete {
+        background: var(--emerald-500);
+        border-color: var(--emerald-500);
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.2);
+      }
+      .timeline-dot.active.partial {
+        background: var(--amber-500);
+        border-color: var(--amber-500);
+        box-shadow: 0 0 0 4px rgba(245,158,11,0.2);
+      }
+      .timeline-dot.active.empty {
+        background: rgba(0,0,0,0.2);
+        border-color: rgba(0,0,0,0.2);
+        box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+      }
+
+      .timeline-dot-label {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        white-space: nowrap;
+      }
+      .timeline-dot-label.active {
+        font-weight: 700;
+        color: var(--fg);
+      }
+
+      .timeline-line {
+        height: 2px;
+        flex: 1;
+        min-width: 32px;
+        background: var(--border);
+        align-self: flex-start;
+        margin-top: 7px;
+        margin-left: -1px;
+        margin-right: -1px;
+      }
+
+      /* ── Hero: Photo (left) + Vertical Scores (right) ── */
+      .hero-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-photo {
+        position: relative;
+        min-height: 320px;
+        background: var(--muted);
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .hero-photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .hero-photo:hover .photo-overlay {
+        opacity: 1;
+      }
+
+      .photo-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        color: white;
+        font-size: 12px;
+        font-weight: 500;
+        gap: 6px;
+      }
+
+      .photo-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(8px);
+        color: white;
+        font-size: 10px;
+        font-weight: 500;
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+
+      .hero-photo-empty {
+        position: relative;
+        min-height: 320px;
+        background: oklch(0.98 0.003 75);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        border-right: 1px solid var(--border);
+      }
+
+      .hero-photo-empty:hover {
+        background: var(--muted);
+      }
+
+      /* ── Vertical Scores ── */
+      .scores-panel {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .scores-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .scores-panel-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .log-label {
+        font-size: 11px;
+        color: var(--muted-fg);
+        font-weight: 500;
+      }
+
+      /* Overall score - hero treatment */
+      .overall-score {
+        text-align: center;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .overall-score-number {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--fg);
+      }
+
+      .overall-score-denom {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        margin-left: 2px;
+      }
+
+      .overall-score-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 6px;
+      }
+
+      /* Category scores - horizontal bar chart */
+      .category-scores {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .category-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .category-label {
+        font-size: 12px;
+        font-weight: 600;
+        width: 56px;
+        flex-shrink: 0;
+        color: var(--fg);
+      }
+
+      .category-bar-track {
+        flex: 1;
+        height: 10px;
+        background: var(--muted);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .category-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.5s ease-out;
+      }
+
+      .category-bar-fill.taste { background: var(--emerald-500); }
+      .category-bar-fill.texture { background: var(--blue-500); }
+      .category-bar-fill.color { background: var(--amber-500); }
+
+      .category-value {
+        font-size: 13px;
+        font-weight: 700;
+        width: 28px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      .category-value.taste { color: var(--emerald-700); }
+      .category-value.texture { color: var(--blue-700); }
+      .category-value.color { color: var(--amber-700); }
+
+      /* Empty score state */
+      .empty-overall-number {
+        color: var(--muted-fg);
+        opacity: 0.3;
+      }
+
+      .empty-category .category-value {
+        color: var(--muted-fg);
+        opacity: 0.4;
+      }
+
+      /* ── Score Breakdown (collapsible) ── */
+      .breakdown-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        cursor: pointer;
+        width: 100%;
+        border: none;
+        background: none;
+        color: var(--fg);
+        font-family: var(--font);
+      }
+
+      .breakdown-trigger:hover {
+        background: oklch(0.98 0.004 75);
+      }
+
+      .breakdown-trigger-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .breakdown-trigger-left .icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--violet-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .breakdown-trigger-left span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .breakdown-count {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        background: var(--muted);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 4px;
+      }
+
+      .breakdown-chevron {
+        font-size: 14px;
+        color: var(--muted-fg);
+        transition: transform 0.2s;
+      }
+
+      .breakdown-content {
+        padding: 0 24px 20px;
+      }
+
+      /* Eval bar */
+      .eval-bar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 5px;
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+
+      .eval-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--muted-fg);
+        border: none;
+        background: none;
+        font-family: var(--font);
+      }
+
+      .eval-pill.active {
+        background: var(--card);
+        color: var(--fg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+      }
+
+      .eval-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .eval-pill-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 4px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .eval-pill.active .eval-pill-actions,
+      .eval-pill:hover .eval-pill-actions {
+        opacity: 1;
+      }
+
+      .eval-pill-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--muted-fg);
+        font-size: 10px;
+        padding: 0;
+      }
+
+      .eval-pill-action:hover {
+        background: var(--muted);
+        color: var(--fg);
+      }
+
+      .eval-pill-action.destructive:hover {
+        background: rgba(239,68,68,0.1);
+        color: var(--red-500);
+      }
+
+      .eval-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        cursor: pointer;
+        border: none;
+        background: none;
+        margin-left: auto;
+        font-family: var(--font);
+      }
+
+      .eval-add-btn:hover {
+        color: var(--fg);
+        background: rgba(255,255,255,0.6);
+      }
+
+      /* Chart */
+      .chart-area {
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chart-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chart-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        width: 80px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      .chart-bar-bg {
+        flex: 1;
+        height: 18px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .chart-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--blue-500);
+      }
+
+      .chart-bar-ghost {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.06);
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted-fg);
+      }
+
+      .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .chart-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      /* ── Card Footer ── */
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--fg);
+        font-family: var(--font);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .btn-destructive-ghost {
+        border: none;
+        background: none;
+        color: var(--muted-fg);
+        padding: 6px 8px;
+      }
+      .btn-destructive-ghost:hover {
+        color: var(--red-500);
+        background: rgba(239,68,68,0.08);
+      }
+
+      /* Empty state */
+      .empty-state {
+        padding: 48px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .empty-state-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+
+      .empty-state-text {
+        font-size: 13px;
+        color: var(--muted-fg);
+        text-align: center;
+      }
+
+      /* ── Sensory comments ── */
+      .comments-section {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .comments-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .comments-header .icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: var(--amber-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+
+      .comments-header span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .comment-card {
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        margin-bottom: 8px;
+      }
+
+      .comment-meta {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .comment-meta .tag {
+        background: var(--card);
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      .comment-text {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--fg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <div class="annotation">
+        <strong>Design v7: "Sensory Evaluation" — Photo + Vertical Scores</strong>
+        <ul>
+          <li><strong>Layout:</strong> Same grid structure as current (photo left, content right), but the right half is now the <em>scores</em> instead of the eval chart. This fills the vertical space naturally — overall score is large and centered, category scores stack below as horizontal bars.</li>
+          <li><strong>Renamed:</strong> Card title is "Sensory Evaluation" (not "Analysis Logs") to better describe what users are looking at.</li>
+          <li><strong>Progressive disclosure:</strong> The detailed per-metric breakdown (chart + eval pills) is hidden behind a collapsible "Score Breakdown" section underneath the hero. Users see the summary first, drill down only if curious.</li>
+          <li><strong>Why this works:</strong> The overall score (large centered number) + 3 category bars fill the right column height to roughly match a square photo. No wasted space, no height mismatch.</li>
+          <li><strong>Actions:</strong> Footer has log-level actions. Photo click opens photo modal. Eval pill icons handle edit/delete. Clean hierarchy.</li>
+        </ul>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 1: WITH DATA (expanded breakdown)
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 1 — With evaluation data (breakdown expanded)</div>
+
+      <div class="card">
+        <!-- Header -->
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="icon">&#x2694;</div>
+            <span>Sensory Evaluation</span>
+          </div>
+          <button class="btn btn-primary" style="font-size: 11px; padding: 4px 10px; gap: 4px;">+ Add Log</button>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-section">
+          <div class="timeline-group-label">Thermomix</div>
+          <div class="timeline-track">
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete"></div>
+              <div class="timeline-dot-label">Immediate</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot partial"></div>
+              <div class="timeline-dot-label">3 days</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete active"></div>
+              <div class="timeline-dot-label active">6 days</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero: Photo + Vertical Scores -->
+        <div class="hero-section">
+          <!-- Photo (left half) -->
+          <div class="hero-photo">
+            <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&h=640&fit=crop" alt="Pudding sample" />
+            <div class="photo-overlay">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+              View Photos
+            </div>
+            <div class="photo-badge">1 of 2</div>
+          </div>
+
+          <!-- Scores (right half) -->
+          <div class="scores-panel">
+            <div class="scores-panel-header">
+              <div class="scores-panel-label">Scores</div>
+              <div class="log-label">Thermomix &middot; 6 days</div>
+            </div>
+
+            <!-- Overall - big centered number -->
+            <div class="overall-score">
+              <div>
+                <span class="overall-score-number">3.3</span>
+                <span class="overall-score-denom">/ 5</span>
+              </div>
+              <div class="overall-score-label">Overall</div>
+            </div>
+
+            <!-- Category scores - horizontal bars -->
+            <div class="category-scores">
+              <div class="category-row">
+                <div class="category-label">Taste</div>
+                <div class="category-bar-track">
+                  <div class="category-bar-fill taste" style="width: 62%"></div>
+                </div>
+                <div class="category-value taste">3.1</div>
+              </div>
+              <div class="category-row">
+                <div class="category-label">Texture</div>
+                <div class="category-bar-track">
+                  <div class="category-bar-fill texture" style="width: 56%"></div>
+                </div>
+                <div class="category-value texture">2.8</div>
+              </div>
+              <div class="category-row">
+                <div class="category-label">Color</div>
+                <div class="category-bar-track">
+                  <div class="category-bar-fill color" style="width: 80%"></div>
+                </div>
+                <div class="category-value color">4.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score Breakdown (collapsible, shown expanded here) -->
+        <button class="breakdown-trigger">
+          <div class="breakdown-trigger-left">
+            <div class="icon">&#x1f50d;</div>
+            <span>Score Breakdown</span>
+            <span class="breakdown-count">2 evaluations</span>
+          </div>
+          <div class="breakdown-chevron">&#x25B2;</div>
+        </button>
+
+        <div class="breakdown-content">
+          <div class="eval-bar">
+            <button class="eval-pill active">All</button>
+            <button class="eval-pill">
+              <span class="dot" style="background: #3b82f6"></span>
+              Nolan
+              <span class="eval-pill-actions">
+                <button class="eval-pill-action" title="Edit">&#x270E;</button>
+                <button class="eval-pill-action destructive" title="Delete">&#x2715;</button>
+              </span>
+            </button>
+            <button class="eval-pill">
+              <span class="dot" style="background: #22c55e"></span>
+              Alex
+              <span class="eval-pill-actions">
+                <button class="eval-pill-action" title="Edit">&#x270E;</button>
+                <button class="eval-pill-action destructive" title="Delete">&#x2715;</button>
+              </span>
+            </button>
+            <button class="eval-pill">
+              <span class="dot" style="background: #f59e0b"></span>
+              Chase
+              <span class="eval-pill-actions">
+                <button class="eval-pill-action" title="Edit">&#x270E;</button>
+                <button class="eval-pill-action destructive" title="Delete">&#x2715;</button>
+              </span>
+            </button>
+            <button class="eval-add-btn">+ Add</button>
+          </div>
+
+          <div class="chart-area">
+            <div class="chart-row"><div class="chart-label">Taste Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 50%"></div><div class="chart-bar-fill" style="width: 55%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Sweet. Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 55%"></div><div class="chart-bar-fill" style="width: 60%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Sweet. Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 58%"></div><div class="chart-bar-fill" style="width: 65%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Flavor Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 48%"></div><div class="chart-bar-fill" style="width: 52%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Aftertaste</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 70%"></div><div class="chart-bar-fill" style="width: 80%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Thickness</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 65%"></div><div class="chart-bar-fill" style="width: 75%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Texture Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 48%"></div><div class="chart-bar-fill" style="width: 52%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Texture Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 52%"></div><div class="chart-bar-fill" style="width: 58%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Color Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 55%"></div><div class="chart-bar-fill" style="width: 50%"></div></div></div>
+            <div class="chart-legend">
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background: rgba(0,0,0,0.1)"></div> Other Logs Avg</div>
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background: var(--blue-500)"></div> All (Avg)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer">
+          <div style="font-size: 11px; color: var(--muted-fg);">Thermomix &middot; 6 days</div>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 1b: WITH DATA (breakdown collapsed)
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 1b — Breakdown collapsed (default view)</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="icon">&#x2694;</div>
+            <span>Sensory Evaluation</span>
+          </div>
+          <button class="btn btn-primary" style="font-size: 11px; padding: 4px 10px; gap: 4px;">+ Add Log</button>
+        </div>
+
+        <div class="timeline-section">
+          <div class="timeline-group-label">Thermomix</div>
+          <div class="timeline-track">
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete"></div>
+              <div class="timeline-dot-label">Immediate</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot partial"></div>
+              <div class="timeline-dot-label">3 days</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete active"></div>
+              <div class="timeline-dot-label active">6 days</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-section">
+          <div class="hero-photo">
+            <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&h=640&fit=crop" alt="Pudding" />
+            <div class="photo-overlay">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+              View Photos
+            </div>
+            <div class="photo-badge">1 of 2</div>
+          </div>
+
+          <div class="scores-panel">
+            <div class="scores-panel-header">
+              <div class="scores-panel-label">Scores</div>
+              <div class="log-label">Thermomix &middot; 6 days</div>
+            </div>
+
+            <div class="overall-score">
+              <div>
+                <span class="overall-score-number">3.3</span>
+                <span class="overall-score-denom">/ 5</span>
+              </div>
+              <div class="overall-score-label">Overall</div>
+            </div>
+
+            <div class="category-scores">
+              <div class="category-row">
+                <div class="category-label">Taste</div>
+                <div class="category-bar-track"><div class="category-bar-fill taste" style="width: 62%"></div></div>
+                <div class="category-value taste">3.1</div>
+              </div>
+              <div class="category-row">
+                <div class="category-label">Texture</div>
+                <div class="category-bar-track"><div class="category-bar-fill texture" style="width: 56%"></div></div>
+                <div class="category-value texture">2.8</div>
+              </div>
+              <div class="category-row">
+                <div class="category-label">Color</div>
+                <div class="category-bar-track"><div class="category-bar-fill color" style="width: 80%"></div></div>
+                <div class="category-value color">4.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown collapsed -->
+        <button class="breakdown-trigger" style="border-bottom: none;">
+          <div class="breakdown-trigger-left">
+            <div class="icon">&#x1f50d;</div>
+            <span>Score Breakdown</span>
+            <span class="breakdown-count">2 evaluations</span>
+          </div>
+          <div class="breakdown-chevron">&#x25BC;</div>
+        </button>
+
+        <div class="card-footer">
+          <div style="font-size: 11px; color: var(--muted-fg);">Thermomix &middot; 6 days</div>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 2: LOG EXISTS, NO EVALUATIONS
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 2 — Log exists, no evaluations</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="icon">&#x2694;</div>
+            <span>Sensory Evaluation</span>
+          </div>
+          <button class="btn btn-primary" style="font-size: 11px; padding: 4px 10px; gap: 4px;">+ Add Log</button>
+        </div>
+
+        <div class="timeline-section">
+          <div class="timeline-group-label">Thermomix</div>
+          <div class="timeline-track">
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot empty active"></div>
+              <div class="timeline-dot-label active">Immediate</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot empty"></div>
+              <div class="timeline-dot-label">1 day</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-section">
+          <!-- Empty photo -->
+          <div class="hero-photo-empty">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.25;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <span style="font-size: 12px; color: var(--muted-fg);">Add Photo</span>
+          </div>
+
+          <!-- Empty scores -->
+          <div class="scores-panel">
+            <div class="scores-panel-header">
+              <div class="scores-panel-label">Scores</div>
+              <div class="log-label">Thermomix &middot; Immediate</div>
+            </div>
+
+            <div class="overall-score">
+              <div>
+                <span class="overall-score-number empty-overall-number">&mdash;</span>
+                <span class="overall-score-denom">/ 5</span>
+              </div>
+              <div class="overall-score-label">Overall</div>
+            </div>
+
+            <div class="category-scores">
+              <div class="category-row empty-category">
+                <div class="category-label">Taste</div>
+                <div class="category-bar-track"><div class="category-bar-fill taste" style="width: 0%"></div></div>
+                <div class="category-value">&mdash;</div>
+              </div>
+              <div class="category-row empty-category">
+                <div class="category-label">Texture</div>
+                <div class="category-bar-track"><div class="category-bar-fill texture" style="width: 0%"></div></div>
+                <div class="category-value">&mdash;</div>
+              </div>
+              <div class="category-row empty-category">
+                <div class="category-label">Color</div>
+                <div class="category-bar-track"><div class="category-bar-fill color" style="width: 0%"></div></div>
+                <div class="category-value">&mdash;</div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+              <button class="btn btn-primary" style="font-size: 11px; padding: 5px 14px;">+ Add Evaluation</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div style="font-size: 11px; color: var(--muted-fg);">Thermomix &middot; Immediate</div>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 3: NO LOGS
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 3 — No logs at all</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="icon">&#x2694;</div>
+            <span>Sensory Evaluation</span>
+          </div>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">&#x1F4CB;</div>
+          <div class="empty-state-text">
+            No analysis logs yet.<br>
+            Create your first log to start tracking sensory evaluations.
+          </div>
+          <button class="btn btn-primary" style="margin-top: 4px;">+ Create First Log</button>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>

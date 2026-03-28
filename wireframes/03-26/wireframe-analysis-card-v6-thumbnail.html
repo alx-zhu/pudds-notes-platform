@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Analysis Card v6 — Thumbnail Photo</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: oklch(0.975 0.005 75);
+        --fg: oklch(0.15 0.01 60);
+        --card: #fff;
+        --primary: oklch(0.22 0.01 60);
+        --muted: oklch(0.955 0.008 75);
+        --muted-fg: oklch(0.50 0.01 60);
+        --border: oklch(0.91 0.008 75);
+        --emerald-500: #22c55e;
+        --emerald-700: #15803d;
+        --amber-500: #f59e0b;
+        --amber-700: #b45309;
+        --blue-500: #3b82f6;
+        --blue-100: #dbeafe;
+        --blue-700: #1d4ed8;
+        --violet-100: #ede9fe;
+        --violet-600: #7c3aed;
+        --red-500: #ef4444;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-xs: 6px;
+        --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+      }
+
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;700&display=swap');
+
+      body {
+        font-family: var(--font);
+        background: oklch(0.88 0.005 75);
+        color: var(--fg);
+        min-height: 100vh;
+        padding: 40px 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+
+      .annotation {
+        background: oklch(0.97 0.015 250);
+        border: 1px solid oklch(0.88 0.04 250);
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: oklch(0.30 0.03 250);
+      }
+      .annotation strong { font-weight: 600; }
+      .annotation ul { margin-top: 6px; padding-left: 16px; }
+      .annotation li { margin-bottom: 3px; }
+
+      /* ── Timeline ── */
+      .timeline-section {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .timeline-group-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      .timeline-track {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .timeline-dot-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+      }
+
+      .timeline-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid;
+        background: var(--card);
+        transition: all 0.15s;
+      }
+
+      .timeline-dot.complete { border-color: var(--emerald-500); }
+      .timeline-dot.partial { border-color: var(--amber-500); }
+      .timeline-dot.empty { border-color: rgba(0,0,0,0.15); }
+
+      /* ACTIVE DOT: filled, slightly larger, with colored ring */
+      .timeline-dot.active {
+        width: 18px;
+        height: 18px;
+        margin-top: -2px;
+      }
+      .timeline-dot.active.complete {
+        background: var(--emerald-500);
+        border-color: var(--emerald-500);
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.2);
+      }
+      .timeline-dot.active.partial {
+        background: var(--amber-500);
+        border-color: var(--amber-500);
+        box-shadow: 0 0 0 4px rgba(245,158,11,0.2);
+      }
+      .timeline-dot.active.empty {
+        background: rgba(0,0,0,0.2);
+        border-color: rgba(0,0,0,0.2);
+        box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+      }
+
+      .timeline-dot-label {
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        white-space: nowrap;
+      }
+      .timeline-dot-label.active {
+        font-weight: 700;
+        color: var(--fg);
+      }
+
+      .timeline-line {
+        height: 2px;
+        flex: 1;
+        min-width: 32px;
+        background: var(--border);
+        align-self: flex-start;
+        margin-top: 7px;
+        margin-left: -1px;
+        margin-right: -1px;
+      }
+
+      /* ── Scores Section ── */
+      .scores-section {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* Log context row: thumbnail + label */
+      .log-context {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .log-thumbnail {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        background: var(--muted);
+        flex-shrink: 0;
+      }
+
+      .log-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .log-thumbnail:hover .thumb-overlay {
+        opacity: 1;
+      }
+
+      .thumb-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s;
+        border-radius: var(--radius-sm);
+      }
+
+      .thumb-overlay svg {
+        color: white;
+        width: 16px;
+        height: 16px;
+      }
+
+      .log-thumbnail-empty {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-sm);
+        border: 2px dashed var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        background: oklch(0.98 0.003 75);
+        transition: background 0.15s;
+      }
+
+      .log-thumbnail-empty:hover {
+        background: var(--muted);
+      }
+
+      .log-context-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .log-context-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+
+      .log-context-sublabel {
+        font-size: 11px;
+        color: var(--muted-fg);
+        margin-top: 2px;
+      }
+
+      .log-context-right {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      /* Scores grid */
+      .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+      }
+
+      .score-item {
+        padding: 0 16px;
+        border-left: 1px solid var(--border);
+      }
+      .score-item:first-child {
+        padding-left: 0;
+        border-left: none;
+      }
+
+      .score-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted-fg);
+        margin-bottom: 4px;
+      }
+
+      .score-value {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+      }
+
+      .score-number {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+
+      .score-denom {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted-fg);
+      }
+
+      .score-bar {
+        margin-top: 8px;
+        height: 3px;
+        background: var(--muted);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .score-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+      }
+
+      .score-bar-fill.taste { background: var(--emerald-500); }
+      .score-bar-fill.texture { background: var(--blue-500); }
+      .score-bar-fill.color { background: var(--amber-500); }
+      .score-bar-fill.overall { background: var(--fg); opacity: 0.6; }
+
+      .score-number.taste { color: var(--emerald-700); }
+      .score-number.texture { color: var(--blue-700); }
+      .score-number.color { color: var(--amber-700); }
+
+      .empty-scores .score-number {
+        color: var(--muted-fg);
+        opacity: 0.4;
+      }
+
+      /* ── Score Breakdown (collapsible) ── */
+      .breakdown-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        cursor: pointer;
+        width: 100%;
+        border: none;
+        background: none;
+        color: var(--fg);
+        font-family: var(--font);
+      }
+
+      .breakdown-trigger:hover {
+        background: oklch(0.98 0.004 75);
+      }
+
+      .breakdown-trigger-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .breakdown-trigger-left .icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--violet-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      .breakdown-trigger-left span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .breakdown-chevron {
+        font-size: 14px;
+        color: var(--muted-fg);
+        transition: transform 0.2s;
+      }
+
+      .breakdown-content {
+        padding: 0 24px 20px;
+      }
+
+      /* Eval bar with inline actions */
+      .eval-bar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 5px;
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+
+      .eval-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--muted-fg);
+        border: none;
+        background: none;
+        font-family: var(--font);
+        position: relative;
+      }
+
+      .eval-pill.active {
+        background: var(--card);
+        color: var(--fg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+      }
+
+      .eval-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      /* Inline edit/delete icons for active eval pill */
+      .eval-pill-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 4px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .eval-pill.active .eval-pill-actions,
+      .eval-pill:hover .eval-pill-actions {
+        opacity: 1;
+      }
+
+      .eval-pill-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--muted-fg);
+        font-size: 10px;
+        padding: 0;
+      }
+
+      .eval-pill-action:hover {
+        background: var(--muted);
+        color: var(--fg);
+      }
+
+      .eval-pill-action.destructive:hover {
+        background: rgba(239,68,68,0.1);
+        color: var(--red-500);
+      }
+
+      .eval-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        cursor: pointer;
+        border: none;
+        background: none;
+        margin-left: auto;
+        font-family: var(--font);
+      }
+
+      .eval-add-btn:hover {
+        color: var(--fg);
+        background: rgba(255,255,255,0.6);
+      }
+
+      /* Chart */
+      .chart-area {
+        background: var(--muted);
+        border-radius: var(--radius-sm);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chart-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chart-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        width: 80px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      .chart-bar-bg {
+        flex: 1;
+        height: 18px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .chart-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--blue-500);
+      }
+
+      .chart-bar-ghost {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.06);
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted-fg);
+      }
+
+      .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .chart-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      /* ── Card Footer ── */
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--fg);
+        font-family: var(--font);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .btn-destructive-ghost {
+        border: none;
+        background: none;
+        color: var(--muted-fg);
+        padding: 6px 8px;
+      }
+      .btn-destructive-ghost:hover {
+        color: var(--red-500);
+        background: rgba(239,68,68,0.08);
+      }
+
+      /* Empty state */
+      .empty-state {
+        padding: 48px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .empty-state-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+
+      .empty-state-text {
+        font-size: 13px;
+        color: var(--muted-fg);
+        text-align: center;
+      }
+
+      /* ── Comparison layout ── */
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .comparison > .card {
+        min-width: 0;
+      }
+
+      @media (max-width: 900px) {
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <div class="annotation">
+        <strong>Design v6: Thumbnail Photo</strong>
+        <ul>
+          <li><strong>Key insight:</strong> the photo's purpose in this card is "visual context" (what does it look like?), not detailed inspection. A 56px thumbnail serves this purpose. Full photo is one click away in the existing modal.</li>
+          <li><strong>Solves the aspect ratio problem</strong> — a 56px square thumbnail has zero layout impact. No side-by-side imbalance, no stacking dominance.</li>
+          <li><strong>Photo + scores are paired</strong> in the same section. The thumbnail sits in a "log context" row above the score grid, alongside the log label. This answers "what am I looking at?" before showing "how good is it?"</li>
+          <li><strong>Active timeline dot</strong> is now 18px (vs 14px), filled solid with a colored ring — much more visible contrast against unfilled outline dots.</li>
+          <li><strong>Action hierarchy:</strong>
+            <ul>
+              <li>Footer: log-level actions (+ Add Log, Delete Log)</li>
+              <li>Thumbnail: click opens photo modal (edit photos there)</li>
+              <li>Eval pills: inline edit/delete icons appear on active/hover pill; + Add at end of row</li>
+            </ul>
+          </li>
+          <li><strong>Empty states:</strong> scores show em-dashes with 0-width bars; photo shows dashed placeholder thumbnail; no-logs shows centered CTA.</li>
+          <li><strong>Inspired by:</strong> Vivino wine ratings, Untappd check-ins, Google Maps restaurant cards — all use small thumbnails alongside scores for visual context.</li>
+        </ul>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 1: WITH DATA
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 1 — With evaluation data</div>
+
+      <div class="card">
+        <!-- Timeline -->
+        <div class="timeline-section">
+          <div class="timeline-group-label">Thermomix</div>
+          <div class="timeline-track">
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete"></div>
+              <div class="timeline-dot-label">Immediate</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot partial"></div>
+              <div class="timeline-dot-label">1 day</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete"></div>
+              <div class="timeline-dot-label">3 days</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot complete active"></div>
+              <div class="timeline-dot-label active">5 days</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scores Section -->
+        <div class="scores-section">
+          <!-- Log context: thumbnail + label -->
+          <div class="log-context">
+            <div class="log-thumbnail">
+              <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=112&h=112&fit=crop" alt="Pudding" />
+              <div class="thumb-overlay">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+              </div>
+            </div>
+            <div class="log-context-info">
+              <div class="log-context-label">Thermomix &middot; 5 days</div>
+              <div class="log-context-sublabel">2 evaluations &middot; 1 photo</div>
+            </div>
+          </div>
+
+          <!-- Score grid -->
+          <div class="scores-grid">
+            <div class="score-item">
+              <div class="score-label">Taste</div>
+              <div class="score-value">
+                <span class="score-number taste">2.8</span>
+                <span class="score-denom">/ 5</span>
+              </div>
+              <div class="score-bar"><div class="score-bar-fill taste" style="width: 56%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Texture</div>
+              <div class="score-value">
+                <span class="score-number texture">2.1</span>
+                <span class="score-denom">/ 5</span>
+              </div>
+              <div class="score-bar"><div class="score-bar-fill texture" style="width: 42%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Color</div>
+              <div class="score-value">
+                <span class="score-number color">2.5</span>
+                <span class="score-denom">/ 5</span>
+              </div>
+              <div class="score-bar"><div class="score-bar-fill color" style="width: 50%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Overall</div>
+              <div class="score-value">
+                <span class="score-number">2.5</span>
+                <span class="score-denom">/ 5</span>
+              </div>
+              <div class="score-bar"><div class="score-bar-fill overall" style="width: 50%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score Breakdown (collapsible) -->
+        <button class="breakdown-trigger">
+          <div class="breakdown-trigger-left">
+            <div class="icon">&#x1f50d;</div>
+            <span>Score Breakdown</span>
+          </div>
+          <div class="breakdown-chevron">&#x25B2;</div>
+        </button>
+
+        <div class="breakdown-content">
+          <!-- Eval pills with inline actions -->
+          <div class="eval-bar">
+            <button class="eval-pill active">All</button>
+            <button class="eval-pill">
+              <span class="dot" style="background: #3b82f6"></span>
+              Nolan
+              <span class="eval-pill-actions">
+                <button class="eval-pill-action" title="Edit">&#x270E;</button>
+                <button class="eval-pill-action destructive" title="Delete">&#x2715;</button>
+              </span>
+            </button>
+            <button class="eval-pill">
+              <span class="dot" style="background: #22c55e"></span>
+              Sarah
+              <span class="eval-pill-actions">
+                <button class="eval-pill-action" title="Edit">&#x270E;</button>
+                <button class="eval-pill-action destructive" title="Delete">&#x2715;</button>
+              </span>
+            </button>
+            <button class="eval-add-btn">+ Add</button>
+          </div>
+
+          <div class="chart-area">
+            <div class="chart-row"><div class="chart-label">Taste Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 45%"></div><div class="chart-bar-fill" style="width: 40%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Sweet. Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 50%"></div><div class="chart-bar-fill" style="width: 55%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Sweet. Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 58%"></div><div class="chart-bar-fill" style="width: 65%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Flavor Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 55%"></div><div class="chart-bar-fill" style="width: 60%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Aftertaste</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 70%"></div><div class="chart-bar-fill" style="width: 80%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Thickness</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 65%"></div><div class="chart-bar-fill" style="width: 75%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Texture Int.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 48%"></div><div class="chart-bar-fill" style="width: 52%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Texture Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 52%"></div><div class="chart-bar-fill" style="width: 58%"></div></div></div>
+            <div class="chart-row"><div class="chart-label">Color Rat.</div><div class="chart-bar-bg"><div class="chart-bar-ghost" style="width: 55%"></div><div class="chart-bar-fill" style="width: 50%"></div></div></div>
+            <div class="chart-legend">
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background: rgba(0,0,0,0.1)"></div> Other Logs Avg</div>
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background: var(--blue-500)"></div> This Log</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer: log-level actions only -->
+        <div class="card-footer">
+          <button class="btn btn-primary">+ Add Log</button>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 2: LOG EXISTS, NO EVALUATIONS
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 2 — Log exists, no evaluations</div>
+
+      <div class="card">
+        <div class="timeline-section">
+          <div class="timeline-group-label">Thermomix</div>
+          <div class="timeline-track">
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot empty active"></div>
+              <div class="timeline-dot-label active">Immediate</div>
+            </div>
+            <div class="timeline-line"></div>
+            <div class="timeline-dot-wrapper">
+              <div class="timeline-dot empty"></div>
+              <div class="timeline-dot-label">1 day</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scores-section">
+          <div class="log-context">
+            <div class="log-thumbnail-empty">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.35;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            </div>
+            <div class="log-context-info">
+              <div class="log-context-label">Thermomix &middot; Immediate</div>
+              <div class="log-context-sublabel">No evaluations yet</div>
+            </div>
+            <div class="log-context-right">
+              <button class="btn btn-primary" style="font-size: 11px; padding: 4px 10px;">+ Add Evaluation</button>
+            </div>
+          </div>
+
+          <div class="scores-grid empty-scores">
+            <div class="score-item">
+              <div class="score-label">Taste</div>
+              <div class="score-value"><span class="score-number">&mdash;</span><span class="score-denom">/ 5</span></div>
+              <div class="score-bar"><div class="score-bar-fill taste" style="width: 0%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Texture</div>
+              <div class="score-value"><span class="score-number">&mdash;</span><span class="score-denom">/ 5</span></div>
+              <div class="score-bar"><div class="score-bar-fill texture" style="width: 0%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Color</div>
+              <div class="score-value"><span class="score-number">&mdash;</span><span class="score-denom">/ 5</span></div>
+              <div class="score-bar"><div class="score-bar-fill color" style="width: 0%"></div></div>
+            </div>
+            <div class="score-item">
+              <div class="score-label">Overall</div>
+              <div class="score-value"><span class="score-number">&mdash;</span><span class="score-denom">/ 5</span></div>
+              <div class="score-bar"><div class="score-bar-fill overall" style="width: 0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn btn-primary">+ Add Log</button>
+          <button class="btn btn-destructive-ghost">&#x1F5D1; Delete Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           STATE 3: NO LOGS
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">State 3 — No logs at all</div>
+
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">&#x1F4CB;</div>
+          <div class="empty-state-text">
+            No analysis logs yet.<br>
+            Create your first log to start tracking sensory evaluations.
+          </div>
+          <button class="btn btn-primary" style="margin-top: 4px;">+ Create First Log</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           SIDE-BY-SIDE COMPARISON: Current vs v6
+           ═══════════════════════════════════════════ -->
+      <div class="section-label">Comparison — Current layout (approx) vs v6 thumbnail</div>
+
+      <div class="comparison">
+        <!-- Current: photo + chart side by side -->
+        <div class="card">
+          <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.06em;">
+            Current: photo + chart grid
+          </div>
+          <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px;">
+              <div style="aspect-ratio: 1; background: var(--muted); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted-fg); font-size: 12px;">
+                Photo<br>(square, tall)
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="height: 28px; background: var(--muted); border-radius: 6px;"></div>
+                <div style="flex: 1; background: var(--muted); border-radius: 6px; min-height: 180px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- v6: thumbnail + full-width scores -->
+        <div class="card">
+          <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.06em;">
+            v6: thumbnail + full-width scores
+          </div>
+          <div style="padding: 20px;">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+              <div style="width: 56px; height: 56px; background: var(--muted); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--muted-fg); font-size: 9px;">
+                Thumb
+              </div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600;">Thermomix &middot; 5 days</div>
+                <div style="font-size: 11px; color: var(--muted-fg);">2 evals &middot; 1 photo</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;">
+              <div style="padding: 0 12px; border-left: 1px solid var(--border);" class="score-item" >
+                <div style="height: 12px; width: 28px; background: var(--muted); border-radius: 2px; margin-bottom: 4px;"></div>
+                <div style="height: 24px; width: 36px; background: var(--muted); border-radius: 3px;"></div>
+                <div style="height: 3px; background: var(--muted); border-radius: 2px; margin-top: 8px;"></div>
+              </div>
+              <div style="padding: 0 12px; border-left: 1px solid var(--border);">
+                <div style="height: 12px; width: 28px; background: var(--muted); border-radius: 2px; margin-bottom: 4px;"></div>
+                <div style="height: 24px; width: 36px; background: var(--muted); border-radius: 3px;"></div>
+                <div style="height: 3px; background: var(--muted); border-radius: 2px; margin-top: 8px;"></div>
+              </div>
+              <div style="padding: 0 12px; border-left: 1px solid var(--border);">
+                <div style="height: 12px; width: 28px; background: var(--muted); border-radius: 2px; margin-bottom: 4px;"></div>
+                <div style="height: 24px; width: 36px; background: var(--muted); border-radius: 3px;"></div>
+                <div style="height: 3px; background: var(--muted); border-radius: 2px; margin-top: 8px;"></div>
+              </div>
+              <div style="padding: 0 12px; border-left: 1px solid var(--border);">
+                <div style="height: 12px; width: 28px; background: var(--muted); border-radius: 2px; margin-bottom: 4px;"></div>
+                <div style="height: 24px; width: 36px; background: var(--muted); border-radius: 3px;"></div>
+                <div style="height: 3px; background: var(--muted); border-radius: 2px; margin-top: 8px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>
