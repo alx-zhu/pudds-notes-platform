@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, FlaskConical } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -5,14 +6,18 @@ import { Button } from "@/components/ui/button";
 import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
+import type { SensoryFormState } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/CommentsCard";
+import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
+import type { SensoryEvaluation } from "@/types/trial";
 
 export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: trial, isLoading, isError } = useTrial(id ?? "");
+  const [sensoryFormState, setSensoryFormState] = useState<SensoryFormState | null>(null);
 
   if (isLoading) {
     return (
@@ -100,11 +105,31 @@ export const TrialView = () => {
 
           {/* Right column: unified category view */}
           <div className="flex flex-col gap-5">
-            <AnalysisLogCard trialId={trial.id} />
-            <CommentsCard trialId={trial.id} />
+            <AnalysisLogCard
+              trialId={trial.id}
+              onOpenSensoryForm={setSensoryFormState}
+            />
+            <CommentsCard
+              trialId={trial.id}
+              onOpenEval={(logId, logLabel, evaluation: SensoryEvaluation) =>
+                setSensoryFormState({ logId, logLabel, evaluation })
+              }
+            />
           </div>
         </div>
       </div>
+
+      {sensoryFormState && (
+        <SensoryForm
+          open={true}
+          onOpenChange={(open) => { if (!open) setSensoryFormState(null); }}
+          trialId={trial.id}
+          logId={sensoryFormState.logId}
+          logLabel={sensoryFormState.logLabel}
+          evaluation={sensoryFormState.evaluation}
+          onDelete={sensoryFormState.onDelete}
+        />
+      )}
     </>
   );
 };

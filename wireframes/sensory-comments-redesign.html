@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sensory Comments — Design Proposals</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: oklch(0.975 0.005 75);
+    --card: #ffffff;
+    --foreground: oklch(0.15 0.01 60);
+    --muted: oklch(0.955 0.008 75);
+    --muted-fg: oklch(0.55 0.01 60);
+    --border: oklch(0.91 0.008 75);
+    --border-subtle: oklch(0.91 0.008 75 / 0.6);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+
+    /* Category colors */
+    --taste-bg: #d1fae5;
+    --taste-fg: #047857;
+    --taste-bar: #10b981;
+    --texture-bg: #dbeafe;
+    --texture-fg: #1d4ed8;
+    --texture-bar: #3b82f6;
+    --appearance-bg: #fef3c7;
+    --appearance-fg: #b45309;
+    --appearance-bar: #f59e0b;
+
+    /* Eval source colors */
+    --eval-blue: hsl(217, 91%, 60%);
+    --eval-green: hsl(142, 71%, 45%);
+    --eval-orange: hsl(25, 95%, 55%);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--foreground);
+    line-height: 1.5;
+    padding: 40px 48px 80px;
+  }
+
+  /* ── Page Layout ── */
+  .page-header {
+    margin-bottom: 48px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--muted-fg);
+    margin-top: 6px;
+    max-width: 640px;
+  }
+
+  .design-section {
+    margin-bottom: 64px;
+  }
+  .design-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-fg);
+    margin-bottom: 8px;
+  }
+  .design-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .design-desc {
+    font-size: 13px;
+    color: var(--muted-fg);
+    margin-bottom: 24px;
+    max-width: 600px;
+  }
+
+  .pros-cons {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    font-size: 12px;
+  }
+  .pros-cons div { flex: 1; }
+  .pros-cons h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .pros-cons ul {
+    list-style: none;
+    padding: 0;
+  }
+  .pros-cons li {
+    padding: 2px 0;
+    color: var(--muted-fg);
+  }
+  .pros-cons li::before {
+    margin-right: 6px;
+    font-weight: 600;
+  }
+  .pros h4 { color: var(--taste-fg); }
+  .cons h4 { color: #dc2626; }
+  .pros li::before { content: "+"; color: var(--taste-fg); }
+  .cons li::before { content: "–"; color: #dc2626; }
+
+  /* ── Shared Card ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-header .icon-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .card-header .title {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .card-header .count {
+    font-size: 11px;
+    color: var(--muted-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .card-content {
+    padding: 16px;
+  }
+
+  /* ── Category Group ── */
+  .category-group {
+    margin-bottom: 16px;
+  }
+  .category-group:last-child {
+    margin-bottom: 0;
+  }
+  .category-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .category-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .category-label span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-fg);
+  }
+  .category-label .category-count {
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* ── Comment Entry ── */
+  .comment-entry {
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--muted);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 6px;
+  }
+  .comment-entry:last-child {
+    margin-bottom: 0;
+  }
+  .comment-accent {
+    width: 3px;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+  .comment-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .metric-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-subtle);
+    background: var(--card);
+    white-space: nowrap;
+  }
+  .source-label {
+    font-size: 10px;
+    color: var(--muted-fg);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .source-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .comment-text {
+    font-size: 13px;
+    color: oklch(0.3 0.01 60);
+    line-height: 1.55;
+  }
+
+  /* ── Tab Bar ── */
+  .tab-bar {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--muted);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+  }
+  .tab {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    color: var(--muted-fg);
+    transition: all 0.15s;
+  }
+  .tab.active {
+    background: var(--card);
+    color: var(--foreground);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* ── Filter Chip ── */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted-fg);
+    cursor: pointer;
+  }
+  .filter-chip.active {
+    border-color: var(--foreground);
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  /* ── Layout helpers ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .demo-frame {
+    max-width: 780px;
+  }
+  .demo-frame-wide {
+    max-width: 1100px;
+  }
+
+  /* ── Mock chart placeholder ── */
+  .mock-chart {
+    background: oklch(0.97 0.003 75);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    padding: 20px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .chart-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .chart-bar-row:last-child { margin-bottom: 0; }
+  .chart-metric-label {
+    font-size: 10px;
+    width: 80px;
+    text-align: right;
+    color: var(--muted-fg);
+    flex-shrink: 0;
+  }
+  .chart-bar-track {
+    flex: 1;
+    height: 10px;
+    background: oklch(0.94 0.005 75);
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .chart-bar-value {
+    font-size: 10px;
+    font-weight: 600;
+    width: 24px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-fg);
+  }
+  .comment-indicator {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--appearance-fg);
+    cursor: pointer;
+    opacity: 0.6;
+  }
+  .comment-indicator:hover {
+    opacity: 1;
+  }
+
+  /* Divider */
+  hr.section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 64px 0;
+  }
+
+  /* Annotation callout */
+  .annotation {
+    background: oklch(0.98 0.01 260);
+    border: 1px solid oklch(0.88 0.03 260);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: oklch(0.35 0.04 260);
+    margin-top: 16px;
+    line-height: 1.55;
+  }
+  .annotation strong {
+    font-weight: 600;
+  }
+
+  .rec-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+  }
+  .rec-badge.recommended {
+    background: var(--taste-bg);
+    color: var(--taste-fg);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Sensory Comments — Design Proposals</h1>
+  <p>Three approaches to improving how sensory evaluation comments are organized, labeled, and displayed. All designs group comments by sensory category and clearly indicate their evaluator source.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION A: Category-Grouped Comments Card                    -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option A <span class="rec-badge recommended">Recommended</span></p>
+  <h2 class="design-title">Category-Grouped Comments Card</h2>
+  <p class="design-desc">
+    Comments are grouped under their sensory category (Taste & Flavor, Texture, Appearance) with colored accents matching the category. Each comment clearly shows the metric it relates to and which evaluation it came from. Simple and clean — no tabs or filters needed.
+  </p>
+
+  <div class="demo-frame">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="icon-badge" style="background: #fef3c7;">
+            <span style="color: #d97706;">💬</span>
+          </div>
+          <span class="title">Sensory Comments</span>
+        </div>
+        <span class="count">5 comments</span>
+      </div>
+      <div class="card-content">
+
+        <!-- Taste & Flavor -->
+        <div class="category-group">
+          <div class="category-label">
+            <div class="category-dot" style="background: var(--taste-bar);"></div>
+            <span>Taste & Flavor</span>
+            <span class="category-count" style="color: var(--muted-fg);">3</span>
+          </div>
+
+          <div class="comment-entry">
+            <div class="comment-accent" style="background: var(--taste-bar);"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="metric-badge">Sweetness Intensity</span>
+                <span class="source-label">
+                  <span class="source-dot" style="background: var(--eval-blue);"></span>
+                  Panelist A · Benchtop · Immediate
+                </span>
+              </div>
+              <p class="comment-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15% to hit the moderate range.</p>
+            </div>
+          </div>
+
+          <div class="comment-entry">
+            <div class="comment-accent" style="background: var(--taste-bar);"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="metric-badge">Aftertaste Intensity</span>
+                <span class="source-label">
+                  <span class="source-dot" style="background: var(--eval-green);"></span>
+                  Panelist B · Benchtop · Immediate
+                </span>
+              </div>
+              <p class="comment-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+            </div>
+          </div>
+
+          <div class="comment-entry">
+            <div class="comment-accent" style="background: var(--taste-bar);"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="metric-badge">Taste Rating</span>
+                <span class="source-label">
+                  <span class="source-dot" style="background: var(--eval-blue);"></span>
+                  Panelist A · Industrial · 24 hrs
+                </span>
+              </div>
+              <p class="comment-text">Flavor profile improved after processing. More balanced sweetness with less of the raw stevia taste.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Texture -->
+        <div class="category-group">
+          <div class="category-label">
+            <div class="category-dot" style="background: var(--texture-bar);"></div>
+            <span>Texture</span>
+            <span class="category-count" style="color: var(--muted-fg);">1</span>
+          </div>
+
+          <div class="comment-entry">
+            <div class="comment-accent" style="background: var(--texture-bar);"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="metric-badge">Thickness Intensity</span>
+                <span class="source-label">
+                  <span class="source-dot" style="background: var(--eval-green);"></span>
+                  Panelist B · Benchtop · Immediate
+                </span>
+              </div>
+              <p class="comment-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable. Consider increasing starch by 0.5%.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="category-group">
+          <div class="category-label">
+            <div class="category-dot" style="background: var(--appearance-bar);"></div>
+            <span>Appearance</span>
+            <span class="category-count" style="color: var(--muted-fg);">1</span>
+          </div>
+
+          <div class="comment-entry">
+            <div class="comment-accent" style="background: var(--appearance-bar);"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="metric-badge">Color Rating</span>
+                <span class="source-label">
+                  <span class="source-dot" style="background: var(--eval-blue);"></span>
+                  Panelist A · Benchtop · Immediate
+                </span>
+              </div>
+              <p class="comment-text">Good color — consistent with expectations for a vanilla pudding. Slightly pale compared to competitor reference.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Design rationale:</strong> Grouping by category creates a natural visual hierarchy that matches the scoring system (Taste, Texture, Appearance). The colored accent bars provide instant category recognition without needing to read labels. Source is shown inline with a colored dot matching the evaluator's chart color — this creates a direct visual link between comments and chart data.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Scannable — users can jump to the category they care about</li>
+        <li>Zero interaction required to see all comments</li>
+        <li>Category colors match chart scoring categories</li>
+        <li>Evaluator source is always visible</li>
+        <li>Simple to implement — just re-groups existing data</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Card can get tall with many comments across categories</li>
+        <li>Comments are separate from the chart (scroll required)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION B: Filterable Comments with Source Chips              -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option B</p>
+  <h2 class="design-title">Filterable Comments with Source Chips</h2>
+  <p class="design-desc">
+    Adds a filter row to quickly view comments from a specific evaluator or category. Useful when trials have many evaluations from multiple panelists and users want to compare feedback per-source.
+  </p>
+
+  <div class="demo-frame">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="icon-badge" style="background: #fef3c7;">
+            <span style="color: #d97706;">💬</span>
+          </div>
+          <span class="title">Sensory Comments</span>
+        </div>
+        <span class="count">5</span>
+      </div>
+      <div class="card-content">
+
+        <!-- Filter chips -->
+        <div class="filter-row">
+          <span class="filter-chip active">All</span>
+          <span class="filter-chip">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--eval-blue);margin-right:4px;vertical-align:middle;"></span>
+            Panelist A
+          </span>
+          <span class="filter-chip">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--eval-green);margin-right:4px;vertical-align:middle;"></span>
+            Panelist B
+          </span>
+          <span style="width:1px;height:16px;background:var(--border);margin:0 4px;"></span>
+          <span class="filter-chip">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--taste-bar);margin-right:4px;vertical-align:middle;"></span>
+            Taste
+          </span>
+          <span class="filter-chip">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--texture-bar);margin-right:4px;vertical-align:middle;"></span>
+            Texture
+          </span>
+          <span class="filter-chip">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--appearance-bar);margin-right:4px;vertical-align:middle;"></span>
+            Appearance
+          </span>
+        </div>
+
+        <!-- Flat list (filtered view) -->
+        <div class="comment-entry">
+          <div class="comment-accent" style="background: var(--taste-bar);"></div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="metric-badge">Sweetness Intensity</span>
+              <span class="source-label">
+                <span class="source-dot" style="background: var(--eval-blue);"></span>
+                Panelist A · Benchtop · Immediate
+              </span>
+            </div>
+            <p class="comment-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15%.</p>
+          </div>
+        </div>
+
+        <div class="comment-entry">
+          <div class="comment-accent" style="background: var(--taste-bar);"></div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="metric-badge">Aftertaste Intensity</span>
+              <span class="source-label">
+                <span class="source-dot" style="background: var(--eval-green);"></span>
+                Panelist B · Benchtop · Immediate
+              </span>
+            </div>
+            <p class="comment-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+          </div>
+        </div>
+
+        <div class="comment-entry">
+          <div class="comment-accent" style="background: var(--texture-bar);"></div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="metric-badge">Thickness Intensity</span>
+              <span class="source-label">
+                <span class="source-dot" style="background: var(--eval-green);"></span>
+                Panelist B · Benchtop · Immediate
+              </span>
+            </div>
+            <p class="comment-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable.</p>
+          </div>
+        </div>
+
+        <div class="comment-entry">
+          <div class="comment-accent" style="background: var(--taste-bar);"></div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="metric-badge">Taste Rating</span>
+              <span class="source-label">
+                <span class="source-dot" style="background: var(--eval-blue);"></span>
+                Panelist A · Industrial · 24 hrs
+              </span>
+            </div>
+            <p class="comment-text">Flavor profile improved after processing. More balanced sweetness.</p>
+          </div>
+        </div>
+
+        <div class="comment-entry">
+          <div class="comment-accent" style="background: var(--appearance-bar);"></div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <span class="metric-badge">Color Rating</span>
+              <span class="source-label">
+                <span class="source-dot" style="background: var(--eval-blue);"></span>
+                Panelist A · Benchtop · Immediate
+              </span>
+            </div>
+            <p class="comment-text">Good color — slightly pale compared to competitor reference.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Design rationale:</strong> Filter chips let users slice comments by evaluator or category without changing the layout. The accent bar color on each comment still signals category at a glance even in the flat list. This is most useful when there are 8+ comments from 3+ evaluators.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Powerful for trials with many evaluations</li>
+        <li>Quick per-evaluator comparison</li>
+        <li>Still shows category via accent bar color</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Filter row adds complexity for trials with few comments</li>
+        <li>More interactive — requires clicking to get value</li>
+        <li>May feel over-engineered for the common case (2–3 comments)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION C: Comments Integrated into Chart View               -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option C</p>
+  <h2 class="design-title">Comments Integrated into Chart View</h2>
+  <p class="design-desc">
+    Comments appear directly below the breakdown chart inside the same card, grouped by category. This eliminates the separate CommentsCard entirely and lets users see scores and feedback in one place. The chart rows that have comments show a subtle indicator icon.
+  </p>
+
+  <div class="demo-frame-wide">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="icon-badge" style="background: #ede9fe;">
+            <span style="color: #7c3aed;">📊</span>
+          </div>
+          <span class="title">Sensory Evaluation</span>
+        </div>
+      </div>
+
+      <!-- Mock: Simulating the scores area within the log card -->
+      <div class="card-content" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-fg);">Scores</span>
+            <div class="tab-bar" style="margin-bottom: 0;">
+              <span class="tab">Summary</span>
+              <span class="tab active">Breakdown</span>
+            </div>
+          </div>
+          <span style="font-size: 11px; color: var(--muted-fg);">Benchtop · Immediate</span>
+        </div>
+
+        <!-- Mock breakdown chart -->
+        <div class="mock-chart" style="margin-bottom: 20px;">
+          <!-- Taste category -->
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--taste-fg); margin-bottom: 8px;">Taste & Flavor</div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Taste Rat.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 80%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">4.0</span>
+            <span class="comment-indicator">💬</span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Sweet. Int.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 72%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">3.6</span>
+            <span class="comment-indicator">💬</span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Sweet. Rat.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 60%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">3.0</span>
+            <span class="comment-indicator" style="opacity: 0;"></span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Flavor Int.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 66%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">3.3</span>
+            <span class="comment-indicator" style="opacity: 0;"></span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Aftertaste</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 40%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">2.0</span>
+            <span class="comment-indicator">💬</span>
+          </div>
+
+          <div style="height: 12px;"></div>
+
+          <!-- Texture category -->
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--texture-fg); margin-bottom: 8px;">Texture</div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Thickness</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 50%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">2.5</span>
+            <span class="comment-indicator">💬</span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Texture Int.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 30%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">1.5</span>
+            <span class="comment-indicator" style="opacity: 0;"></span>
+          </div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Texture Rat.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 70%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">3.5</span>
+            <span class="comment-indicator" style="opacity: 0;"></span>
+          </div>
+
+          <div style="height: 12px;"></div>
+
+          <!-- Appearance category -->
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--appearance-fg); margin-bottom: 8px;">Appearance</div>
+          <div class="chart-bar-row">
+            <span class="chart-metric-label">Color Rat.</span>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width: 86%; background: var(--eval-blue);"></div></div>
+            <span class="chart-bar-value">4.3</span>
+            <span class="comment-indicator">💬</span>
+          </div>
+        </div>
+
+        <!-- Comments section below chart -->
+        <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-fg);">Comments</span>
+            </div>
+            <span style="font-size: 11px; color: var(--muted-fg);">5 notes</span>
+          </div>
+
+          <!-- Taste -->
+          <div class="category-group">
+            <div class="category-label">
+              <div class="category-dot" style="background: var(--taste-bar);"></div>
+              <span>Taste & Flavor</span>
+            </div>
+
+            <div class="comment-entry">
+              <div class="comment-accent" style="background: var(--taste-bar);"></div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="metric-badge">Sweetness Intensity</span>
+                  <span class="source-label">
+                    <span class="source-dot" style="background: var(--eval-blue);"></span>
+                    Panelist A
+                  </span>
+                </div>
+                <p class="comment-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15%.</p>
+              </div>
+            </div>
+
+            <div class="comment-entry">
+              <div class="comment-accent" style="background: var(--taste-bar);"></div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="metric-badge">Aftertaste Intensity</span>
+                  <span class="source-label">
+                    <span class="source-dot" style="background: var(--eval-green);"></span>
+                    Panelist B
+                  </span>
+                </div>
+                <p class="comment-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Texture -->
+          <div class="category-group">
+            <div class="category-label">
+              <div class="category-dot" style="background: var(--texture-bar);"></div>
+              <span>Texture</span>
+            </div>
+
+            <div class="comment-entry">
+              <div class="comment-accent" style="background: var(--texture-bar);"></div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="metric-badge">Thickness Intensity</span>
+                  <span class="source-label">
+                    <span class="source-dot" style="background: var(--eval-green);"></span>
+                    Panelist B
+                  </span>
+                </div>
+                <p class="comment-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="category-group">
+            <div class="category-label">
+              <div class="category-dot" style="background: var(--appearance-bar);"></div>
+              <span>Appearance</span>
+            </div>
+
+            <div class="comment-entry">
+              <div class="comment-accent" style="background: var(--appearance-bar);"></div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="metric-badge">Color Rating</span>
+                  <span class="source-label">
+                    <span class="source-dot" style="background: var(--eval-blue);"></span>
+                    Panelist A
+                  </span>
+                </div>
+                <p class="comment-text">Good color — slightly pale compared to competitor reference.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Design rationale:</strong> Embedding comments directly below the chart within the same card creates the tightest coupling between quantitative scores and qualitative feedback. The 💬 indicators on chart rows hint that a comment exists for that metric. This eliminates the need for a separate card and reduces page length.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Scores and comments in one unified view — no scrolling between cards</li>
+        <li>Chart indicators show which metrics have feedback</li>
+        <li>Eliminates a separate card — cleaner page layout</li>
+        <li>Strongest data-to-context connection</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Makes the analysis card significantly taller</li>
+        <li>Only shows comments for the currently selected log (not all logs at once)</li>
+        <li>More complex implementation — chart + comments in same scroll area</li>
+        <li>The fixed 480px height of the current card would need to become flexible</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- RECOMMENDATION                                               -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section" style="max-width: 640px;">
+  <p class="design-label">Recommendation</p>
+  <h2 class="design-title">Option A — Category-Grouped Comments Card</h2>
+  <p class="design-desc" style="margin-bottom: 16px;">
+    Option A best balances the three goals:
+  </p>
+  <ul style="font-size: 13px; color: var(--foreground); line-height: 1.8; padding-left: 20px; margin-bottom: 16px;">
+    <li><strong>Labeled by category:</strong> Category group headers with colored dots provide instant recognition</li>
+    <li><strong>Clear source:</strong> Each comment shows evaluator name + log context with a color-coded dot</li>
+    <li><strong>Full card width:</strong> Comments fill the card naturally — no cramped layout</li>
+    <li><strong>Aesthetically clean:</strong> Matches the app's Stripe-like minimal style</li>
+    <li><strong>Simplest to build:</strong> Re-groups existing data with no new interactive paradigms</li>
+  </ul>
+  <p class="design-desc">
+    Option B's filters add complexity that most trials won't need (typically 2–4 comments). Option C is appealing but scoping comments to the selected log loses the cross-log view, and expanding the card height disrupts the current 480px photo+scores grid.
+  </p>
+  <p class="design-desc" style="margin-top: 12px;">
+    If we later find users frequently want to cross-reference a specific comment with its chart bar, we can add the 💬 indicator icons from Option C to the breakdown chart as a small enhancement on top of Option A.
+  </p>
+</div>
+
+</body>
+</html>

@@ -7,7 +7,6 @@ import { SensoryScores } from "./Sensory/SensoryScores";
 import { CreateLogModal } from "./CreateLogModal/CreateLogModal";
 import { PhotosModal } from "./Photos/PhotosModal";
 import { TrialImage } from "./Photos/TrialImage";
-import { SensoryForm } from "./Sensory/SensoryForm/SensoryForm";
 import { getLogLabel, sortLogs } from "@/lib/analysisLog";
 import {
   useTrial,
@@ -16,11 +15,19 @@ import {
 } from "@/hooks/useTrials";
 import type { AnalysisLog, SensoryEvaluation } from "@/types/trial";
 
-interface Props {
-  trialId: string;
+export interface SensoryFormState {
+  logId: string;
+  logLabel: string;
+  evaluation?: SensoryEvaluation;
+  onDelete?: () => void;
 }
 
-export const AnalysisLogCard = ({ trialId }: Props) => {
+interface Props {
+  trialId: string;
+  onOpenSensoryForm: (state: SensoryFormState) => void;
+}
+
+export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
   const { data: trial } = useTrial(trialId);
 
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
@@ -29,11 +36,6 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
     string | undefined
   >(undefined);
   const [photosLog, setPhotosLog] = useState<AnalysisLog | null>(null);
-  const [sensoryState, setSensoryState] = useState<{
-    logId: string;
-    logLabel: string;
-    evaluation?: SensoryEvaluation;
-  } | null>(null);
 
   const deleteMutation = useDeleteAnalysisLog(trialId);
   const deleteEvalMutation = useDeleteEvaluation(trialId);
@@ -70,21 +72,18 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
 
   const openSensoryCreate = () => {
     if (!activeLog) return;
-    setSensoryState({ logId: activeLog.id, logLabel: getLogLabel(activeLog) });
+    onOpenSensoryForm({ logId: activeLog.id, logLabel: getLogLabel(activeLog) });
   };
 
   const openSensoryEdit = (evaluation: SensoryEvaluation) => {
     if (!activeLog) return;
-    setSensoryState({
+    onOpenSensoryForm({
       logId: activeLog.id,
       logLabel: getLogLabel(activeLog),
       evaluation,
+      onDelete: () =>
+        deleteEvalMutation.mutate({ logId: activeLog.id, evalId: evaluation.id }),
     });
-  };
-
-  const handleDeleteEvaluation = (evalId: string) => {
-    if (!activeLog) return;
-    deleteEvalMutation.mutate({ logId: activeLog.id, evalId });
   };
 
   return (
@@ -211,23 +210,6 @@ export const AnalysisLogCard = ({ trialId }: Props) => {
         />
       )}
 
-      {sensoryState && (
-        <SensoryForm
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setSensoryState(null);
-          }}
-          trialId={trialId}
-          logId={sensoryState.logId}
-          logLabel={sensoryState.logLabel}
-          evaluation={sensoryState.evaluation}
-          onDelete={
-            sensoryState.evaluation
-              ? () => handleDeleteEvaluation(sensoryState.evaluation!.id)
-              : undefined
-          }
-        />
-      )}
     </>
   );
 };

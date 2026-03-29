@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sensory Comments v2 — Wide-Screen Proposals</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: oklch(0.975 0.005 75);
+    --card: #ffffff;
+    --fg: oklch(0.15 0.01 60);
+    --fg-secondary: oklch(0.35 0.01 60);
+    --muted-fg: oklch(0.50 0.01 60);
+    --muted-fg-light: oklch(0.62 0.008 60);
+    --border: oklch(0.91 0.008 75);
+    --border-subtle: oklch(0.93 0.006 75);
+    --radius: 12px;
+    --radius-sm: 8px;
+
+    --taste: #10b981;
+    --taste-light: #ecfdf5;
+    --texture: #3b82f6;
+    --texture-light: #eff6ff;
+    --appearance: #f59e0b;
+    --appearance-light: #fffbeb;
+
+    --eval-blue: hsl(217, 91%, 60%);
+    --eval-green: hsl(142, 71%, 45%);
+    --eval-orange: hsl(25, 95%, 55%);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+    padding: 40px 48px 80px;
+  }
+
+  .page-header { margin-bottom: 48px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 13px; color: var(--muted-fg); margin-top: 6px; max-width: 680px; line-height: 1.6; }
+
+  .design-section { margin-bottom: 72px; }
+  .design-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted-fg); margin-bottom: 6px;
+  }
+  .design-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .design-desc { font-size: 13px; color: var(--muted-fg); margin-bottom: 24px; max-width: 640px; line-height: 1.6; }
+
+  .rec-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 2px 8px; border-radius: 4px;
+    background: #ecfdf5; color: #047857; margin-left: 8px;
+  }
+
+  .annotation {
+    background: #f8f8fb; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 18px;
+    font-size: 12px; color: var(--fg-secondary); margin-top: 20px;
+    line-height: 1.6; max-width: 780px;
+  }
+  .annotation strong { font-weight: 600; color: var(--fg); }
+
+  .ref-note {
+    font-size: 11px; color: var(--muted-fg-light); margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 72px 0; }
+
+  /* ── Shared Card Shell ── */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid oklch(0.91 0.008 75 / 0.6);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-header-left { display: flex; align-items: center; gap: 10px; }
+  .icon-badge {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+  .card-header .title { font-size: 13px; font-weight: 600; }
+  .card-header .count { font-size: 11px; color: var(--muted-fg); font-variant-numeric: tabular-nums; }
+
+  /* ═══════════════════════════════════════════════════
+     OPTION A: Category Columns (Kanban-inspired)
+     ═══════════════════════════════════════════════════ */
+  .columns-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .category-column {
+    padding: 16px 18px;
+  }
+  .category-column:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+  .col-header {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 2px solid transparent;
+  }
+  .col-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .col-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted-fg);
+  }
+  .col-count {
+    font-size: 10px; color: var(--muted-fg-light); margin-left: auto;
+  }
+
+  /* Comment thread (Slack-inspired) */
+  .comment-thread {
+    margin-bottom: 14px;
+  }
+  .comment-thread:last-child { margin-bottom: 0; }
+
+  .thread-metric {
+    font-size: 11px; font-weight: 600; color: var(--fg-secondary);
+    margin-bottom: 6px;
+  }
+  .thread-message {
+    display: flex; gap: 10px;
+    padding: 8px 0;
+  }
+  .thread-message:not(:last-child) {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .msg-avatar {
+    width: 22px; height: 22px; border-radius: 6px;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 9px; font-weight: 700;
+    color: white;
+  }
+  .msg-body { flex: 1; min-width: 0; }
+  .msg-header {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 2px;
+  }
+  .msg-name { font-size: 12px; font-weight: 600; color: var(--fg); }
+  .msg-context { font-size: 10px; color: var(--muted-fg-light); }
+  .msg-text { font-size: 13px; color: var(--fg-secondary); line-height: 1.5; }
+
+
+  /* ═══════════════════════════════════════════════════
+     OPTION B: Threaded by Metric (Linear-inspired)
+     ═══════════════════════════════════════════════════ */
+  .metric-threads {
+    padding: 16px 20px;
+  }
+  .metric-thread-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin-bottom: 16px;
+  }
+  .metric-thread-row:last-child { margin-bottom: 0; }
+
+  .mt-group-label {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 12px;
+    grid-column: 1 / -1;
+  }
+  .mt-group-label .col-dot { width: 6px; height: 6px; }
+  .mt-group-label span {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted-fg);
+  }
+
+  .metric-thread {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .mt-metric-name {
+    font-size: 11px; font-weight: 600; color: var(--fg);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mt-metric-name .accent-line {
+    width: 12px; height: 2px; border-radius: 1px;
+  }
+
+  .mt-comment {
+    display: flex; gap: 10px;
+    padding: 6px 0;
+  }
+  .mt-comment + .mt-comment {
+    border-top: 1px solid var(--border-subtle);
+  }
+  .mt-avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 8px; font-weight: 700;
+    color: white; margin-top: 1px;
+  }
+  .mt-content { flex: 1; min-width: 0; }
+  .mt-author-row {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 1px;
+  }
+  .mt-author { font-size: 12px; font-weight: 600; color: var(--fg); }
+  .mt-log { font-size: 10px; color: var(--muted-fg-light); }
+  .mt-text { font-size: 13px; color: var(--fg-secondary); line-height: 1.5; }
+
+
+  /* ═══════════════════════════════════════════════════
+     OPTION C: Compact Cards Grid (Notion-inspired)
+     ═══════════════════════════════════════════════════ */
+  .cards-grid-content {
+    padding: 16px 20px;
+  }
+  .cards-category-label {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 10px; margin-top: 4px;
+  }
+  .cards-category-label:first-child { margin-top: 0; }
+  .cards-category-label .col-dot { width: 6px; height: 6px; }
+  .cards-category-label span {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted-fg);
+  }
+
+  .comment-cards-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .comment-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: box-shadow 0.15s;
+    background: var(--card);
+  }
+  .comment-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .cc-top {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cc-metric {
+    font-size: 11px; font-weight: 600; color: var(--fg);
+  }
+  .cc-source {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; color: var(--muted-fg-light);
+  }
+  .cc-source-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .cc-text {
+    font-size: 13px; color: var(--fg-secondary); line-height: 1.5;
+  }
+  .cc-log {
+    font-size: 10px; color: var(--muted-fg-light);
+  }
+  .cc-accent {
+    height: 2px; border-radius: 1px; width: 20px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     Pros/cons
+     ═══════════════════════════════════════════════════ */
+  .pros-cons { display: flex; gap: 24px; margin-top: 16px; font-size: 12px; max-width: 640px; }
+  .pros-cons div { flex: 1; }
+  .pros-cons h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .pros-cons ul { list-style: none; padding: 0; }
+  .pros-cons li { padding: 2px 0; color: var(--muted-fg); line-height: 1.5; }
+  .pros-cons li::before { margin-right: 6px; font-weight: 600; }
+  .pros h4 { color: #047857; }
+  .cons h4 { color: #dc2626; }
+  .pros li::before { content: "+"; color: #047857; }
+  .cons li::before { content: "–"; color: #dc2626; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Sensory Comments v2 — Wide-Screen Designs</h1>
+  <p>
+    Addresses two problems: (1) comments must fill the wide right column naturally instead of stretching a narrow list, and (2) avoid dark/muted card backgrounds per comment that create visual heaviness. All designs use a white card surface with structure provided by layout, typography, and subtle borders only.
+  </p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION A: Category Columns                                   -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option A <span class="rec-badge">Recommended</span></p>
+  <h2 class="design-title">Category Columns</h2>
+  <p class="design-desc">
+    Three equal columns — one per sensory category — divided by subtle vertical rules. Comments appear as threaded messages under their metric name, showing the evaluator's avatar, name, and log context. Fills wide screens naturally.
+  </p>
+  <p class="ref-note">Inspired by: Slack's channel layout, Linear's sidebar columns, Trello's column structure</p>
+
+  <div class="card" style="max-width: 1100px;">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="icon-badge" style="background: #fef3c7;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="title">Sensory Comments</span>
+      </div>
+      <span class="count">5 comments</span>
+    </div>
+
+    <div class="columns-grid">
+      <!-- Taste & Flavor Column -->
+      <div class="category-column">
+        <div class="col-header" style="border-bottom-color: var(--taste);">
+          <div class="col-dot" style="background: var(--taste);"></div>
+          <span class="col-title">Taste & Flavor</span>
+          <span class="col-count">3</span>
+        </div>
+
+        <div class="comment-thread">
+          <div class="thread-metric">Sweetness Intensity</div>
+          <div class="thread-message">
+            <div class="msg-avatar" style="background: var(--eval-blue);">NA</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">Nolan</span>
+                <span class="msg-context">Benchtop · Immediate</span>
+              </div>
+              <p class="msg-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15% to hit the moderate range.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-thread">
+          <div class="thread-metric">Aftertaste Intensity</div>
+          <div class="thread-message">
+            <div class="msg-avatar" style="background: var(--eval-green);">AX</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">Alex</span>
+                <span class="msg-context">Benchtop · Immediate</span>
+              </div>
+              <p class="msg-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-thread">
+          <div class="thread-metric">Taste Rating</div>
+          <div class="thread-message">
+            <div class="msg-avatar" style="background: var(--eval-blue);">NA</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">Nolan</span>
+                <span class="msg-context">Industrial · 24 hrs</span>
+              </div>
+              <p class="msg-text">Flavor profile improved after processing. More balanced sweetness with less of the raw stevia taste.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texture Column -->
+      <div class="category-column">
+        <div class="col-header" style="border-bottom-color: var(--texture);">
+          <div class="col-dot" style="background: var(--texture);"></div>
+          <span class="col-title">Texture</span>
+          <span class="col-count">1</span>
+        </div>
+
+        <div class="comment-thread">
+          <div class="thread-metric">Thickness Intensity</div>
+          <div class="thread-message">
+            <div class="msg-avatar" style="background: var(--eval-green);">AX</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">Alex</span>
+                <span class="msg-context">Benchtop · Immediate</span>
+              </div>
+              <p class="msg-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable. Consider increasing starch by 0.5%.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance Column -->
+      <div class="category-column">
+        <div class="col-header" style="border-bottom-color: var(--appearance);">
+          <div class="col-dot" style="background: var(--appearance);"></div>
+          <span class="col-title">Appearance</span>
+          <span class="col-count">1</span>
+        </div>
+
+        <div class="comment-thread">
+          <div class="thread-metric">Color Rating</div>
+          <div class="thread-message">
+            <div class="msg-avatar" style="background: var(--eval-blue);">NA</div>
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-name">Nolan</span>
+                <span class="msg-context">Benchtop · Immediate</span>
+              </div>
+              <p class="msg-text">Good color — consistent with expectations for vanilla pudding. Slightly pale vs. competitor reference.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Why this works on wide screens:</strong> Three columns divide the space naturally and create a clear information hierarchy. Each category owns its column — users scan left-to-right by domain. The column layout mirrors how food scientists actually think: "How's the taste? How's the texture? How does it look?" No background fills on individual comments — structure comes from layout, metric names, and divider lines, keeping the surface clean and light. Evaluator identity is shown via avatar + name (Slack pattern), which is faster to scan than inline text labels.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Fills wide screens naturally — no empty space</li>
+        <li>Clean white surface — no dark card backgrounds</li>
+        <li>Category scan pattern matches how scientists think</li>
+        <li>Evaluator avatars make source instantly recognizable</li>
+        <li>Metric grouping within columns adds further structure</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Columns can be uneven if most comments are Taste</li>
+        <li>Narrower per-column width on medium screens</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION B: Threaded by Metric, 2-Column Flow                 -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option B</p>
+  <h2 class="design-title">Metric Threads, 2-Column Flow</h2>
+  <p class="design-desc">
+    Comments are grouped by metric, and metrics flow into a 2-column grid under their category heading. Each metric acts as a mini thread. A small colored accent line identifies the category. On narrower screens, collapses to single column.
+  </p>
+  <p class="ref-note">Inspired by: Linear's activity feed, GitHub PR conversations, Notion's database views</p>
+
+  <div class="card" style="max-width: 1100px;">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="icon-badge" style="background: #fef3c7;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="title">Sensory Comments</span>
+      </div>
+      <span class="count">5 comments</span>
+    </div>
+
+    <div class="metric-threads">
+      <!-- Taste & Flavor -->
+      <div class="mt-group-label">
+        <div class="col-dot" style="background: var(--taste);"></div>
+        <span>Taste & Flavor</span>
+      </div>
+
+      <div class="metric-thread-row">
+        <div class="metric-thread">
+          <div class="mt-metric-name">
+            <span class="accent-line" style="background: var(--taste);"></span>
+            Sweetness Intensity
+          </div>
+          <div class="mt-comment">
+            <div class="mt-avatar" style="background: var(--eval-blue);">N</div>
+            <div class="mt-content">
+              <div class="mt-author-row">
+                <span class="mt-author">Nolan</span>
+                <span class="mt-log">Benchtop · Immediate</span>
+              </div>
+              <p class="mt-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15%.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-thread">
+          <div class="mt-metric-name">
+            <span class="accent-line" style="background: var(--taste);"></span>
+            Aftertaste Intensity
+          </div>
+          <div class="mt-comment">
+            <div class="mt-avatar" style="background: var(--eval-green);">A</div>
+            <div class="mt-content">
+              <div class="mt-author-row">
+                <span class="mt-author">Alex</span>
+                <span class="mt-log">Benchtop · Immediate</span>
+              </div>
+              <p class="mt-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-thread-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="metric-thread">
+          <div class="mt-metric-name">
+            <span class="accent-line" style="background: var(--taste);"></span>
+            Taste Rating
+          </div>
+          <div class="mt-comment">
+            <div class="mt-avatar" style="background: var(--eval-blue);">N</div>
+            <div class="mt-content">
+              <div class="mt-author-row">
+                <span class="mt-author">Nolan</span>
+                <span class="mt-log">Industrial · 24 hrs</span>
+              </div>
+              <p class="mt-text">Flavor profile improved after processing. More balanced sweetness.</p>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- Texture -->
+      <div class="mt-group-label" style="margin-top: 8px;">
+        <div class="col-dot" style="background: var(--texture);"></div>
+        <span>Texture</span>
+      </div>
+
+      <div class="metric-thread-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="metric-thread">
+          <div class="mt-metric-name">
+            <span class="accent-line" style="background: var(--texture);"></span>
+            Thickness Intensity
+          </div>
+          <div class="mt-comment">
+            <div class="mt-avatar" style="background: var(--eval-green);">A</div>
+            <div class="mt-content">
+              <div class="mt-author-row">
+                <span class="mt-author">Alex</span>
+                <span class="mt-log">Benchtop · Immediate</span>
+              </div>
+              <p class="mt-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable. Consider increasing starch by 0.5%.</p>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="mt-group-label" style="margin-top: 8px;">
+        <div class="col-dot" style="background: var(--appearance);"></div>
+        <span>Appearance</span>
+      </div>
+
+      <div class="metric-thread-row" style="grid-template-columns: 1fr 1fr;">
+        <div class="metric-thread">
+          <div class="mt-metric-name">
+            <span class="accent-line" style="background: var(--appearance);"></span>
+            Color Rating
+          </div>
+          <div class="mt-comment">
+            <div class="mt-avatar" style="background: var(--eval-blue);">N</div>
+            <div class="mt-content">
+              <div class="mt-author-row">
+                <span class="mt-author">Nolan</span>
+                <span class="mt-log">Benchtop · Immediate</span>
+              </div>
+              <p class="mt-text">Good color — consistent with expectations. Slightly pale vs. competitor.</p>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Why this works:</strong> The 2-column grid fills width while keeping each comment at a comfortable reading width (~350–450px). Metric threads create natural grouping — if two evaluators commented on the same metric, their messages stack in the same thread. The small accent line is the only color, keeping the design light.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Good width utilization via 2-column grid</li>
+        <li>Thread pattern handles multiple comments per metric naturally</li>
+        <li>Gracefully collapses to 1-column on narrower screens</li>
+        <li>Minimal color use — clean and quiet</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Empty grid cells when odd number of metric threads</li>
+        <li>Category boundaries less visually distinct than columns</li>
+        <li>More vertical space than Option A</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- OPTION C: Compact Comment Cards Grid                        -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section">
+  <p class="design-label">Option C</p>
+  <h2 class="design-title">Compact Comment Cards Grid</h2>
+  <p class="design-desc">
+    Each comment is a lightweight bordered card in an auto-filling grid. Cards self-organize into rows, adapting to screen width. Category labels act as section dividers. The most compact option — best when there are many comments.
+  </p>
+  <p class="ref-note">Inspired by: Notion's gallery view, Attio's card-based records, Apple Notes grid</p>
+
+  <div class="card" style="max-width: 1100px;">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="icon-badge" style="background: #fef3c7;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="title">Sensory Comments</span>
+      </div>
+      <span class="count">5 comments</span>
+    </div>
+
+    <div class="cards-grid-content">
+      <!-- Taste -->
+      <div class="cards-category-label">
+        <div class="col-dot" style="background: var(--taste);"></div>
+        <span>Taste & Flavor</span>
+      </div>
+      <div class="comment-cards-row">
+        <div class="comment-card">
+          <div class="cc-accent" style="background: var(--taste);"></div>
+          <div class="cc-top">
+            <span class="cc-metric">Sweetness Intensity</span>
+            <span class="cc-source">
+              <span class="cc-source-dot" style="background: var(--eval-blue);"></span>
+              Nolan
+            </span>
+          </div>
+          <p class="cc-text">Noticeably sweeter than the reference vanilla yogurt. Could reduce stevia by ~15%.</p>
+          <span class="cc-log">Benchtop · Immediate</span>
+        </div>
+
+        <div class="comment-card">
+          <div class="cc-accent" style="background: var(--taste);"></div>
+          <div class="cc-top">
+            <span class="cc-metric">Aftertaste Intensity</span>
+            <span class="cc-source">
+              <span class="cc-source-dot" style="background: var(--eval-green);"></span>
+              Alex
+            </span>
+          </div>
+          <p class="cc-text">Slight lingering bitter note — typical of stevia but more noticeable at this concentration.</p>
+          <span class="cc-log">Benchtop · Immediate</span>
+        </div>
+
+        <div class="comment-card">
+          <div class="cc-accent" style="background: var(--taste);"></div>
+          <div class="cc-top">
+            <span class="cc-metric">Taste Rating</span>
+            <span class="cc-source">
+              <span class="cc-source-dot" style="background: var(--eval-blue);"></span>
+              Nolan
+            </span>
+          </div>
+          <p class="cc-text">Flavor profile improved after processing. More balanced sweetness.</p>
+          <span class="cc-log">Industrial · 24 hrs</span>
+        </div>
+      </div>
+
+      <!-- Texture -->
+      <div class="cards-category-label">
+        <div class="col-dot" style="background: var(--texture);"></div>
+        <span>Texture</span>
+      </div>
+      <div class="comment-cards-row">
+        <div class="comment-card">
+          <div class="cc-accent" style="background: var(--texture);"></div>
+          <div class="cc-top">
+            <span class="cc-metric">Thickness Intensity</span>
+            <span class="cc-source">
+              <span class="cc-source-dot" style="background: var(--eval-green);"></span>
+              Alex
+            </span>
+          </div>
+          <p class="cc-text">Slightly thinner than target. Closer to drinkable yogurt than spoonable. Consider increasing starch by 0.5%.</p>
+          <span class="cc-log">Benchtop · Immediate</span>
+        </div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="cards-category-label">
+        <div class="col-dot" style="background: var(--appearance);"></div>
+        <span>Appearance</span>
+      </div>
+      <div class="comment-cards-row">
+        <div class="comment-card">
+          <div class="cc-accent" style="background: var(--appearance);"></div>
+          <div class="cc-top">
+            <span class="cc-metric">Color Rating</span>
+            <span class="cc-source">
+              <span class="cc-source-dot" style="background: var(--eval-blue);"></span>
+              Nolan
+            </span>
+          </div>
+          <p class="cc-text">Good color — consistent with expectations. Slightly pale vs. competitor reference.</p>
+          <span class="cc-log">Benchtop · Immediate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Why this works:</strong> Auto-fill grid adapts to any width — on a wide screen, 3 cards fit per row; on narrower, 2 or 1. The bordered card approach (no fill) keeps the surface clean. Each card is self-contained with all context (metric, evaluator, log, comment) visible without any interaction.
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Strengths</h4>
+      <ul>
+        <li>Adapts to any screen width automatically</li>
+        <li>Most compact — good information density</li>
+        <li>Each card is self-contained with all context</li>
+        <li>Clean bordered style — no background fills</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Trade-offs</h4>
+      <ul>
+        <li>Multiple comments on same metric not visually threaded</li>
+        <li>Cards can feel disconnected from each other</li>
+        <li>Category sections break the grid flow</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- RECOMMENDATION                                               -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="design-section" style="max-width: 680px;">
+  <p class="design-label">Recommendation</p>
+  <h2 class="design-title">Option A — Category Columns</h2>
+  <div style="font-size: 13px; color: var(--fg-secondary); line-height: 1.7;">
+    <p style="margin-bottom: 12px;">
+      <strong>Option A</strong> is the strongest choice because it solves the width problem structurally — three columns fill a wide screen by design rather than by stretching content. The fixed column-per-category layout also maps to the scoring system's three dimensions, creating a consistent mental model across charts and comments.
+    </p>
+    <p style="margin-bottom: 12px;">Key design decisions:</p>
+    <ul style="padding-left: 18px; margin-bottom: 12px;">
+      <li><strong>No background fills on comments</strong> — structure comes from columns, dividers, and typography</li>
+      <li><strong>Evaluator avatars</strong> (Slack pattern) instead of inline text labels — faster visual parsing</li>
+      <li><strong>Metric names as thread headers</strong> — if two people comment on Sweetness, their messages stack naturally</li>
+      <li><strong>Colored column header underline</strong> — the only deliberate color, tying back to the summary chart bars</li>
+    </ul>
+    <p>
+      <strong>Option B</strong> is a solid alternative if we want a more compact layout that handles uneven comment distribution better. <strong>Option C</strong> works best at scale (8+ comments) but loses the threaded structure that makes multi-evaluator feedback readable.
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
