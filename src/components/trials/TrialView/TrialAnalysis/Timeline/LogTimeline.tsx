@@ -22,7 +22,11 @@ const getDotState = (log: AnalysisLog): "complete" | "partial" | "empty" => {
   return "empty";
 };
 
-export const LogTimeline = ({ groups, activeLogId, onSelect }: LogTimelineProps) => (
+export const LogTimeline = ({
+  groups,
+  activeLogId,
+  onSelect,
+}: LogTimelineProps) => (
   <div className="flex flex-col gap-4 pt-3">
     {groups.map(({ thermalType, logs }) => (
       <div key={thermalType} className="flex flex-col gap-2">
@@ -48,15 +52,29 @@ export const LogTimeline = ({ groups, activeLogId, onSelect }: LogTimelineProps)
                     className={cn(
                       "rounded-full border-2 transition-all",
                       /* Inactive: 14px. Active: 18px (shifted up 2px to keep line aligned) */
-                      isSelected ? "w-[18px] h-[18px] -mt-[2px]" : "w-3.5 h-3.5",
+                      isSelected
+                        ? "w-[18px] h-[18px] -mt-[2px]"
+                        : "w-3.5 h-3.5",
                       /* Unselected: outline only, white fill */
-                      !isSelected && state === "complete" && "border-emerald-500 bg-card group-hover:scale-110",
-                      !isSelected && state === "partial" && "border-amber-400 bg-card group-hover:scale-110",
-                      !isSelected && state === "empty" && "border-muted-foreground/25 bg-card group-hover:scale-110",
+                      !isSelected &&
+                        state === "complete" &&
+                        "border-emerald-500 bg-card group-hover:scale-110",
+                      !isSelected &&
+                        state === "partial" &&
+                        "border-amber-400 bg-card group-hover:scale-110",
+                      !isSelected &&
+                        state === "empty" &&
+                        "border-muted-foreground/25 bg-card group-hover:scale-110",
                       /* Selected: filled solid with colored ring */
-                      isSelected && state === "complete" && "border-emerald-500 bg-emerald-500 ring-[3px] ring-emerald-500/20",
-                      isSelected && state === "partial" && "border-amber-400 bg-amber-400 ring-[3px] ring-amber-400/20",
-                      isSelected && state === "empty" && "border-muted-foreground/25 bg-muted-foreground/25 ring-[3px] ring-muted-foreground/10",
+                      isSelected &&
+                        state === "complete" &&
+                        "border-emerald-500 bg-emerald-500 ring-[3px] ring-emerald-500/20",
+                      isSelected &&
+                        state === "partial" &&
+                        "border-amber-400 bg-amber-400 ring-[3px] ring-amber-400/20",
+                      isSelected &&
+                        state === "empty" &&
+                        "border-muted-foreground/25 bg-muted-foreground/25 ring-[3px] ring-muted-foreground/10",
                     )}
                   />
                   <span
