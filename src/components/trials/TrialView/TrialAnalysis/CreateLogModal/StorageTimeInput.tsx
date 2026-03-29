@@ -9,13 +9,8 @@ import {
 } from "@/components/ui/select";
 import { decomposeMinutes, parseToMinutes } from "@/lib/storageTime";
 import type { StorageTimeUnit } from "@/lib/storageTime";
+import { STORAGE_TIME_PRESETS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
-
-const PRESETS = [
-  { label: "Immediate", minutes: 0 },
-  { label: "24 hrs", minutes: 1440 },
-  { label: "3 days", minutes: 4320 },
-] as const;
 
 interface Props {
   value: number;
@@ -60,7 +55,7 @@ export const StorageTimeInput = ({ value, onChange }: Props) => {
     <div className="flex flex-col gap-2">
       {/* Presets */}
       <div className="flex gap-1.5">
-        {PRESETS.map((preset) => (
+        {STORAGE_TIME_PRESETS.map((preset) => (
           <button
             key={preset.label}
             type="button"

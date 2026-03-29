@@ -11,6 +11,8 @@ export interface TrialSetup {
   flavor: Flavor;
 }
 
+export type EvalView = "all" | string;
+
 export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
 export type PartialSensoryComments = Partial<Record<SensoryMetricKey, string>>;
 

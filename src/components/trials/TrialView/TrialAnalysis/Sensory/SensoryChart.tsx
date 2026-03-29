@@ -12,27 +12,8 @@ import {
 } from "recharts";
 import { useSensoryComparison } from "@/hooks/useTrials";
 import type { SensoryComparisonParams } from "@/hooks/useTrials";
-import { SENSORY_METRICS, EVAL_COLORS } from "@/config/trial.config";
+import { SENSORY_METRICS, EVAL_COLORS, SENSORY_CHART_COLORS } from "@/config/trial.config";
 import type { PartialSensoryMetrics } from "@/types/trial";
-
-const METRIC_SHORT: Record<string, string> = {
-  tasteRating: "Taste Rat.",
-  sweetnessIntensity: "Sweetness Int.",
-  sweetnessRating: "Sweetness Rat.",
-  flavorIntensity: "Flavor Int.",
-  aftertasteIntensity: "Aftertaste",
-  thicknessIntensity: "Thickness",
-  textureIntensity: "Texture Int.",
-  textureRating: "Texture Rat.",
-  colorRating: "Color Rat.",
-};
-
-const CHART_COLORS = {
-  otherAvg: "hsl(220, 14%, 70%)",
-  grid: "#e8e8ec",
-  tick: "#8c8c96",
-  cursor: "rgba(0, 0, 0, 0.1)",
-} as const;
 
 interface TooltipPayload {
   dataKey: string;
@@ -61,7 +42,7 @@ const ChartTooltip = ({
           <span
             className="inline-block w-2 h-2 rounded-full shrink-0"
             style={{
-              background: p.dataKey === "current" ? barColor : CHART_COLORS.otherAvg,
+              background: p.dataKey === "current" ? barColor : SENSORY_CHART_COLORS.otherAvg,
             }}
           />
           <span className="text-muted-foreground">
@@ -98,7 +79,7 @@ export const SensoryChart = ({
   const chartData = useMemo(() => {
     if (!hasData) return [];
     return SENSORY_METRICS.map((metric) => ({
-      name: METRIC_SHORT[metric.key] ?? metric.label,
+      name: metric.shortLabel,
       current: logMetrics[metric.key] ?? 0,
       average: averages[metric.key],
     }));
@@ -107,7 +88,7 @@ export const SensoryChart = ({
   if (!hasData) {
     return (
       <div
-        className="h-full min-h-90 flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40 cursor-pointer hover:bg-muted/40 transition-colors"
+        className="h-full flex flex-col items-center justify-center gap-3 bg-muted/20 rounded-xl ring-1 ring-border/40 cursor-pointer hover:bg-muted/40 transition-colors"
         onClick={onAddData}
       >
         <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
@@ -122,8 +103,8 @@ export const SensoryChart = ({
   }
 
   return (
-    <div className="bg-muted/20 rounded-xl ring-1 ring-border/40 p-3">
-      <ResponsiveContainer width="100%" height={360}>
+    <div className="bg-muted/20 rounded-xl ring-1 ring-border/40 p-3 h-full">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
           data={chartData}
@@ -134,13 +115,13 @@ export const SensoryChart = ({
           <CartesianGrid
             strokeDasharray="3 3"
             horizontal={false}
-            stroke={CHART_COLORS.grid}
+            stroke={SENSORY_CHART_COLORS.grid}
           />
           <XAxis
             type="number"
             domain={[0, 6]}
             tickCount={7}
-            tick={{ fontSize: 11, fill: CHART_COLORS.tick }}
+            tick={{ fontSize: 11, fill: SENSORY_CHART_COLORS.tick }}
             axisLine={false}
             tickLine={false}
           />
@@ -148,13 +129,13 @@ export const SensoryChart = ({
             type="category"
             dataKey="name"
             width={110}
-            tick={{ fontSize: 11, fill: CHART_COLORS.tick }}
+            tick={{ fontSize: 11, fill: SENSORY_CHART_COLORS.tick }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             content={<ChartTooltip currentLabel={metricLabel} barColor={barColor} />}
-            cursor={{ fill: CHART_COLORS.cursor }}
+            cursor={{ fill: SENSORY_CHART_COLORS.cursor }}
           />
           <Legend
             wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
@@ -172,7 +153,7 @@ export const SensoryChart = ({
           <Bar
             dataKey="average"
             name="average"
-            fill={CHART_COLORS.otherAvg}
+            fill={SENSORY_CHART_COLORS.otherAvg}
             radius={[0, 4, 4, 0]}
             barSize={10}
           />

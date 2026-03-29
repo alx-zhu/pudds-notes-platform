@@ -1,11 +1,9 @@
 import { Pencil, Plus } from "lucide-react";
 import { EVAL_COLORS } from "@/config/trial.config";
-import type { SensoryEvaluation } from "@/types/trial";
+import type { SensoryEvaluation, EvalView } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
-export type EvalView = "all" | string;
-
-interface SensoryEvalBarProps {
+interface SensoryNavBarProps {
   evaluations: SensoryEvaluation[];
   selectedView: EvalView;
   onSelectView: (view: EvalView) => void;
@@ -13,13 +11,13 @@ interface SensoryEvalBarProps {
   onAdd: () => void;
 }
 
-export const SensoryEvalBar = ({
+export const SensoryNavBar = ({
   evaluations,
   selectedView,
   onSelectView,
   onEdit,
   onAdd,
-}: SensoryEvalBarProps) => {
+}: SensoryNavBarProps) => {
   const selectedEval =
     selectedView !== "all"
       ? evaluations.find((e) => e.id === selectedView)

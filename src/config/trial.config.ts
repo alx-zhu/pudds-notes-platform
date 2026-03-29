@@ -35,16 +35,18 @@ export const FLAVORS = [
 ] as const;
 
 
+export const SENSORY_MAX_SCORE = 5;
+
 export const SENSORY_METRICS = [
-  { key: "tasteRating", label: "Taste Rating", max: 5, description: "Rate how much you liked the taste of the product." },
-  { key: "sweetnessIntensity", label: "Sweetness Intensity", max: 5, description: "Rate how sweet the product was (references provided)." },
-  { key: "sweetnessRating", label: "Sweetness Rating", max: 5, description: "Rate how much you liked the sweetness of the product." },
-  { key: "flavorIntensity", label: "Flavor Intensity", max: 5, description: "Rate how intense the flavor of the product was (references provided)." },
-  { key: "aftertasteIntensity", label: "Aftertaste Intensity", max: 5, description: "Rate how much of an aftertaste the product had (references provided)." },
-  { key: "thicknessIntensity", label: "Thickness Intensity", max: 5, description: "Rate how thick the product was (references provided)." },
-  { key: "textureIntensity", label: "Texture Intensity", max: 5, description: "Rate how smooth the product was (references provided)." },
-  { key: "textureRating", label: "Texture Rating", max: 5, description: "Rate how much you liked the texture of the product." },
-  { key: "colorRating", label: "Color Rating", max: 5, fullWidth: true, description: "Rate how much you liked the color of the product." },
+  { key: "tasteRating", label: "Taste Rating", shortLabel: "Taste Rat.", max: 5, description: "Rate how much you liked the taste of the product." },
+  { key: "sweetnessIntensity", label: "Sweetness Intensity", shortLabel: "Sweetness Int.", max: 5, description: "Rate how sweet the product was (references provided)." },
+  { key: "sweetnessRating", label: "Sweetness Rating", shortLabel: "Sweetness Rat.", max: 5, description: "Rate how much you liked the sweetness of the product." },
+  { key: "flavorIntensity", label: "Flavor Intensity", shortLabel: "Flavor Int.", max: 5, description: "Rate how intense the flavor of the product was (references provided)." },
+  { key: "aftertasteIntensity", label: "Aftertaste Intensity", shortLabel: "Aftertaste", max: 5, description: "Rate how much of an aftertaste the product had (references provided)." },
+  { key: "thicknessIntensity", label: "Thickness Intensity", shortLabel: "Thickness", max: 5, description: "Rate how thick the product was (references provided)." },
+  { key: "textureIntensity", label: "Texture Intensity", shortLabel: "Texture Int.", max: 5, description: "Rate how smooth the product was (references provided)." },
+  { key: "textureRating", label: "Texture Rating", shortLabel: "Texture Rat.", max: 5, description: "Rate how much you liked the texture of the product." },
+  { key: "colorRating", label: "Color Rating", shortLabel: "Color Rat.", max: 5, fullWidth: true, description: "Rate how much you liked the color of the product." },
 ] as const;
 
 const LIKENESS_OPTIONS = [
@@ -191,6 +193,34 @@ export const SENSORY_SCORE_CATEGORIES = [
 ] as const;
 
 export type ScoreCategoryKey = (typeof SENSORY_SCORE_CATEGORIES)[number]["key"];
+
+export const SENSORY_CATEGORY_STYLES: Record<string, { bar: string; number: string }> = {
+  taste: {
+    bar: "bg-emerald-500",
+    number: "text-emerald-700 dark:text-emerald-400",
+  },
+  texture: {
+    bar: "bg-blue-500",
+    number: "text-blue-700 dark:text-blue-400",
+  },
+  color: {
+    bar: "bg-amber-500",
+    number: "text-amber-700 dark:text-amber-400",
+  },
+};
+
+export const SENSORY_CHART_COLORS = {
+  otherAvg: "hsl(220, 14%, 70%)",
+  grid: "#e8e8ec",
+  tick: "#8c8c96",
+  cursor: "rgba(0, 0, 0, 0.1)",
+} as const;
+
+export const STORAGE_TIME_PRESETS = [
+  { label: "Immediate", minutes: 0 },
+  { label: "24 hrs", minutes: 1440 },
+  { label: "3 days", minutes: 4320 },
+] as const;
 
 // Derived types (consumed by types/trial.ts)
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];

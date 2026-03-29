@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { calcScoresFromEvaluations } from "@/lib/sensoryScores";
+import { SENSORY_MAX_SCORE, SENSORY_CATEGORY_STYLES } from "@/config/trial.config";
 import type { SensoryEvaluation } from "@/types/trial";
 import { cn } from "@/lib/utils";
 
@@ -7,24 +8,7 @@ interface Props {
   evaluations: SensoryEvaluation[];
 }
 
-const MAX_SCORE = 5;
-
-const CATEGORY_STYLES: Record<string, { bar: string; number: string }> = {
-  taste: {
-    bar: "bg-emerald-500",
-    number: "text-emerald-700 dark:text-emerald-400",
-  },
-  texture: {
-    bar: "bg-blue-500",
-    number: "text-blue-700 dark:text-blue-400",
-  },
-  color: {
-    bar: "bg-amber-500",
-    number: "text-amber-700 dark:text-amber-400",
-  },
-};
-
-export const SensoryScoresPanel = ({ evaluations }: Props) => {
+export const SummaryChart = ({ evaluations }: Props) => {
   const scores = useMemo(
     () => calcScoresFromEvaluations(evaluations),
     [evaluations],
@@ -46,7 +30,7 @@ export const SensoryScoresPanel = ({ evaluations }: Props) => {
             {hasData ? scores.overall!.toFixed(1) : "\u2014"}
           </span>
           <span className="text-base text-muted-foreground font-medium ml-0.5">
-            / {MAX_SCORE}
+            / {SENSORY_MAX_SCORE}
           </span>
         </div>
         <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-1.5">
@@ -57,8 +41,8 @@ export const SensoryScoresPanel = ({ evaluations }: Props) => {
       {/* Category scores — horizontal bars */}
       <div className="flex flex-col gap-5">
         {scores.categories.map((cat) => {
-          const style = CATEGORY_STYLES[cat.key];
-          const pct = cat.score != null ? (cat.score / MAX_SCORE) * 100 : 0;
+          const style = SENSORY_CATEGORY_STYLES[cat.key];
+          const pct = cat.score != null ? (cat.score / SENSORY_MAX_SCORE) * 100 : 0;
           return (
             <div key={cat.key} className="flex items-center gap-4">
               <span className="text-sm font-semibold w-16 shrink-0 text-foreground">

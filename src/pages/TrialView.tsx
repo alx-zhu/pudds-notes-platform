@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
-import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard/AnalysisLogCard";
+import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/CommentsCard";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";

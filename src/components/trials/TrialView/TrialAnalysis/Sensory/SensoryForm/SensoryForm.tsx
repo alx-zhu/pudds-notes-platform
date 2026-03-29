@@ -33,7 +33,7 @@ interface Props {
   onDelete?: () => void;
 }
 
-export const SensorySheet = ({
+export const SensoryForm = ({
   open,
   onOpenChange,
   trialId,
@@ -51,7 +51,7 @@ export const SensorySheet = ({
       >
         <SheetTitle className="sr-only">Sensory Evaluation</SheetTitle>
         <SheetDescription className="sr-only">{logLabel}</SheetDescription>
-        <SensoryForm
+        <SensoryFormContent
           trialId={trialId}
           logId={logId}
           logLabel={logLabel}
@@ -64,7 +64,7 @@ export const SensorySheet = ({
   );
 };
 
-const SensoryForm = ({
+const SensoryFormContent = ({
   trialId,
   logId,
   logLabel,
