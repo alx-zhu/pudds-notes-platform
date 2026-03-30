@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trial List Revamp — Card & Table Views</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: oklch(0.975 0.005 75);
+    --card: #ffffff;
+    --foreground: oklch(0.15 0.01 60);
+    --muted: oklch(0.955 0.008 75);
+    --muted-fg: oklch(0.55 0.01 60);
+    --border: oklch(0.91 0.008 75);
+    --border-subtle: oklch(0.91 0.008 75 / 0.6);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+
+    /* Score category colors */
+    --taste-fg: #047857;
+    --taste-bar: #10b981;
+    --texture-fg: #1d4ed8;
+    --texture-bar: #3b82f6;
+    --color-fg: #b45309;
+    --color-bar: #f59e0b;
+
+    /* Processing */
+    --benchtop-bg: #e0f2fe;
+    --benchtop-fg: #075985;
+    --industrial-bg: #ffedd5;
+    --industrial-fg: #9a3412;
+
+    /* Flavor */
+    --chocolate-bg: #78350f;
+    --chocolate-fg: #fef3c7;
+    --vanilla-bg: #fef9c3;
+    --vanilla-fg: #854d0e;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--foreground);
+    padding: 48px 32px;
+    line-height: 1.5;
+  }
+
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+    margin-top: 48px;
+  }
+
+  .description {
+    font-size: 14px;
+    color: var(--muted-fg);
+    margin-bottom: 32px;
+    max-width: 720px;
+    line-height: 1.6;
+  }
+
+  /* ══════════════════════════════════════════════
+     CARD VIEW
+     ══════════════════════════════════════════════ */
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 1100px;
+  }
+
+  .trial-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 1px var(--border-subtle);
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    min-width: 0; /* prevent overflow */
+  }
+  .trial-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px var(--border);
+    transform: translateY(-1px);
+  }
+
+  /* ── Card: Trial number header ── */
+  .card-number-row {
+    padding: 14px 16px 0;
+  }
+  .trial-number {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--foreground);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Card: Image — fixed aspect, never affected by siblings ── */
+  .card-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--muted);
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card-image .image-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    background: rgba(0,0,0,0.55);
+    padding: 2px 8px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  .card-image .no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted-fg);
+    font-size: 12px;
+    opacity: 0.4;
+  }
+
+  /* ── Card: Formulation (below image) ── */
+  .card-formulation {
+    padding: 12px 16px 0;
+  }
+  .formulation-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--foreground);
+    line-height: 1.4;
+  }
+  .formulation-text .abbrev {
+    font-weight: 700;
+  }
+  .formulation-text .pct {
+    color: var(--muted-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .formulation-text .sep {
+    color: var(--border);
+    margin: 0 2px;
+  }
+
+  /* ── Card: Scores ── */
+  .card-scores {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .score-overall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 48px;
+  }
+  .score-overall .score-value {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+  .score-overall .score-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted-fg);
+    margin-top: 2px;
+  }
+
+  .score-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+  }
+
+  .score-categories {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .score-category {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .score-category .cat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-fg);
+    width: 48px;
+    text-align: right;
+  }
+  .score-category .cat-bar {
+    flex: 1;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .score-category .cat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  .score-category .cat-value {
+    font-size: 11px;
+    font-weight: 600;
+    width: 24px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Card: Metadata footer ── */
+  .card-meta {
+    padding: 0 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .meta-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .meta-date {
+    font-size: 11px;
+    color: var(--muted-fg);
+    font-weight: 500;
+  }
+  .meta-dot {
+    font-size: 11px;
+    color: var(--border);
+  }
+
+  .no-scores {
+    font-size: 11px;
+    color: var(--muted-fg);
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  /* ── Card: Empty score state (same layout as real scores) ── */
+  .card-scores-empty {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .score-overall-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 48px;
+  }
+  .score-overall-empty .score-value-empty {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--border);
+  }
+  .score-overall-empty .score-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted-fg);
+    margin-top: 2px;
+    opacity: 0.5;
+  }
+  .score-categories-empty .cat-bar-fill-empty {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--border);
+    width: 0%;
+  }
+  .score-categories-empty .cat-value-empty {
+    font-size: 11px;
+    font-weight: 600;
+    width: 24px;
+    text-align: right;
+    color: var(--border);
+  }
+
+  /* ══════════════════════════════════════════════
+     TABLE VIEW
+     ══════════════════════════════════════════════ */
+
+  .table-container {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 0 0 1px var(--border-subtle);
+    overflow-x: auto;
+    max-width: 1200px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: oklch(0.975 0.005 75 / 0.5);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid oklch(0.91 0.008 75 / 0.4);
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: oklch(0.975 0.005 75 / 0.5); }
+
+  tbody td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  .table-trial-num {
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Table formulation — plain text, no pills */
+  .table-formulation {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+  .table-formulation .abbrev { font-weight: 700; }
+  .table-formulation .pct { color: var(--muted-fg); font-variant-numeric: tabular-nums; }
+  .table-formulation .sep { color: var(--border); margin: 0 3px; }
+
+  /* Table scores — each score is label + value */
+  .table-scores {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .table-score-item {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .table-score-item .label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-fg);
+  }
+  .table-score-item .value {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Utility ── */
+  .taste-color { color: var(--taste-fg); }
+  .texture-color { color: var(--texture-fg); }
+  .color-color { color: var(--color-fg); }
+  .overall-color { color: var(--foreground); }
+
+  .taste-bar-fill { background: var(--taste-bar); }
+  .texture-bar-fill { background: var(--texture-bar); }
+  .color-bar-fill { background: var(--color-bar); }
+
+  .benchtop-tag { background: var(--benchtop-bg); color: var(--benchtop-fg); }
+  .industrial-tag { background: var(--industrial-bg); color: var(--industrial-fg); }
+  .chocolate-tag { background: var(--chocolate-bg); color: var(--chocolate-fg); }
+  .vanilla-tag { background: var(--vanilla-bg); color: var(--vanilla-fg); }
+
+  /* ── Design Notes ── */
+  .design-notes {
+    margin-top: 48px;
+    padding: 20px 24px;
+    background: #fffbeb;
+    border-radius: var(--radius);
+    border: 1px solid #fde68a;
+    max-width: 720px;
+  }
+  .design-notes h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #92400e;
+  }
+  .design-notes ul {
+    font-size: 13px;
+    color: #78350f;
+    padding-left: 20px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<h1>Trial List — Revamped Design (v2)</h1>
+<p class="description">
+  Information hierarchy: <strong>1) Trial number</strong> →
+  <strong>2) Image</strong> (fixed aspect, with eval label overlay) →
+  <strong>3) Formulation</strong> (pinned ingredients as plain text: abbreviation + percentage) →
+  <strong>4) Scores</strong> (overall + category breakdown) →
+  <strong>5) Metadata</strong> (date, processing, flavor).
+  Cards have a minimum width of 280px to prevent compression. Formulation uses plain text instead of colored pills to reduce visual noise.
+</p>
+
+<!-- ─────────────────────────────── CARD VIEW ─────────────────────────────── -->
+<p class="section-label">Card View</p>
+
+<div class="card-grid">
+
+  <!-- Card 1: Full data -->
+  <div class="trial-card">
+    <div class="card-number-row">
+      <span class="trial-number">13</span>
+    </div>
+
+    <div class="card-image">
+      <div class="no-image">No photo</div>
+      <span class="image-label">Thermomix · 3 Days</span>
+    </div>
+
+    <div class="card-formulation">
+      <span class="formulation-text">
+        <span class="abbrev">MC</span> <span class="pct">12%</span>
+        <span class="sep">/</span>
+        <span class="abbrev">GA</span> <span class="pct">0.4%</span>
+      </span>
+    </div>
+
+    <div class="card-scores">
+      <div class="score-overall">
+        <span class="score-value">3.5</span>
+        <span class="score-label">Overall</span>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-categories">
+        <div class="score-category">
+          <span class="cat-label">Taste</span>
+          <div class="cat-bar"><div class="cat-bar-fill taste-bar-fill" style="width: 62%"></div></div>
+          <span class="cat-value taste-color">3.1</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Texture</span>
+          <div class="cat-bar"><div class="cat-bar-fill texture-bar-fill" style="width: 56%"></div></div>
+          <span class="cat-value texture-color">2.8</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Color</span>
+          <div class="cat-bar"><div class="cat-bar-fill color-bar-fill" style="width: 80%"></div></div>
+          <span class="cat-value color-color">4.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-date">Mar 25, 2026</span>
+      <span class="meta-dot">&middot;</span>
+      <span class="meta-tag benchtop-tag">Benchtop</span>
+      <span class="meta-tag vanilla-tag">Vanilla</span>
+    </div>
+  </div>
+
+  <!-- Card 2: More ingredients -->
+  <div class="trial-card">
+    <div class="card-number-row">
+      <span class="trial-number">12</span>
+    </div>
+
+    <div class="card-image">
+      <div class="no-image">No photo</div>
+      <span class="image-label">Thermomix · Immediate</span>
+    </div>
+
+    <div class="card-formulation">
+      <span class="formulation-text">
+        <span class="abbrev">WPI</span> <span class="pct">10%</span>
+        <span class="sep">/</span>
+        <span class="abbrev">MC</span> <span class="pct">4%</span>
+        <span class="sep">/</span>
+        <span class="abbrev">XG</span> <span class="pct">0.2%</span>
+      </span>
+    </div>
+
+    <div class="card-scores">
+      <div class="score-overall">
+        <span class="score-value">4.1</span>
+        <span class="score-label">Overall</span>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-categories">
+        <div class="score-category">
+          <span class="cat-label">Taste</span>
+          <div class="cat-bar"><div class="cat-bar-fill taste-bar-fill" style="width: 82%"></div></div>
+          <span class="cat-value taste-color">4.1</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Texture</span>
+          <div class="cat-bar"><div class="cat-bar-fill texture-bar-fill" style="width: 74%"></div></div>
+          <span class="cat-value texture-color">3.7</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Color</span>
+          <div class="cat-bar"><div class="cat-bar-fill color-bar-fill" style="width: 90%"></div></div>
+          <span class="cat-value color-color">4.5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-date">Mar 22, 2026</span>
+      <span class="meta-dot">&middot;</span>
+      <span class="meta-tag industrial-tag">Industrial</span>
+      <span class="meta-tag chocolate-tag">Chocolate</span>
+    </div>
+  </div>
+
+  <!-- Card 3: No scores -->
+  <div class="trial-card">
+    <div class="card-number-row">
+      <span class="trial-number">11</span>
+    </div>
+
+    <div class="card-image">
+      <div class="no-image">No photo</div>
+    </div>
+
+    <div class="card-formulation">
+      <span class="formulation-text">
+        <span class="abbrev">WPI</span> <span class="pct">14%</span>
+      </span>
+    </div>
+
+    <div class="card-scores-empty">
+      <div class="score-overall-empty">
+        <span class="score-value-empty">—</span>
+        <span class="score-label">Overall</span>
+      </div>
+      <div class="score-divider" style="opacity: 0.4;"></div>
+      <div class="score-categories score-categories-empty">
+        <div class="score-category">
+          <span class="cat-label" style="opacity: 0.4;">Taste</span>
+          <div class="cat-bar"><div class="cat-bar-fill-empty"></div></div>
+          <span class="cat-value-empty">—</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label" style="opacity: 0.4;">Texture</span>
+          <div class="cat-bar"><div class="cat-bar-fill-empty"></div></div>
+          <span class="cat-value-empty">—</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label" style="opacity: 0.4;">Color</span>
+          <div class="cat-bar"><div class="cat-bar-fill-empty"></div></div>
+          <span class="cat-value-empty">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-date">Mar 20, 2026</span>
+      <span class="meta-dot">&middot;</span>
+      <span class="meta-tag benchtop-tag">Benchtop</span>
+      <span class="meta-tag vanilla-tag">Vanilla</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Many ingredients -->
+  <div class="trial-card">
+    <div class="card-number-row">
+      <span class="trial-number">10</span>
+    </div>
+
+    <div class="card-image">
+      <div class="no-image">No photo</div>
+      <span class="image-label">HTST · 24 hrs</span>
+    </div>
+
+    <div class="card-formulation">
+      <span class="formulation-text">
+        <span class="abbrev">MC</span> <span class="pct">8%</span>
+        <span class="sep">/</span>
+        <span class="abbrev">SUC</span> <span class="pct">6%</span>
+        <span class="sep">/</span>
+        <span class="abbrev">GA</span> <span class="pct">0.3%</span>
+      </span>
+    </div>
+
+    <div class="card-scores">
+      <div class="score-overall">
+        <span class="score-value">3.8</span>
+        <span class="score-label">Overall</span>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-categories">
+        <div class="score-category">
+          <span class="cat-label">Taste</span>
+          <div class="cat-bar"><div class="cat-bar-fill taste-bar-fill" style="width: 78%"></div></div>
+          <span class="cat-value taste-color">3.9</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Texture</span>
+          <div class="cat-bar"><div class="cat-bar-fill texture-bar-fill" style="width: 68%"></div></div>
+          <span class="cat-value texture-color">3.4</span>
+        </div>
+        <div class="score-category">
+          <span class="cat-label">Color</span>
+          <div class="cat-bar"><div class="cat-bar-fill color-bar-fill" style="width: 84%"></div></div>
+          <span class="cat-value color-color">4.2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-date">Mar 18, 2026</span>
+      <span class="meta-dot">&middot;</span>
+      <span class="meta-tag industrial-tag">Industrial</span>
+      <span class="meta-tag chocolate-tag">Chocolate</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────── TABLE VIEW ─────────────────────────────── -->
+<p class="section-label">Table View</p>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 48px">#</th>
+        <th style="width: 200px">Formulation</th>
+        <th style="width: 160px">Most Recent Eval</th>
+        <th style="width: 300px">Scores</th>
+        <th style="width: 90px">Date</th>
+        <th style="width: 90px">Processing</th>
+        <th style="width: 90px">Flavor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Row 1 -->
+      <tr>
+        <td><span class="table-trial-num">13</span></td>
+        <td>
+          <span class="table-formulation">
+            <span class="abbrev">MC</span> <span class="pct">12%</span>
+            <span class="sep">/</span>
+            <span class="abbrev">GA</span> <span class="pct">0.4%</span>
+          </span>
+        </td>
+        <td><span style="font-size: 13px; font-weight: 500;">Thermomix · 3 Days</span></td>
+        <td>
+          <div class="table-scores">
+            <div class="table-score-item"><span class="label">Overall</span> <span class="value overall-color">3.5</span></div>
+            <div class="table-score-item"><span class="label">Taste</span> <span class="value taste-color">3.1</span></div>
+            <div class="table-score-item"><span class="label">Texture</span> <span class="value texture-color">2.8</span></div>
+            <div class="table-score-item"><span class="label">Color</span> <span class="value color-color">4.0</span></div>
+          </div>
+        </td>
+        <td><span class="meta-date">Mar 25</span></td>
+        <td><span class="meta-tag benchtop-tag">Benchtop</span></td>
+        <td><span class="meta-tag vanilla-tag">Vanilla</span></td>
+      </tr>
+
+      <!-- Row 2 -->
+      <tr>
+        <td><span class="table-trial-num">12</span></td>
+        <td>
+          <span class="table-formulation">
+            <span class="abbrev">WPI</span> <span class="pct">10%</span>
+            <span class="sep">/</span>
+            <span class="abbrev">MC</span> <span class="pct">4%</span>
+            <span class="sep">/</span>
+            <span class="abbrev">XG</span> <span class="pct">0.2%</span>
+          </span>
+        </td>
+        <td><span style="font-size: 13px; font-weight: 500;">Thermomix · Immediate</span></td>
+        <td>
+          <div class="table-scores">
+            <div class="table-score-item"><span class="label">Overall</span> <span class="value overall-color">4.1</span></div>
+            <div class="table-score-item"><span class="label">Taste</span> <span class="value taste-color">4.1</span></div>
+            <div class="table-score-item"><span class="label">Texture</span> <span class="value texture-color">3.7</span></div>
+            <div class="table-score-item"><span class="label">Color</span> <span class="value color-color">4.5</span></div>
+          </div>
+        </td>
+        <td><span class="meta-date">Mar 22</span></td>
+        <td><span class="meta-tag industrial-tag">Industrial</span></td>
+        <td><span class="meta-tag chocolate-tag">Chocolate</span></td>
+      </tr>
+
+      <!-- Row 3: No scores -->
+      <tr>
+        <td><span class="table-trial-num">11</span></td>
+        <td>
+          <span class="table-formulation">
+            <span class="abbrev">WPI</span> <span class="pct">14%</span>
+          </span>
+        </td>
+        <td><span style="font-size: 13px; color: var(--muted-fg);">&mdash;</span></td>
+        <td><span class="no-scores">No evaluations</span></td>
+        <td><span class="meta-date">Mar 20</span></td>
+        <td><span class="meta-tag benchtop-tag">Benchtop</span></td>
+        <td><span class="meta-tag vanilla-tag">Vanilla</span></td>
+      </tr>
+
+      <!-- Row 4 -->
+      <tr>
+        <td><span class="table-trial-num">10</span></td>
+        <td>
+          <span class="table-formulation">
+            <span class="abbrev">MC</span> <span class="pct">8%</span>
+            <span class="sep">/</span>
+            <span class="abbrev">SUC</span> <span class="pct">6%</span>
+            <span class="sep">/</span>
+            <span class="abbrev">GA</span> <span class="pct">0.3%</span>
+          </span>
+        </td>
+        <td><span style="font-size: 13px; font-weight: 500;">HTST · 24 hrs</span></td>
+        <td>
+          <div class="table-scores">
+            <div class="table-score-item"><span class="label">Overall</span> <span class="value overall-color">3.8</span></div>
+            <div class="table-score-item"><span class="label">Taste</span> <span class="value taste-color">3.9</span></div>
+            <div class="table-score-item"><span class="label">Texture</span> <span class="value texture-color">3.4</span></div>
+            <div class="table-score-item"><span class="label">Color</span> <span class="value color-color">4.2</span></div>
+          </div>
+        </td>
+        <td><span class="meta-date">Mar 18</span></td>
+        <td><span class="meta-tag industrial-tag">Industrial</span></td>
+        <td><span class="meta-tag chocolate-tag">Chocolate</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ─────────────────────────────── DESIGN NOTES ─────────────────────────────── -->
+<div class="design-notes">
+  <h3>Design Decisions (v2)</h3>
+  <ul>
+    <li><strong>Cards use min-width 280px.</strong> <code>auto-fill, minmax(280px, 1fr)</code> ensures cards never compress too small — grid wraps to fewer columns instead.</li>
+    <li><strong>Formulation moved below image.</strong> Trial number stands alone at top for instant identification. Image has fixed aspect-ratio (16:9) that cannot be affected by content above or below.</li>
+    <li><strong>Formulation is plain text, not colored pills.</strong> Reduces visual noise — the abbreviation is bold, percentage is muted. Slash separators keep it readable. Eliminates the many-colored-badges problem.</li>
+    <li><strong>Table: scores in one cell, all labeled.</strong> Overall, Taste, Texture, Color shown inline with labels — including "Overall" which was previously unlabeled. Compact but every number is explicitly identified.</li>
+    <li><strong>Table: metadata split into individual columns.</strong> Date, Processing, and Flavor each have their own column rather than being combined into one "Metadata" cell. Non-technical users can read each field independently.</li>
+    <li><strong>Card empty state matches real layout.</strong> When no evaluations exist, the score area shows the same overall + category bar structure with em-dash placeholders and muted styling. Card height stays consistent regardless of score state.</li>
+    <li><strong>Reduced color palette on cards.</strong> Only the metadata badges (processing + flavor) use colored backgrounds. Formulation and scores use text color/weight hierarchy instead — much less visual clutter.</li>
+  </ul>
+</div>
+
+</body>
+</html>

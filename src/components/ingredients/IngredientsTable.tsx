@@ -12,20 +12,18 @@ import type {
   UpdateIngredientInput,
 } from "@/api/ingredients";
 
-/* ── Column sizing ───────────────────────────────────────────────── */
+/* ── Column widths (px) ──────────────────────────────────────────── */
 
-const COL = {
-  pin: "w-12",
-  abbreviation: "w-28",
-  type: "w-40",
-  solid: "w-16",
-  cost: "w-28",
-  trials: "w-18",
-  actions: "w-12",
+const COL_WIDTHS = {
+  pin: 48,
+  name: 200,
+  abbreviation: 110,
+  type: 140,
+  solid: 70,
+  cost: 100,
+  trials: 70,
+  actions: 48,
 } as const;
-
-const TH =
-  "px-4 py-2.5 font-medium text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap";
 
 /* ── Table ───────────────────────────────────────────────────────── */
 
@@ -49,20 +47,54 @@ export const IngredientsTable = ({
   onCancelAdd,
 }: Props) => {
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden">
-      <table className="w-full text-sm table-fixed">
+    <div className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden overflow-x-auto">
+      <table className="w-full">
         <thead>
-          <tr className="bg-muted">
-            <th className={COL.pin} />
-            <th className={`${TH} text-left`}>Ingredient</th>
-            <th className={`${TH} text-left ${COL.abbreviation}`}>
-              Abbreviation
+          <tr className="border-b border-border">
+            <th
+              className="px-4 py-3 bg-muted/30"
+              style={{ width: COL_WIDTHS.pin }}
+            />
+            <th
+              className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.name }}
+            >
+              Ingredient
             </th>
-            <th className={`${TH} text-left ${COL.type}`}>Type</th>
-            <th className={`${TH} text-center ${COL.solid}`}>Solid</th>
-            <th className={`${TH} text-left ${COL.cost}`}>Cost / lb</th>
-            <th className={`${TH} text-right ${COL.trials}`}>Trials</th>
-            <th className={COL.actions} />
+            <th
+              className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.abbreviation }}
+            >
+              Abbrev
+            </th>
+            <th
+              className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.type }}
+            >
+              Type
+            </th>
+            <th
+              className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.solid }}
+            >
+              Solid
+            </th>
+            <th
+              className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.cost }}
+            >
+              Cost / lb
+            </th>
+            <th
+              className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.trials }}
+            >
+              Trials
+            </th>
+            <th
+              className="px-4 py-3 bg-muted/30"
+              style={{ width: COL_WIDTHS.actions }}
+            />
           </tr>
         </thead>
         <tbody>
@@ -136,9 +168,9 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
   };
 
   return (
-    <tr className="border-b border-border bg-primary/5">
+    <tr className="border-b border-border/40 bg-primary/5">
       {/* Pin */}
-      <td className="px-2 py-2.5 text-center">
+      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.pin }}>
         <Button
           variant="ghost"
           size="icon"
@@ -157,7 +189,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Name */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.name }}>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -169,7 +201,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Abbreviation */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.abbreviation }}>
         <Input
           value={abbreviation}
           onChange={(e) => setAbbreviation(e.target.value)}
@@ -180,12 +212,12 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Type */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.type }}>
         <IngredientTypeSelect value={type} onChange={setType} />
       </td>
 
       {/* Solid */}
-      <td className="px-4 py-2.5 text-center">
+      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.solid }}>
         <Checkbox
           checked={solid}
           onCheckedChange={(checked) => setSolid(checked === true)}
@@ -193,7 +225,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Cost */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.cost }}>
         <Input
           value={costRaw}
           onChange={(e) => setCostRaw(e.target.value)}
@@ -204,10 +236,15 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Trials (empty for new) */}
-      <td className="px-4 py-2.5 text-right text-muted-foreground">—</td>
+      <td
+        className="px-4 py-3 text-right text-muted-foreground"
+        style={{ width: COL_WIDTHS.trials }}
+      >
+        —
+      </td>
 
       {/* Actions: submit / cancel */}
-      <td className="px-1 py-2.5">
+      <td className="px-2 py-3" style={{ width: COL_WIDTHS.actions }}>
         <div className="flex flex-col items-center gap-0.5">
           <Button
             variant="ghost"
@@ -251,9 +288,9 @@ const IngredientRow = ({
   const pinned = ingredient.pinned ?? false;
 
   return (
-    <tr className="border-t border-border hover:bg-muted/50 transition-colors">
+    <tr className="border-b border-border/40 last:border-b-0 hover:bg-muted/50 transition-colors">
       {/* Pin */}
-      <td className="px-2 py-2.5 text-center">
+      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.pin }}>
         <Button
           variant="ghost"
           size="icon"
@@ -272,7 +309,7 @@ const IngredientRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-4 py-2.5 font-medium">
+      <td className="px-4 py-3 font-medium" style={{ width: COL_WIDTHS.name }}>
         <InlineInput
           value={ingredient.name}
           onCommit={(name) => onUpdate(id, { name })}
@@ -280,7 +317,7 @@ const IngredientRow = ({
       </td>
 
       {/* Abbreviation */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.abbreviation }}>
         <InlineInput
           value={ingredient.abbreviation ?? ""}
           onCommit={(abbreviation) => onUpdate(id, { abbreviation })}
@@ -290,7 +327,7 @@ const IngredientRow = ({
       </td>
 
       {/* Type */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.type }}>
         <IngredientTypeSelect
           value={ingredient.type}
           onChange={(type) => onUpdate(id, { type })}
@@ -298,7 +335,7 @@ const IngredientRow = ({
       </td>
 
       {/* Solid */}
-      <td className="px-4 py-2.5 text-center">
+      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.solid }}>
         <Checkbox
           checked={ingredient.solid ?? false}
           onCheckedChange={(checked) =>
@@ -308,7 +345,7 @@ const IngredientRow = ({
       </td>
 
       {/* Cost / lb */}
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3" style={{ width: COL_WIDTHS.cost }}>
         <InlineInput
           value={
             ingredient.costPerLb != null
@@ -325,12 +362,15 @@ const IngredientRow = ({
       </td>
 
       {/* Trials (read-only) */}
-      <td className="px-4 py-2.5 text-right text-muted-foreground tabular-nums">
+      <td
+        className="px-4 py-3 text-right text-muted-foreground tabular-nums"
+        style={{ width: COL_WIDTHS.trials }}
+      >
         {trialCount}
       </td>
 
       {/* Delete */}
-      <td className="px-2 py-2.5">
+      <td className="px-2 py-3" style={{ width: COL_WIDTHS.actions }}>
         <Button
           variant="ghost"
           size="icon"

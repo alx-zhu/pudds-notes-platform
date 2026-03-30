@@ -33,7 +33,7 @@ export const resolveTrialIngredients = (
 ): TrialIngredient[] => {
   const ingredients = readIngredients();
   const ingredientMap = new Map<string, Ingredient>(
-    ingredients.map((i) => [i.id, { id: i.id, name: i.name }]),
+    ingredients.map((i) => [i.id, i]),
   );
 
   return records

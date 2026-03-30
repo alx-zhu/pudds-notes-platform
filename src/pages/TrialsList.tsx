@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, List, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,14 +13,12 @@ import { ActiveFiltersBar } from "@/components/trials/TrialList/ActiveFiltersBar
 import { useTrials } from "@/hooks/useTrials";
 import { EMPTY_FILTERS, type TrialFilters } from "@/types/filters";
 import { filterTrials, countActiveFilters } from "@/lib/filterTrials";
-import type { SensoryMetricKey } from "@/config/trial.config";
-import { cn } from "@/lib/utils";
 
 export const TrialsList = () => {
   const navigate = useNavigate();
   const { data: trials = [], isLoading } = useTrials();
   const [modalOpen, setModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<TrialFilters>(EMPTY_FILTERS);
 
@@ -31,11 +28,6 @@ export const TrialsList = () => {
   );
 
   const activeFilterCount = countActiveFilters(filters);
-
-  const hasSensoryFilters = Object.keys(filters.sensoryRanges).length > 0;
-  const activeMetricKeys = Object.keys(
-    filters.sensoryRanges,
-  ) as SensoryMetricKey[];
 
   return (
     <>
@@ -124,29 +116,23 @@ export const TrialsList = () => {
               <TrialsTable trials={filteredTrials} />
             ) : (
               <div
-                className={cn(
-                  "grid gap-3",
-                  sidebarOpen ? "grid-cols-3" : "grid-cols-4",
-                )}
+                className="grid gap-4"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                }}
               >
                 {filteredTrials.map((t) => (
-                  <TrialCard
-                    key={t.id}
-                    trial={t}
-                    matchingLogs={t.matchingLogs}
-                    sensoryFiltersActive={hasSensoryFilters}
-                    activeMetricKeys={activeMetricKeys}
-                  />
+                  <TrialCard key={t.id} trial={t} />
                 ))}
-                <Card
-                  className="border-2 border-dashed cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-center min-h-40"
+                <div
+                  className="rounded-xl border-2 border-dashed border-border bg-transparent cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-center min-h-40"
                   onClick={() => setModalOpen(true)}
                 >
-                  <CardContent className="p-4 flex flex-col items-center gap-1 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
                     <Plus size={28} />
                     <span className="text-xs font-semibold">New Trial</span>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
           </section>
