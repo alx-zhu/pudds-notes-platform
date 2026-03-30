@@ -1,8 +1,15 @@
+import type { IngredientType } from "@/config/ingredient.config";
+
 /* ── Data model types (mirror DB tables) ────────────────────────── */
 
 export interface IngredientRecord {
   id: string;
   name: string;
+  abbreviation?: string;
+  pinned?: boolean;
+  type?: IngredientType;
+  solid?: boolean;
+  costPerLb?: number;
 }
 
 export interface TrialIngredientRecord {
@@ -17,6 +24,11 @@ export interface TrialIngredientRecord {
 export interface Ingredient {
   id: string;
   name: string;
+  abbreviation?: string;
+  pinned?: boolean;
+  type?: IngredientType;
+  solid?: boolean;
+  costPerLb?: number;
 }
 
 export interface TrialIngredient {

@@ -1,4 +1,4 @@
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, TestTubes } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,8 @@ const SidebarIcon = ({ icon, active, onClick }: SidebarIconProps) => {
 export const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isTrials = location.pathname === "/trials";
+  const isTrials = location.pathname.startsWith("/trials");
+  const isIngredients = location.pathname === "/ingredients";
 
   return (
     <div className="flex h-screen overflow-hidden bg-muted/60">
@@ -38,6 +39,11 @@ export const AppShell = () => {
           icon={<LayoutGrid size={18} />}
           active={isTrials}
           onClick={() => navigate("/trials")}
+        />
+        <SidebarIcon
+          icon={<TestTubes size={18} />}
+          active={isIngredients}
+          onClick={() => navigate("/ingredients")}
         />
       </aside>
 

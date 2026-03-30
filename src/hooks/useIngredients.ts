@@ -1,4 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  CreateIngredientInput,
+  UpdateIngredientInput,
+} from "@/api/ingredients";
 import * as api from "@/api/ingredients";
 import { trialKeys } from "./useTrials";
 
@@ -12,7 +16,7 @@ export const useIngredients = () =>
 export const useCreateIngredient = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => api.createIngredient(name),
+    mutationFn: (input: CreateIngredientInput) => api.createIngredient(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ingredientKeys.all });
     },
@@ -22,8 +26,8 @@ export const useCreateIngredient = () => {
 export const useUpdateIngredient = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) =>
-      api.updateIngredient(id, name),
+    mutationFn: ({ id, ...input }: { id: string } & UpdateIngredientInput) =>
+      api.updateIngredient(id, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ingredientKeys.all });
       // Resolved ingredient names may have changed on trials

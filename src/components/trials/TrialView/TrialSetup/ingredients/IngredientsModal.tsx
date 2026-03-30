@@ -80,7 +80,7 @@ export const IngredientsModal = ({
     );
 
     if (!ingredient) {
-      ingredient = await createIngredient.mutateAsync(ingredientName.trim());
+      ingredient = await createIngredient.mutateAsync({ name: ingredientName.trim() });
     }
 
     // Prevent adding the same ingredient twice

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { StringCombobox } from "@/components/trials/shared/StringCombobox";
+import { StringCombobox } from "@/components/shared/StringCombobox";
 import { StorageTimeInput } from "./StorageTimeInput";
 import {
   useAddAnalysisLog,

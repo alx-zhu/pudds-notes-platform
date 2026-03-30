@@ -24,6 +24,11 @@ export const writeIngredients = (records: IngredientRecord[]): void => {
 const toIngredient = (record: IngredientRecord): Ingredient => ({
   id: record.id,
   name: record.name,
+  abbreviation: record.abbreviation,
+  pinned: record.pinned,
+  type: record.type,
+  solid: record.solid,
+  costPerLb: record.costPerLb,
 });
 
 /* ── CRUD (RESTful) ──────────────────────────────────────────────── */
@@ -36,26 +41,36 @@ export const fetchIngredients = async (): Promise<Ingredient[]> => {
   );
 };
 
+export type CreateIngredientInput = Omit<IngredientRecord, "id">;
+export type UpdateIngredientInput = Partial<Omit<IngredientRecord, "id">>;
+
 /** POST /ingredients */
-export const createIngredient = async (name: string): Promise<Ingredient> => {
+export const createIngredient = async (
+  input: CreateIngredientInput,
+): Promise<Ingredient> => {
   const records = readIngredients();
   const record: IngredientRecord = {
     id: crypto.randomUUID(),
-    name: name.trim(),
+    ...input,
+    name: input.name.trim(),
   };
   writeIngredients([...records, record]);
   return simulateApiCall(toIngredient(record));
 };
 
-/** PUT /ingredients/:id */
+/** PATCH /ingredients/:id */
 export const updateIngredient = async (
   id: string,
-  name: string,
+  input: UpdateIngredientInput,
 ): Promise<Ingredient> => {
   const records = readIngredients();
   const idx = records.findIndex((r) => r.id === id);
   if (idx === -1) throw new Error(`Ingredient ${id} not found`);
-  records[idx] = { ...records[idx], name: name.trim() };
+  records[idx] = {
+    ...records[idx],
+    ...input,
+    ...(input.name != null && { name: input.name.trim() }),
+  };
   writeIngredients(records);
   return simulateApiCall(toIngredient(records[idx]));
 };

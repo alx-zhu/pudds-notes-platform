@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { TrialsList } from "@/pages/TrialsList";
 import { TrialView } from "@/pages/TrialView";
+import { IngredientsPage } from "@/pages/IngredientsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ export const App = () => {
           <Route element={<AppShell />}>
             <Route path="/trials" element={<TrialsList />} />
             <Route path="/trials/:id" element={<TrialView />} />
+            <Route path="/ingredients" element={<IngredientsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/trials" replace />} />
         </Routes>

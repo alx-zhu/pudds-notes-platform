@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingredients Page Wireframe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: oklch(0.975 0.005 75);
+      --fg: oklch(0.15 0.01 60);
+      --card: oklch(1 0 0);
+      --muted: oklch(0.955 0.008 75);
+      --muted-fg: oklch(0.50 0.01 60);
+      --border: oklch(0.91 0.008 75);
+      --primary: oklch(0.22 0.01 60);
+      --primary-fg: oklch(0.985 0.003 75);
+      --accent: oklch(0.955 0.008 75);
+      --radius: 0.625rem;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app { display: flex; height: 100vh; }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 64px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    .sidebar-icon.inactive {
+      background: transparent;
+      color: var(--muted-fg);
+    }
+    .sidebar-icon.inactive:hover {
+      background: var(--accent);
+    }
+    .sidebar-icon.active {
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+
+    /* ─── Main content ─── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ─── Header ─── */
+    .header {
+      height: 56px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .search {
+      max-width: 380px;
+      height: 36px;
+      background: var(--muted);
+      border: none;
+      border-radius: 9999px;
+      padding: 0 16px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--fg);
+      flex: 1;
+    }
+    .search::placeholder { color: var(--muted-fg); }
+    .search:focus { outline: 2px solid oklch(0.65 0.01 60); outline-offset: -1px; }
+
+    .spacer { flex: 1; }
+
+    .header-stats {
+      font-size: 12px;
+      color: var(--muted-fg);
+    }
+
+    /* ─── Content ─── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    /* ─── Table ─── */
+    .table-wrap {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: var(--muted);
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 16px;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--muted-fg);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: oklch(0.97 0.004 75); }
+
+    /* ─── Badges ─── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .badge-formulation {
+      background: oklch(0.93 0.04 280);
+      color: oklch(0.35 0.15 280);
+    }
+    .badge-pinned {
+      background: oklch(0.93 0.08 145);
+      color: oklch(0.35 0.12 155);
+    }
+    .badge-solid {
+      background: oklch(0.94 0.03 60);
+      color: oklch(0.40 0.08 60);
+    }
+    .badge-liquid {
+      background: oklch(0.93 0.04 230);
+      color: oklch(0.35 0.12 240);
+    }
+
+    /* ─── Abbreviation ─── */
+    .abbr {
+      font-family: 'SF Mono', 'Cascadia Code', monospace;
+      font-size: 11px;
+      color: var(--muted-fg);
+      background: var(--muted);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* ─── Ingredient name cell ─── */
+    .ingredient-name {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── Type cell ─── */
+    .type-text {
+      color: var(--muted-fg);
+      font-size: 13px;
+    }
+
+    /* ─── Cost cell ─── */
+    .cost {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Trials count ─── */
+    .trials-count {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted-fg);
+    }
+
+    /* ─── Labels column ─── */
+    .labels {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Empty state ─── */
+    .empty-row td {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--muted-fg);
+      font-size: 13px;
+    }
+
+    /* ─── Annotation overlay ─── */
+    .annotation {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: var(--primary-fg);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 12px;
+      max-width: 700px;
+      line-height: 1.6;
+      text-align: center;
+      z-index: 10;
+    }
+
+    /* ─── Editable inline ─── */
+    .editable {
+      cursor: text;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+    }
+    .editable:hover {
+      background: var(--muted);
+    }
+
+    /* ─── Icon placeholder ─── */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <button class="sidebar-icon inactive" title="Trials">
+        <!-- LayoutGrid icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="sidebar-icon active" title="Ingredients">
+        <!-- TestTubes icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v17.5A2.5 2.5 0 0 1 6.5 22A2.5 2.5 0 0 1 4 19.5V2"/><path d="M20 2v17.5a2.5 2.5 0 0 1-2.5 2.5a2.5 2.5 0 0 1-2.5-2.5V2"/><path d="M3 2h7"/><path d="M14 2h7"/><path d="M9 16H4"/><path d="M20 16h-5"/></svg>
+      </button>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <!-- Header -->
+      <header class="header">
+        <input class="search" type="text" placeholder="Search ingredients..." />
+        <span class="spacer"></span>
+        <span class="header-stats">12 ingredients</span>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ingredient</th>
+                <th>Abbreviation</th>
+                <th>Labels</th>
+                <th>Type</th>
+                <th>Form</th>
+                <th>Cost / lb</th>
+                <th style="text-align: right">Trials</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="ingredient-name">Whole Milk</span>
+                </td>
+                <td><span class="abbr">WM</span></td>
+                <td>
+                  <span class="labels">
+                    <span class="badge badge-formulation">Formulation</span>
+                    <span class="badge badge-pinned">Pinned</span>
+                  </span>
+                </td>
+                <td><span class="type-text">Dairy</span></td>
+                <td><span class="badge badge-liquid">Liquid</span></td>
+                <td><span class="cost">$0.25</span></td>
+                <td style="text-align: right"><span class="trials-count">8</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Sugar</span>
+                </td>
+                <td><span class="abbr">SUG</span></td>
+                <td>
+                  <span class="labels">
+                    <span class="badge badge-formulation">Formulation</span>
+                    <span class="badge badge-pinned">Pinned</span>
+                  </span>
+                </td>
+                <td><span class="type-text">Sweetener</span></td>
+                <td><span class="badge badge-solid">Solid</span></td>
+                <td><span class="cost">$0.40</span></td>
+                <td style="text-align: right"><span class="trials-count">11</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Cocoa Powder</span>
+                </td>
+                <td><span class="abbr">CP</span></td>
+                <td>
+                  <span class="labels">
+                    <span class="badge badge-formulation">Formulation</span>
+                  </span>
+                </td>
+                <td><span class="type-text">Flavoring</span></td>
+                <td><span class="badge badge-solid">Solid</span></td>
+                <td><span class="cost">$3.50</span></td>
+                <td style="text-align: right"><span class="trials-count">5</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Carrageenan</span>
+                </td>
+                <td><span class="abbr">CGN</span></td>
+                <td>
+                  <span class="labels">
+                    <span class="badge badge-pinned">Pinned</span>
+                  </span>
+                </td>
+                <td><span class="type-text">Stabilizer</span></td>
+                <td><span class="badge badge-solid">Solid</span></td>
+                <td><span class="cost">$12.00</span></td>
+                <td style="text-align: right"><span class="trials-count">9</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Heavy Cream</span>
+                </td>
+                <td><span class="abbr">HC</span></td>
+                <td>
+                  <span class="labels">
+                    <span class="badge badge-formulation">Formulation</span>
+                  </span>
+                </td>
+                <td><span class="type-text">Dairy</span></td>
+                <td><span class="badge badge-liquid">Liquid</span></td>
+                <td><span class="cost">$1.80</span></td>
+                <td style="text-align: right"><span class="trials-count">6</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Corn Starch</span>
+                </td>
+                <td><span class="abbr">CS</span></td>
+                <td>
+                  <span class="labels"></span>
+                </td>
+                <td><span class="type-text">Thickener</span></td>
+                <td><span class="badge badge-solid">Solid</span></td>
+                <td><span class="cost">$0.60</span></td>
+                <td style="text-align: right"><span class="trials-count">4</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Vanilla Extract</span>
+                </td>
+                <td><span class="abbr">VE</span></td>
+                <td>
+                  <span class="labels"></span>
+                </td>
+                <td><span class="type-text">Flavoring</span></td>
+                <td><span class="badge badge-liquid">Liquid</span></td>
+                <td><span class="cost">$8.50</span></td>
+                <td style="text-align: right"><span class="trials-count">7</span></td>
+              </tr>
+
+              <tr>
+                <td>
+                  <span class="ingredient-name">Salt</span>
+                </td>
+                <td><span class="abbr">NaCl</span></td>
+                <td>
+                  <span class="labels"></span>
+                </td>
+                <td><span class="type-text">Seasoning</span></td>
+                <td><span class="badge badge-solid">Solid</span></td>
+                <td><span class="cost">$0.10</span></td>
+                <td style="text-align: right"><span class="trials-count">10</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Wireframe:</strong> Ingredients page — clean table layout. Rows are inline-editable (click to edit).
+    Labels (Formulation / Pinned) toggle on click. Type uses a combobox for prior values.
+    "Trials" column shows how many trials use each ingredient (read-only, computed).
+  </div>
+</body>
+</html>

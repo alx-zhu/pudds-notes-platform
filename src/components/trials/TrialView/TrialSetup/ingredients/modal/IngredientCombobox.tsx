@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { StringCombobox } from "@/components/trials/shared/StringCombobox";
+import { StringCombobox } from "@/components/shared/StringCombobox";
 import type { Ingredient } from "@/types/ingredient";
 
 interface Props {
