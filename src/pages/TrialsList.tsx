@@ -63,11 +63,19 @@ export const TrialsList = () => {
           variant="outline"
           size="sm"
         >
-          <ToggleGroupItem value="cards" aria-label="Card view">
-            <LayoutGrid size={14} />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="table" aria-label="Table view">
+          <ToggleGroupItem
+            value="table"
+            aria-label="Table view"
+            className="cursor-pointer"
+          >
             <List size={14} />
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="cards"
+            aria-label="Card view"
+            className="cursor-pointer"
+          >
+            <LayoutGrid size={14} />
           </ToggleGroupItem>
         </ToggleGroup>
         <div className="ml-auto flex items-center gap-2">
