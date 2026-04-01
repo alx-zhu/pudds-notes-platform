@@ -126,7 +126,7 @@ export const TrialsList = () => {
               <div
                 className="grid gap-4"
                 style={{
-                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
                 }}
               >
                 {filteredTrials.map((t) => (

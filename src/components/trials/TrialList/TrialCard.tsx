@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
 import {
   FLAVORS,
@@ -42,6 +41,14 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
   );
   const flavorConfig = FLAVORS.find((f) => f.value === trial.setup?.flavor);
 
+  // Build metadata items for plain-text footer
+  const metaItems: string[] = [];
+  if (trial.setup?.date) {
+    metaItems.push(format(parseISO(trial.setup.date), "MMM d, yyyy"));
+  }
+  if (processingConfig) metaItems.push(processingConfig.label);
+  if (flavorConfig) metaItems.push(flavorConfig.label);
+
   return (
     <div
       className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-border transition-all"
@@ -53,21 +60,22 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
       </div>
 
       {/* Content below image */}
-      <div className="px-3.5 pt-3 pb-3 flex flex-col gap-2.5">
-        {/* Header: trial number badge + formulation */}
-        <div className="flex items-start gap-2.5">
-          <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 rounded-md bg-muted text-foreground text-sm font-normal tabular-nums tracking-tight">
-            #{trial.trialNumber}
+      <div className="px-4.5 pt-4 pb-3.5 flex flex-col gap-3">
+        {/* Header: trial number + formulation abbreviations */}
+        <div className="flex items-center gap-2.5">
+          <span className="text-[22px] font-extrabold leading-none tracking-tight tabular-nums">
+            {trial.trialNumber}
           </span>
           {formulation.length > 0 && (
-            <span className="text-[13px] font-medium text-foreground leading-snug pt-0.5">
+            <span className="text-sm font-semibold leading-none">
               {formulation.map((item, i) => (
                 <span key={item.abbreviation + i}>
-                  {i > 0 && <span className="text-border mx-0.5">/</span>}
-                  <span className="font-bold">{item.abbreviation}</span>{" "}
-                  <span className="text-muted-foreground tabular-nums">
-                    {item.percentage}%
-                  </span>
+                  {i > 0 && (
+                    <span className="text-muted-foreground font-normal mx-0.5">
+                      +
+                    </span>
+                  )}
+                  {item.abbreviation}
                 </span>
               ))}
             </span>
@@ -81,37 +89,30 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
           <ScoreEmptyState />
         )}
 
-        {/* Metadata footer */}
-        <div className="flex items-center gap-1.5 flex-wrap pt-1">
-          {trial.setup?.date && (
-            <span className="text-[11px] text-muted-foreground font-medium">
-              {format(parseISO(trial.setup.date), "MMM d, yyyy")}
-            </span>
-          )}
-          {processingConfig && (
-            <>
-              <span className="text-[11px] text-border">·</span>
-              <Badge
-                className={cn(
-                  "text-[11px] font-medium",
-                  processingConfig.color,
-                )}
-              >
-                {processingConfig.label}
-              </Badge>
-            </>
-          )}
-          {flavorConfig && (
-            <>
-              <span className="text-[11px] text-border">·</span>
-              <Badge
-                className={cn("text-[11px] font-medium", flavorConfig.color)}
-              >
-                {flavorConfig.label}
-              </Badge>
-            </>
-          )}
-        </div>
+        {/* Score source */}
+        {recentEval ? (
+          <p className="text-[11px] text-muted-foreground italic flex justify-end">
+            Source: {recentEval.label}
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground/40 italic">
+            No evaluations yet
+          </p>
+        )}
+
+        {/* Metadata footer — plain muted text, no colored badges */}
+        {metaItems.length > 0 && (
+          <div className="flex justify-end items-center gap-1.5 flex-wrap pt-2.5 mt-0.5 border-t border-border/50">
+            {metaItems.map((item, i) => (
+              <span key={item} className="flex items-center gap-1.5">
+                {i > 0 && <span className="text-xs text-border">·</span>}
+                <span className="text-xs text-muted-foreground font-medium">
+                  {item}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -125,17 +126,17 @@ function ScoreDisplay({
   scores: { categories: CategoryScore[]; overall: number | null };
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex flex-col items-center min-w-12">
-        <span className="text-2xl font-extrabold leading-none tracking-tight">
+    <div className="flex items-center gap-3.5">
+      <div className="flex flex-col items-center min-w-[50px]">
+        <span className="text-[28px] font-extrabold leading-none tracking-tight">
           {scores.overall != null ? scores.overall.toFixed(1) : "—"}
         </span>
-        <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
+        <span className="text-[11px] font-medium text-muted-foreground mt-1">
           Overall
         </span>
       </div>
 
-      <div className="w-px h-8 bg-border" />
+      <div className="w-px h-9 bg-border" />
 
       <div className="flex-1 flex flex-col gap-1.5">
         {scores.categories.map((cat) => {
@@ -143,11 +144,11 @@ function ScoreDisplay({
           const pct =
             cat.score != null ? (cat.score / SENSORY_MAX_SCORE) * 100 : 0;
           return (
-            <div key={cat.key} className="flex items-center gap-1.5">
-              <span className="text-[11px] font-medium text-muted-foreground w-12 text-right">
+            <div key={cat.key} className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground w-[52px] text-right">
                 {cat.label}
               </span>
-              <div className="flex-1 h-[5px] bg-muted rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full",
@@ -158,7 +159,7 @@ function ScoreDisplay({
               </div>
               <span
                 className={cn(
-                  "text-[11px] font-semibold tabular-nums w-6 text-right",
+                  "text-xs font-bold tabular-nums w-[26px] text-right",
                   style?.number ?? "text-foreground",
                 )}
               >
@@ -178,26 +179,26 @@ function ScoreEmptyState() {
   const categories = ["Taste", "Texture", "Color"];
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex flex-col items-center min-w-12">
-        <span className="text-2xl font-extrabold leading-none tracking-tight text-border">
+    <div className="flex items-center gap-3.5">
+      <div className="flex flex-col items-center min-w-[50px]">
+        <span className="text-[28px] font-extrabold leading-none tracking-tight text-border">
           —
         </span>
-        <span className="text-[10px] font-medium text-muted-foreground/50 mt-0.5">
+        <span className="text-[11px] font-medium text-muted-foreground/50 mt-1">
           Overall
         </span>
       </div>
 
-      <div className="w-px h-8 bg-border/40" />
+      <div className="w-px h-9 bg-border/40" />
 
       <div className="flex-1 flex flex-col gap-1.5">
         {categories.map((label) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground/40 w-12 text-right">
+          <div key={label} className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground/40 w-[52px] text-right">
               {label}
             </span>
-            <div className="flex-1 h-[5px] bg-muted rounded-full overflow-hidden" />
-            <span className="text-[11px] font-semibold tabular-nums w-6 text-right text-border">
+            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden" />
+            <span className="text-xs font-bold tabular-nums w-[26px] text-right text-border">
               —
             </span>
           </div>
