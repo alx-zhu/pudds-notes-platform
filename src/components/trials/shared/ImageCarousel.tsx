@@ -39,7 +39,7 @@ export const ImageCarousel = ({ photos, labels, className }: Props) => {
 
       {/* Storage label badge */}
       {labels?.[clampedIndex] && (
-        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium leading-tight">
+        <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium leading-tight">
           {labels[clampedIndex]}
         </div>
       )}

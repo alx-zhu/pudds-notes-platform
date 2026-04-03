@@ -1,33 +1,32 @@
 import { useState, useMemo } from "react";
-import { Plus, List, LayoutGrid, SlidersHorizontal } from "lucide-react";
+import { Plus, List, LayoutGrid } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
 import { TrialsTable } from "@/components/trials/TrialList/TrialsTable";
 import { TrialCard } from "@/components/trials/TrialList/TrialCard";
-import { FilterSidebar } from "@/components/trials/TrialList/FilterSidebar/FilterSidebar";
+import { FilterPopover } from "@/components/trials/TrialList/FilterPopover";
 import { ActiveFiltersBar } from "@/components/trials/TrialList/ActiveFiltersBar";
-import { useTrials } from "@/hooks/useTrials";
-import { EMPTY_FILTERS, type TrialFilters } from "@/types/filters";
-import { filterTrials, countActiveFilters } from "@/lib/filterTrials";
+import { useTrials, useDeleteTrial } from "@/hooks/useTrials";
+import { EMPTY_FILTERS, DEFAULT_SORT } from "@/types/filters";
+import type { TrialFilters, SortByScore } from "@/types/filters";
+import { filterTrials, sortTrialsByScore } from "@/lib/filterTrials";
 
 export const TrialsList = () => {
   const navigate = useNavigate();
   const { data: trials = [], isLoading } = useTrials();
+  const deleteTrial = useDeleteTrial();
   const [modalOpen, setModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<TrialFilters>(EMPTY_FILTERS);
+  const [sortBy, setSortBy] = useState<SortByScore>(DEFAULT_SORT);
 
-  const filteredTrials = useMemo(
-    () => filterTrials(trials, filters),
-    [trials, filters],
+  const displayTrials = useMemo(
+    () => sortTrialsByScore(filterTrials(trials, filters), sortBy),
+    [trials, filters, sortBy],
   );
-
-  const activeFilterCount = countActiveFilters(filters);
 
   return (
     <>
@@ -37,23 +36,12 @@ export const TrialsList = () => {
           placeholder="Search trials, ingredients..."
           className="max-w-95 h-9 bg-muted border-0 rounded-full"
         />
-        <Button
-          variant={sidebarOpen ? "default" : "outline"}
-          size="sm"
-          className="rounded-full h-9 gap-1.5"
-          onClick={() => setSidebarOpen((prev) => !prev)}
-        >
-          <SlidersHorizontal size={14} />
-          Filter
-          {activeFilterCount > 0 && (
-            <Badge
-              variant="secondary"
-              className="ml-0.5 h-4 min-w-4 px-1 text-[10px] leading-none"
-            >
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
+        <FilterPopover
+          filters={filters}
+          onFiltersChange={setFilters}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
         <ToggleGroup
           type="single"
           value={viewMode}
@@ -90,62 +78,69 @@ export const TrialsList = () => {
         </div>
       </header>
 
-      {/* Content area with optional sidebar */}
-      <div className="flex flex-1 overflow-hidden">
-        {sidebarOpen && (
-          <FilterSidebar filters={filters} onFiltersChange={setFilters} />
-        )}
+      {/* Content */}
+      <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
+        <section>
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="text-xl font-extrabold tracking-tight">
+              Trials
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                ({displayTrials.length})
+              </span>
+            </h2>
+            <Button
+              size="sm"
+              className="rounded-full"
+              onClick={() => setModalOpen(true)}
+            >
+              <Plus size={14} className="mr-1" />
+              New Trial
+            </Button>
+          </div>
 
-        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
-          <section>
-            <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-xl font-extrabold tracking-tight">
-                Trials
-                <span className="text-sm font-normal text-muted-foreground ml-2">
-                  ({filteredTrials.length})
-                </span>
-              </h2>
-              <Button
-                size="sm"
-                className="rounded-full"
+          <ActiveFiltersBar
+            filters={filters}
+            onFiltersChange={setFilters}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
+
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : viewMode === "table" ? (
+            <TrialsTable
+              trials={displayTrials}
+              sortBy={sortBy}
+              onDelete={deleteTrial.mutate}
+            />
+          ) : (
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              }}
+            >
+              {displayTrials.map((t) => (
+                <TrialCard
+                  key={t.id}
+                  trial={t}
+                  sortBy={sortBy}
+                  onDelete={deleteTrial.mutate}
+                />
+              ))}
+              <div
+                className="rounded-xl border-2 border-dashed border-border bg-transparent cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-center min-h-40"
                 onClick={() => setModalOpen(true)}
               >
-                <Plus size={14} className="mr-1" />
-                New Trial
-              </Button>
-            </div>
-
-            {/* Active filters bar — directly above the grid/table */}
-            <ActiveFiltersBar filters={filters} onFiltersChange={setFilters} />
-
-            {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            ) : viewMode === "table" ? (
-              <TrialsTable trials={filteredTrials} />
-            ) : (
-              <div
-                className="grid gap-4"
-                style={{
-                  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-                }}
-              >
-                {filteredTrials.map((t) => (
-                  <TrialCard key={t.id} trial={t} />
-                ))}
-                <div
-                  className="rounded-xl border-2 border-dashed border-border bg-transparent cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-center min-h-40"
-                  onClick={() => setModalOpen(true)}
-                >
-                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                    <Plus size={28} />
-                    <span className="text-xs font-semibold">New Trial</span>
-                  </div>
+                <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                  <Plus size={28} />
+                  <span className="text-xs font-semibold">New Trial</span>
                 </div>
               </div>
-            )}
-          </section>
-        </main>
-      </div>
+            </div>
+          )}
+        </section>
+      </main>
 
       <TrialSetupModal
         open={modalOpen}

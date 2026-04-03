@@ -72,7 +72,10 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
 
   const openSensoryCreate = () => {
     if (!activeLog) return;
-    onOpenSensoryForm({ logId: activeLog.id, logLabel: getLogLabel(activeLog) });
+    onOpenSensoryForm({
+      logId: activeLog.id,
+      logLabel: getLogLabel(activeLog),
+    });
   };
 
   const openSensoryEdit = (evaluation: SensoryEvaluation) => {
@@ -82,7 +85,10 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
       logLabel: getLogLabel(activeLog),
       evaluation,
       onDelete: () =>
-        deleteEvalMutation.mutate({ logId: activeLog.id, evalId: evaluation.id }),
+        deleteEvalMutation.mutate({
+          logId: activeLog.id,
+          evalId: evaluation.id,
+        }),
     });
   };
 
@@ -165,6 +171,12 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                     trial={trial}
                     onOpenSensoryCreate={openSensoryCreate}
                     onOpenSensoryEdit={openSensoryEdit}
+                    onDeleteSensoryEval={(evaluation) =>
+                      deleteEvalMutation.mutate({
+                        logId: activeLog.id,
+                        evalId: evaluation.id,
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -209,7 +221,6 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
           log={photosLog}
         />
       )}
-
     </>
   );
 };

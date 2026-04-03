@@ -7,15 +7,35 @@ import {
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { FlaskConical } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { Trial } from "@/types/trial";
-import { columns } from "./columns";
+import type { SortByScore } from "@/types/filters";
+import { createColumns } from "./columns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TrialsTableProps {
   trials: Trial[];
+  sortBy: SortByScore;
+  onDelete: (id: string) => void;
 }
 
-export const TrialsTable = ({ trials }: TrialsTableProps) => {
+export const TrialsTable = ({ trials, sortBy, onDelete }: TrialsTableProps) => {
   const navigate = useNavigate();
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const columns = useMemo(
+    () => createColumns(sortBy, (id) => setPendingDeleteId(id)),
+    [sortBy],
+  );
 
   const table = useReactTable({
     data: trials,
@@ -37,48 +57,78 @@ export const TrialsTable = ({ trials }: TrialsTableProps) => {
   }
 
   return (
-    <div className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="border-b border-border">
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
-                  style={{ width: header.getSize() }}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className="border-b border-border/40 last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate(`/trials/${row.original.id}`)}
+    <>
+      <div className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id} className="border-b border-border">
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+                    style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className="border-b border-border/40 last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate(`/trials/${row.original.id}`)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className="px-4 py-3 align-middle"
+                    style={{ width: cell.column.getSize() }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <AlertDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete trial?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the trial and all its data. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pendingDeleteId) onDelete(pendingDeleteId);
+              }}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  className="px-4 py-3 align-middle"
-                  style={{ width: cell.column.getSize() }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

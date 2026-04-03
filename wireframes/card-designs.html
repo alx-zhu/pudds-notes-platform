@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trial Card Wireframes — Design C Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f0f5;
+    padding: 40px;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  h2 { font-size: 16px; color: #666; margin-bottom: 40px; font-weight: 400; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888;
+    margin-bottom: 6px;
+    margin-top: 48px;
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 20px;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .card {
+    width: 340px;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+  }
+
+  /* Image */
+  .card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+  }
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Image scrims */
+  .image-scrim-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 36px 14px 11px;
+    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%);
+    z-index: 2;
+  }
+  .image-scrim-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 14px;
+    z-index: 2;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .badge-chocolate { background: #44250e; color: #fef3c7; }
+  .badge-vanilla { background: rgba(254,249,195,0.9); color: #854d0e; }
+  .badge-white { background: rgba(255,255,255,0.85); color: #333; backdrop-filter: blur(4px); }
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* Card body */
+  .card-body { padding: 14px 16px 14px; }
+
+  /* Title row */
+  .title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  /* Formulation */
+  .formulation-plus {
+    color: #aaa;
+    font-weight: 400;
+    margin: 0 1px;
+  }
+
+  /* Score section — UNCHANGED from current */
+  .scores {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .scores-overall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+  }
+  .scores-overall-num {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+  .scores-overall-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #888;
+    margin-top: 4px;
+  }
+  .scores-divider {
+    width: 1px;
+    height: 36px;
+    background: #e5e5e5;
+  }
+  .scores-bars {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .score-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #888;
+    width: 52px;
+    text-align: right;
+  }
+  .score-bar-track {
+    flex: 1;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .score-bar-fill { height: 100%; border-radius: 3px; }
+  .bar-taste { background: #10b981; }
+  .bar-texture { background: #3b82f6; }
+  .bar-color { background: #f59e0b; }
+  .score-value {
+    font-size: 12px;
+    font-weight: 700;
+    width: 26px;
+    text-align: right;
+  }
+  .val-taste { color: #059669; }
+  .val-texture { color: #2563eb; }
+  .val-color { color: #d97706; }
+
+  /* Source line under scores */
+  .source-line {
+    font-size: 11px;
+    color: #999;
+    font-style: italic;
+    text-align: right;
+    margin-top: 6px;
+  }
+
+  /* Image overlay text */
+  .source-line-white {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Date (muted, right-aligned in header) */
+  .date-muted {
+    font-size: 12px;
+    font-weight: 400;
+    color: #aaa;
+    margin-left: auto;
+  }
+
+  /* Annotations */
+  .annotation {
+    font-size: 11px;
+    color: #e11d48;
+    font-weight: 500;
+    padding: 4px 8px;
+    background: #fff1f2;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .divider-line {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 16px 0 0;
+  }
+
+  .page { max-width: 1200px; margin: 0 auto; }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #bbb;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Design C — Variations</h1>
+  <h2>Flavor badge on image. Date in card header (right). Source under scores. No processing type. No footer.</h2>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- CURRENT (reference) -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-title">Current Design (reference)</div>
+  <div class="section-subtitle">Large bold trial number clashes with large bold overall score. Footer with date/processing/flavor.</div>
+  <div class="card-row">
+    <div>
+      <div class="card">
+        <div class="card-image">
+          <div class="image-scrim-top">
+            <span class="badge badge-white" style="font-size:11px;">Thermomix · 3 days</span>
+          </div>
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:10px;">
+            <span style="font-size:22px; font-weight:800; letter-spacing:-0.5px; line-height:1;">1</span>
+            <span style="font-size:13px; font-weight:600; color:#444;">MC<span class="formulation-plus">+</span>SC</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">3.5</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:68%"></div></div><span class="score-value val-taste">3.4</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:64%"></div></div><span class="score-value val-texture">3.2</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:80%"></div></div><span class="score-value val-color">4.0</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · 3 days</div>
+          <div style="display:flex; justify-content:flex-end; align-items:center; gap:6px; padding-top:10px; margin-top:6px; border-top:1px solid #f0f0f0;">
+            <span style="font-size:12px; color:#999; font-weight:500;">Mar 13, 2026</span>
+            <span style="font-size:12px; color:#ddd;">·</span>
+            <span style="font-size:12px; color:#999; font-weight:500;">Benchtop</span>
+            <span style="font-size:12px; color:#ddd;">·</span>
+            <span style="font-size:12px; color:#999; font-weight:500;">Chocolate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider-line" style="margin-bottom:0;">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- C1: Number as badge -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-title">C1 — Number as Badge</div>
+  <div class="section-subtitle">Trial number in a small grey pill badge. Date right-aligned in header. Flavor badge on image. Source under scores.</div>
+  <div class="card-row">
+    <div>
+      <div class="card-label">Chocolate trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-chocolate">Chocolate</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · 3 days</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:8px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; min-width:26px; height:22px; padding:0 7px; border-radius:6px; background:#f3f4f6; font-size:13px; font-weight:700; color:#374151; line-height:1;">1</span>
+            <span style="font-size:14px; font-weight:600; color:#444;">MC<span class="formulation-plus">+</span>SC</span>
+            <span class="date-muted">Mar 13</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">3.5</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:68%"></div></div><span class="score-value val-taste">3.4</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:64%"></div></div><span class="score-value val-texture">3.2</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:80%"></div></div><span class="score-value val-color">4.0</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · 3 days</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card-label">Vanilla trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-vanilla">Vanilla</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · Immediate</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:8px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; min-width:26px; height:22px; padding:0 7px; border-radius:6px; background:#f3f4f6; font-size:13px; font-weight:700; color:#374151; line-height:1;">4</span>
+            <span style="font-size:14px; font-weight:600; color:#444;">WPI<span class="formulation-plus">+</span>GG</span>
+            <span class="date-muted">Mar 10</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">4.1</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:82%"></div></div><span class="score-value val-taste">4.1</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:78%"></div></div><span class="score-value val-texture">3.9</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:86%"></div></div><span class="score-value val-color">4.3</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · Immediate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annotation">Trial number in grey pill. Date right-aligned muted in header. Flavor on image top. Source under scores.</div>
+
+  <hr class="divider-line" style="margin-bottom:0;">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- C2: Unified text line -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-title">C2 — Unified Text Line</div>
+  <div class="section-subtitle">Number and formulation at the same 14px size with dot separator. "1 · MC+SC". Date right-aligned.</div>
+  <div class="card-row">
+    <div>
+      <div class="card-label">Chocolate trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-chocolate">Chocolate</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · 3 days</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:0;">
+            <span style="font-size:14px; font-weight:700; color:#1a1a1a;">1</span>
+            <span style="font-size:14px; color:#ccc; margin:0 6px;">·</span>
+            <span style="font-size:14px; font-weight:600; color:#444;">MC<span class="formulation-plus">+</span>SC</span>
+            <span class="date-muted">Mar 13</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">3.5</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:68%"></div></div><span class="score-value val-taste">3.4</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:64%"></div></div><span class="score-value val-texture">3.2</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:80%"></div></div><span class="score-value val-color">4.0</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · 3 days</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card-label">Vanilla trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-vanilla">Vanilla</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · Immediate</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:0;">
+            <span style="font-size:14px; font-weight:700; color:#1a1a1a;">4</span>
+            <span style="font-size:14px; color:#ccc; margin:0 6px;">·</span>
+            <span style="font-size:14px; font-weight:600; color:#444;">WPI<span class="formulation-plus">+</span>GG</span>
+            <span class="date-muted">Mar 10</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">4.1</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:82%"></div></div><span class="score-value val-taste">4.1</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:78%"></div></div><span class="score-value val-texture">3.9</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:86%"></div></div><span class="score-value val-color">4.3</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · Immediate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annotation">Same-size text for number + formulation. Dot separator. Date right-aligned. Most minimal title line.</div>
+
+  <hr class="divider-line" style="margin-bottom:0;">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- C3: Hash prefix -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-title">C3 — Hash Prefix (#1 MC+SC)</div>
+  <div class="section-subtitle"># prefix like Linear/GitHub issues. Familiar pattern. Date right-aligned.</div>
+  <div class="card-row">
+    <div>
+      <div class="card-label">Chocolate trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-chocolate">Chocolate</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · 3 days</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:4px;">
+            <span style="font-size:14px; font-weight:700; color:#999;">#</span><span style="font-size:14px; font-weight:700; color:#1a1a1a;">1</span>
+            <span style="font-size:14px; font-weight:600; color:#444; margin-left:4px;">MC<span class="formulation-plus">+</span>SC</span>
+            <span class="date-muted">Mar 13</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">3.5</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:68%"></div></div><span class="score-value val-taste">3.4</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:64%"></div></div><span class="score-value val-texture">3.2</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:80%"></div></div><span class="score-value val-color">4.0</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · 3 days</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card-label">Vanilla trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-vanilla">Vanilla</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · Immediate</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:4px;">
+            <span style="font-size:14px; font-weight:700; color:#999;">#</span><span style="font-size:14px; font-weight:700; color:#1a1a1a;">4</span>
+            <span style="font-size:14px; font-weight:600; color:#444; margin-left:4px;">WPI<span class="formulation-plus">+</span>GG</span>
+            <span class="date-muted">Mar 10</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">4.1</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:82%"></div></div><span class="score-value val-taste">4.1</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:78%"></div></div><span class="score-value val-texture">3.9</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:86%"></div></div><span class="score-value val-color">4.3</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · Immediate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annotation"># prefix contextualizes the number. Reads naturally as "#1 MC+SC". Date right-aligned muted.</div>
+
+  <hr class="divider-line" style="margin-bottom:0;">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- C4: Formulation-first -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-title">C4 — Formulation-First</div>
+  <div class="section-subtitle">Formulation is the hero title. "Trial 1" as small muted label. Date right-aligned. Emphasizes composition.</div>
+  <div class="card-row">
+    <div>
+      <div class="card-label">Chocolate trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-chocolate">Chocolate</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · 3 days</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:8px;">
+            <span style="font-size:15px; font-weight:700; color:#1a1a1a; letter-spacing:-0.3px;">MC<span class="formulation-plus" style="font-size:15px;">+</span>SC</span>
+            <span style="font-size:12px; font-weight:500; color:#bbb;">Trial 1</span>
+            <span class="date-muted">Mar 13</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">3.5</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:68%"></div></div><span class="score-value val-taste">3.4</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:64%"></div></div><span class="score-value val-texture">3.2</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:80%"></div></div><span class="score-value val-color">4.0</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · 3 days</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card-label">Vanilla trial</div>
+      <div class="card">
+        <div class="card-image">
+          <img src="IMG_1024.jpeg" alt="Trial photo">
+          <div class="image-scrim-top">
+            <span class="badge badge-vanilla">Vanilla</span>
+          </div>
+          <div class="image-scrim-bottom">
+            <div class="source-line-white">Thermomix · Immediate</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="title-row" style="gap:8px;">
+            <span style="font-size:15px; font-weight:700; color:#1a1a1a; letter-spacing:-0.3px;">WPI<span class="formulation-plus" style="font-size:15px;">+</span>GG</span>
+            <span style="font-size:12px; font-weight:500; color:#bbb;">Trial 4</span>
+            <span class="date-muted">Mar 10</span>
+          </div>
+          <div class="scores">
+            <div class="scores-overall">
+              <span class="scores-overall-num">4.1</span>
+              <span class="scores-overall-label">Overall</span>
+            </div>
+            <div class="scores-divider"></div>
+            <div class="scores-bars">
+              <div class="score-row"><span class="score-label">Taste</span><div class="score-bar-track"><div class="score-bar-fill bar-taste" style="width:82%"></div></div><span class="score-value val-taste">4.1</span></div>
+              <div class="score-row"><span class="score-label">Texture</span><div class="score-bar-track"><div class="score-bar-fill bar-texture" style="width:78%"></div></div><span class="score-value val-texture">3.9</span></div>
+              <div class="score-row"><span class="score-label">Color</span><div class="score-bar-track"><div class="score-bar-fill bar-color" style="width:86%"></div></div><span class="score-value val-color">4.3</span></div>
+            </div>
+          </div>
+          <div class="source-line">Source: Thermomix · Immediate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annotation">Formulation is hero. "Trial 1" small and muted. Date pushed right. Emphasizes what it IS over which number.</div>
+
+</div>
+</body>
+</html>

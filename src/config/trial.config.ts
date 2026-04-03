@@ -194,18 +194,31 @@ export const SENSORY_SCORE_CATEGORIES = [
 
 export type ScoreCategoryKey = (typeof SENSORY_SCORE_CATEGORIES)[number]["key"];
 
-export const SENSORY_CATEGORY_STYLES: Record<string, { bar: string; number: string }> = {
+export interface ScoreCategoryStyle {
+  bar: string;
+  number: string;
+  activeClass: string;
+  chip: string;
+}
+
+export const SENSORY_CATEGORY_STYLES: Record<ScoreCategoryKey, ScoreCategoryStyle> = {
   taste: {
     bar: "bg-emerald-500",
     number: "text-emerald-700 dark:text-emerald-400",
+    activeClass: "data-[state=on]:bg-emerald-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    chip: "bg-emerald-100 text-emerald-800",
   },
   texture: {
     bar: "bg-blue-500",
     number: "text-blue-700 dark:text-blue-400",
+    activeClass: "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    chip: "bg-blue-100 text-blue-800",
   },
   color: {
     bar: "bg-amber-500",
     number: "text-amber-700 dark:text-amber-400",
+    activeClass: "data-[state=on]:bg-amber-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    chip: "bg-amber-100 text-amber-800",
   },
 };
 

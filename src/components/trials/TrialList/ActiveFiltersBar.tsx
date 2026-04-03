@@ -3,40 +3,53 @@ import { Button } from "@/components/ui/button";
 import {
   PROCESSING_TYPES,
   FLAVORS,
-  SENSORY_METRICS,
+  SENSORY_SCORE_CATEGORIES,
+  SENSORY_CATEGORY_STYLES,
 } from "@/config/trial.config";
-import type { SensoryMetricKey } from "@/config/trial.config";
-import { formatStorageTime } from "@/lib/storageTime";
-import { EMPTY_FILTERS, type TrialFilters } from "@/types/filters";
+import type { ScoreCategoryKey } from "@/config/trial.config";
+import { EMPTY_FILTERS, DEFAULT_SORT } from "@/types/filters";
+import type { TrialFilters, SortByScore } from "@/types/filters";
 import { format, parseISO } from "date-fns";
 
 interface ActiveFiltersBarProps {
   filters: TrialFilters;
   onFiltersChange: (filters: TrialFilters) => void;
+  sortBy: SortByScore;
+  onSortChange: (sort: SortByScore) => void;
 }
 
 interface Chip {
   key: string;
   label: string;
-  onRemove: () => void;
+  chipClass: string;
+  onRemove?: () => void;
+}
+
+function getSortLabel(sortBy: NonNullable<SortByScore>): string {
+  if (sortBy === "overall") return "Overall";
+  return SENSORY_SCORE_CATEGORIES.find((c) => c.key === sortBy)!.label;
+}
+
+function getSortChipClass(sortBy: NonNullable<SortByScore>): string {
+  if (sortBy === "overall") return "bg-foreground text-background";
+  return SENSORY_CATEGORY_STYLES[sortBy as ScoreCategoryKey].chip;
 }
 
 export const ActiveFiltersBar = ({
   filters,
   onFiltersChange,
+  sortBy,
+  onSortChange,
 }: ActiveFiltersBarProps) => {
   const chips: Chip[] = [];
 
-  const lookupLabel = (
-    list: readonly { value: string; label: string }[],
-    value: string,
-  ) => list.find((item) => item.value === value)?.label ?? value;
-
   // Processing Types
   for (const val of filters.processingTypes) {
+    const config = PROCESSING_TYPES.find((p) => p.value === val);
     chips.push({
       key: `pt-${val}`,
-      label: `Processing: ${lookupLabel(PROCESSING_TYPES, val)}`,
+      label: config?.label ?? val,
+      chipClass: `${config?.color ?? "bg-muted text-foreground"} pl-3 pr-1.5`,
       onRemove: () =>
         onFiltersChange({
           ...filters,
@@ -47,9 +60,11 @@ export const ActiveFiltersBar = ({
 
   // Flavors
   for (const val of filters.flavors) {
+    const config = FLAVORS.find((f) => f.value === val);
     chips.push({
       key: `fl-${val}`,
-      label: `Flavor: ${lookupLabel(FLAVORS, val)}`,
+      label: config?.label ?? val,
+      chipClass: `${config?.color ?? "bg-muted text-foreground"} pl-3 pr-1.5`,
       onRemove: () =>
         onFiltersChange({
           ...filters,
@@ -58,54 +73,12 @@ export const ActiveFiltersBar = ({
     });
   }
 
-  // Thermal Processing Types
-  for (const val of filters.thermalProcessingTypes) {
-    chips.push({
-      key: `tp-${val}`,
-      label: `Thermal: ${val}`,
-      onRemove: () =>
-        onFiltersChange({
-          ...filters,
-          thermalProcessingTypes: filters.thermalProcessingTypes.filter(
-            (v) => v !== val,
-          ),
-        }),
-    });
-  }
-
-  // Storage Times
-  for (const val of filters.storageTimeMinutes) {
-    chips.push({
-      key: `st-${val}`,
-      label: `Storage: ${formatStorageTime(val)}`,
-      onRemove: () =>
-        onFiltersChange({
-          ...filters,
-          storageTimeMinutes: filters.storageTimeMinutes.filter(
-            (v) => v !== val,
-          ),
-        }),
-    });
-  }
-
-  // Ingredients
-  for (const val of filters.ingredients) {
-    chips.push({
-      key: `ing-${val}`,
-      label: `Ingredient: ${val}`,
-      onRemove: () =>
-        onFiltersChange({
-          ...filters,
-          ingredients: filters.ingredients.filter((v) => v !== val),
-        }),
-    });
-  }
-
   // Date range
   if (filters.dateRange.from) {
     chips.push({
       key: "date-from",
-      label: `From: ${format(parseISO(filters.dateRange.from), "MMM d, yyyy")}`,
+      label: `From ${format(parseISO(filters.dateRange.from), "MMM d, yyyy")}`,
+      chipClass: "bg-muted text-foreground pl-3 pr-1.5",
       onRemove: () =>
         onFiltersChange({
           ...filters,
@@ -116,7 +89,8 @@ export const ActiveFiltersBar = ({
   if (filters.dateRange.to) {
     chips.push({
       key: "date-to",
-      label: `To: ${format(parseISO(filters.dateRange.to), "MMM d, yyyy")}`,
+      label: `To ${format(parseISO(filters.dateRange.to), "MMM d, yyyy")}`,
+      chipClass: "bg-muted text-foreground pl-3 pr-1.5",
       onRemove: () =>
         onFiltersChange({
           ...filters,
@@ -125,21 +99,21 @@ export const ActiveFiltersBar = ({
     });
   }
 
-  // Sensory ranges
-  for (const [key, range] of Object.entries(filters.sensoryRanges)) {
-    const metric = SENSORY_METRICS.find((m) => m.key === key);
+  // Sort indicator (not removable — informational, colored by category)
+  if (sortBy != null) {
     chips.push({
-      key: `sensory-${key}`,
-      label: `${metric?.label ?? key}: ${range.min}\u2013${range.max}`,
-      onRemove: () => {
-        const next = { ...filters.sensoryRanges };
-        delete next[key as SensoryMetricKey];
-        onFiltersChange({ ...filters, sensoryRanges: next });
-      },
+      key: "sort",
+      label: `Sort: ${getSortLabel(sortBy)} ↓`,
+      chipClass: `${getSortChipClass(sortBy)} pl-3 pr-3`,
     });
   }
 
   if (chips.length === 0) return null;
+
+  const handleClearAll = () => {
+    onFiltersChange(EMPTY_FILTERS);
+    onSortChange(DEFAULT_SORT);
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -149,22 +123,24 @@ export const ActiveFiltersBar = ({
       {chips.map((chip) => (
         <span
           key={chip.key}
-          className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 text-sky-800 text-xs font-medium pl-3 pr-1.5 py-1"
+          className={`inline-flex items-center gap-1.5 rounded-full text-xs font-medium py-1 ${chip.chipClass}`}
         >
           {chip.label}
-          <button
-            onClick={chip.onRemove}
-            className="rounded-full p-0.5 hover:bg-sky-200 transition-colors"
-          >
-            <X size={10} />
-          </button>
+          {chip.onRemove && (
+            <button
+              onClick={chip.onRemove}
+              className="rounded-full p-0.5 hover:bg-black/10 transition-colors"
+            >
+              <X size={10} />
+            </button>
+          )}
         </span>
       ))}
       <Button
         variant="ghost"
         size="sm"
         className="h-7 text-xs text-muted-foreground hover:text-red-600 hover:bg-transparent"
-        onClick={() => onFiltersChange(EMPTY_FILTERS)}
+        onClick={handleClearAll}
       >
         Clear all
       </Button>

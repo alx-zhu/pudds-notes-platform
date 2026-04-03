@@ -1,10 +1,20 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, parseISO } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   FLAVORS,
-  PROCESSING_TYPES,
   SENSORY_CATEGORY_STYLES,
   SENSORY_MAX_SCORE,
 } from "@/config/trial.config";
@@ -14,15 +24,19 @@ import {
   getTrialPhotos,
 } from "@/lib/trialDisplay";
 import type { Trial } from "@/types/trial";
+import type { SortByScore } from "@/types/filters";
 import type { CategoryScore } from "@/lib/sensoryScores";
 import { cn } from "@/lib/utils";
 
 interface TrialCardProps {
   trial: Trial;
+  sortBy: SortByScore;
+  onDelete: (id: string) => void;
 }
 
-export const TrialCard = ({ trial }: TrialCardProps) => {
+export const TrialCard = ({ trial, sortBy, onDelete }: TrialCardProps) => {
   const navigate = useNavigate();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const formulation = useMemo(
     () => getPinnedFormulation(trial.ingredients),
@@ -36,20 +50,10 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
     return { srcs: items.map((p) => p.src), labels: items.map((p) => p.label) };
   }, [trial.analysisLogs]);
 
-  const processingConfig = PROCESSING_TYPES.find(
-    (p) => p.value === trial.setup?.processingType,
-  );
   const flavorConfig = FLAVORS.find((f) => f.value === trial.setup?.flavor);
 
-  // Build metadata items for plain-text footer
-  const metaItems: string[] = [];
-  if (trial.setup?.date) {
-    metaItems.push(format(parseISO(trial.setup.date), "MMM d, yyyy"));
-  }
-  if (processingConfig) metaItems.push(processingConfig.label);
-  if (flavorConfig) metaItems.push(flavorConfig.label);
-
   return (
+    <>
     <div
       className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-border transition-all"
       onClick={() => navigate(`/trials/${trial.id}`)}
@@ -60,31 +64,57 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
       </div>
 
       {/* Content below image */}
-      <div className="px-4.5 pt-4 pb-3.5 flex flex-col gap-3">
-        {/* Header: trial number + formulation abbreviations */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-[22px] font-extrabold leading-none tracking-tight tabular-nums">
+      <div className="px-4.5 pt-3.5 pb-3.5 flex flex-col gap-4">
+        {/* Header: trial number badge + formulation + flavor badge */}
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center justify-center min-w-[26px] h-[22px] px-1.5 rounded-md bg-muted text-[13px] font-bold tabular-nums leading-none">
             {trial.trialNumber}
           </span>
-          {formulation.length > 0 && (
-            <span className="text-sm font-semibold leading-none">
+          {formulation.length > 0 ? (
+            <span className="text-[13px] font-medium leading-none">
               {formulation.map((item, i) => (
                 <span key={item.abbreviation + i}>
-                  {i > 0 && (
-                    <span className="text-muted-foreground font-normal mx-0.5">
-                      +
-                    </span>
-                  )}
-                  {item.abbreviation}
+                  {i > 0 && <span className="text-border mx-1">/</span>}
+                  <span className="font-bold">{item.abbreviation}</span>{" "}
+                  <span className="text-muted-foreground tabular-nums">
+                    {item.percentage}%
+                  </span>
                 </span>
               ))}
             </span>
+          ) : (
+            <span className="text-xs text-muted-foreground/60 italic">
+              No pinned ingredients
+            </span>
           )}
+          <div className="ml-auto flex items-center gap-1.5">
+            {flavorConfig && (
+              <span
+                className={cn(
+                  "inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium leading-none",
+                  flavorConfig.color,
+                )}
+              >
+                {flavorConfig.label}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmOpen(true);
+              }}
+            >
+              <Trash2 size={14} />
+            </Button>
+          </div>
         </div>
 
         {/* Scores */}
         {recentEval ? (
-          <ScoreDisplay scores={recentEval.scores} />
+          <ScoreDisplay scores={recentEval.scores} sortBy={sortBy} />
         ) : (
           <ScoreEmptyState />
         )}
@@ -95,26 +125,34 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
             Source: {recentEval.label}
           </p>
         ) : (
-          <p className="text-[11px] text-muted-foreground/40 italic">
+          <p className="text-[11px] text-muted-foreground/40 italic flex justify-end">
             No evaluations yet
           </p>
         )}
-
-        {/* Metadata footer — plain muted text, no colored badges */}
-        {metaItems.length > 0 && (
-          <div className="flex justify-end items-center gap-1.5 flex-wrap pt-2.5 mt-0.5 border-t border-border/50">
-            {metaItems.map((item, i) => (
-              <span key={item} className="flex items-center gap-1.5">
-                {i > 0 && <span className="text-xs text-border">·</span>}
-                <span className="text-xs text-muted-foreground font-medium">
-                  {item}
-                </span>
-              </span>
-            ))}
-          </div>
-        )}
       </div>
+
     </div>
+
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete trial?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete the trial and all its data. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => onDelete(trial.id)}
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 
@@ -122,12 +160,21 @@ export const TrialCard = ({ trial }: TrialCardProps) => {
 
 function ScoreDisplay({
   scores,
+  sortBy,
 }: {
   scores: { categories: CategoryScore[]; overall: number | null };
+  sortBy: SortByScore;
 }) {
+  const hasSortEmphasis = sortBy != null && sortBy !== "overall";
+
   return (
     <div className="flex items-center gap-3.5">
-      <div className="flex flex-col items-center min-w-[50px]">
+      <div
+        className={cn(
+          "flex flex-col items-center min-w-[50px] transition-opacity",
+          hasSortEmphasis && "opacity-40",
+        )}
+      >
         <span className="text-[28px] font-extrabold leading-none tracking-tight">
           {scores.overall != null ? scores.overall.toFixed(1) : "—"}
         </span>
@@ -143,12 +190,31 @@ function ScoreDisplay({
           const style = SENSORY_CATEGORY_STYLES[cat.key];
           const pct =
             cat.score != null ? (cat.score / SENSORY_MAX_SCORE) * 100 : 0;
+          const isEmphasized = sortBy === cat.key;
+          const isDimmed = hasSortEmphasis && !isEmphasized;
+
           return (
-            <div key={cat.key} className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground w-[52px] text-right">
+            <div
+              key={cat.key}
+              className={cn(
+                "flex items-center gap-2 transition-opacity",
+                isDimmed && "opacity-40",
+              )}
+            >
+              <span
+                className={cn(
+                  "text-xs font-medium text-muted-foreground w-[52px] text-right",
+                  isEmphasized && "text-foreground font-semibold",
+                )}
+              >
                 {cat.label}
               </span>
-              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "flex-1 h-1.5 bg-muted rounded-full overflow-hidden transition-all",
+                  isEmphasized && "h-2",
+                )}
+              >
                 <div
                   className={cn(
                     "h-full rounded-full",
@@ -161,6 +227,7 @@ function ScoreDisplay({
                 className={cn(
                   "text-xs font-bold tabular-nums w-[26px] text-right",
                   style?.number ?? "text-foreground",
+                  isEmphasized && "text-[13px] font-extrabold",
                 )}
               >
                 {cat.score != null ? cat.score.toFixed(1) : "—"}

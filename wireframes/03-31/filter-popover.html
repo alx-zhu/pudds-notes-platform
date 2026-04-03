@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Filter Popover – Trials List</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #f8f8fa;
+      color: #18181b;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1120px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Topbar ── */
+    .topbar {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid #e4e4e7;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 10px;
+      border-radius: 12px 12px 0 0;
+      position: relative;
+    }
+    .search-input {
+      height: 36px; width: 320px;
+      background: #f4f4f5; border: none; border-radius: 999px;
+      padding: 0 14px; font-size: 13px; color: #52525b; outline: none;
+    }
+
+    /* ── Filter Button ── */
+    .filter-btn {
+      height: 36px; padding: 0 14px; border-radius: 999px;
+      border: 1px solid #e4e4e7; background: #fff;
+      font-size: 13px; font-weight: 500; color: #3f3f46;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .filter-btn:hover { background: #f4f4f5; }
+    .filter-btn.active { background: #18181b; color: #fff; border-color: #18181b; }
+    .filter-btn .icon { font-size: 14px; }
+    .filter-badge {
+      background: rgba(255,255,255,0.2); font-size: 10px; font-weight: 600;
+      padding: 1px 5px; border-radius: 999px; margin-left: 2px;
+    }
+
+    /* ── Popover ── */
+    .popover-anchor { position: relative; display: inline-flex; }
+    .popover {
+      position: absolute; top: calc(100% + 6px); left: 0;
+      width: 320px; background: #fff; border: 1px solid #e4e4e7;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      z-index: 50; padding: 16px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .filter-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #a1a1aa; margin-bottom: 8px;
+    }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      height: 32px; padding: 0 12px; border-radius: 8px;
+      border: 1px solid #e4e4e7; background: #fff;
+      font-size: 13px; font-weight: 500; color: #52525b;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+    .chip:hover { background: #f4f4f5; }
+    .chip.selected { border-color: #18181b; background: #18181b; color: #fff; }
+    .chip.selected.chocolate { background: #78350f; border-color: #78350f; color: #fef3c7; }
+    .chip.selected.vanilla { background: #fef9c3; border-color: #ca8a04; color: #854d0e; }
+    .chip.selected.benchtop { background: #e0f2fe; border-color: #0284c7; color: #0c4a6e; }
+    .chip.selected.industrial { background: #ffedd5; border-color: #ea580c; color: #9a3412; }
+    .chip.sort-selected { border-color: #18181b; background: #18181b; color: #fff; }
+
+    .date-row { display: flex; gap: 8px; }
+    .date-input {
+      flex: 1; height: 32px; border: 1px solid #e4e4e7; border-radius: 8px;
+      padding: 0 10px; font-size: 13px; color: #3f3f46; background: #fff; outline: none;
+    }
+    .popover-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 12px; border-top: 1px solid #f4f4f5;
+    }
+    .clear-btn {
+      font-size: 12px; font-weight: 500; color: #a1a1aa;
+      background: none; border: none; cursor: pointer;
+    }
+    .clear-btn:hover { color: #ef4444; }
+    .apply-btn {
+      height: 32px; padding: 0 16px; border-radius: 8px; border: none;
+      background: #18181b; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .popover-divider { height: 1px; background: #f4f4f5; }
+
+    /* ── Active Filters Bar ── */
+    .active-filters {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      padding: 10px 20px; background: #fff;
+    }
+    .active-label { font-size: 11px; font-weight: 500; color: #a1a1aa; margin-right: 4px; }
+    .active-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 26px; padding: 0 10px; border-radius: 999px;
+      background: #e0f2fe; color: #0c4a6e; font-size: 12px; font-weight: 500;
+    }
+    .active-chip .remove {
+      width: 14px; height: 14px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; cursor: pointer;
+    }
+
+    /* ── Results area ── */
+    .results-area {
+      background: #fff; border-radius: 0 0 12px 12px;
+      padding: 20px; min-height: 200px;
+    }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;
+    }
+    .section-title { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+    .section-count { font-size: 13px; font-weight: 400; color: #a1a1aa; margin-left: 8px; }
+    .new-trial-btn {
+      height: 32px; padding: 0 14px; border-radius: 999px; border: none;
+      background: #18181b; color: #fff; font-size: 13px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ── Table ── */
+    .trial-table {
+      width: 100%; border-collapse: collapse;
+      border: 1px solid #e4e4e7; border-radius: 12px; overflow: hidden;
+    }
+    .trial-table thead th {
+      text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em; color: #a1a1aa;
+      background: #fafafa; border-bottom: 1px solid #e4e4e7;
+    }
+    .trial-table tbody td {
+      padding: 12px 16px; border-bottom: 1px solid #f4f4f5;
+      font-size: 13px; vertical-align: middle;
+    }
+    .trial-table tbody tr:last-child td { border-bottom: none; }
+    .trial-table tbody tr:hover { background: #fafafa; cursor: pointer; }
+
+    .trial-num { font-size: 15px; font-weight: 800; tabular-nums: true; }
+    .formulation { font-size: 13px; font-weight: 500; }
+    .formulation .abbr { font-weight: 700; }
+    .formulation .pct { color: #a1a1aa; }
+    .formulation .sep { color: #d4d4d8; margin: 0 4px; }
+    .eval-label { font-size: 13px; font-weight: 500; }
+    .date-cell { font-size: 13px; color: #71717a; }
+
+    /* Score cells in table */
+    .scores-cell { display: flex; align-items: baseline; gap: 14px; }
+    .score-item { display: inline-flex; align-items: baseline; gap: 3px; }
+    .score-label { font-size: 11px; font-weight: 500; color: #a1a1aa; }
+    .score-value { font-size: 13px; font-weight: 700; }
+    .score-value.taste { color: #059669; }
+    .score-value.texture { color: #2563eb; }
+    .score-value.color-cat { color: #d97706; }
+
+    /* Emphasized score (when sorted by that category) */
+    .score-item.emphasized .score-label {
+      color: #18181b; font-weight: 600;
+    }
+    .score-item.emphasized .score-value {
+      font-size: 14px; font-weight: 800;
+    }
+    /* De-emphasized scores (not the active sort) */
+    .score-item.dimmed .score-value { opacity: 0.45; }
+    .score-item.dimmed .score-label { opacity: 0.45; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+      border-radius: 6px; font-size: 11px; font-weight: 500;
+    }
+    .badge.sky { background: #e0f2fe; color: #0c4a6e; }
+    .badge.orange { background: #ffedd5; color: #9a3412; }
+    .badge.amber-dark { background: #78350f; color: #fef3c7; }
+    .badge.yellow { background: #fef9c3; color: #854d0e; }
+
+    /* ── View Toggle ── */
+    .view-toggle {
+      display: flex; border: 1px solid #e4e4e7; border-radius: 8px; overflow: hidden;
+    }
+    .view-toggle button {
+      width: 36px; height: 32px; border: none; background: #fff;
+      cursor: pointer; font-size: 14px; color: #71717a;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .view-toggle button.active { background: #f4f4f5; color: #18181b; }
+    .view-toggle button:not(:last-child) { border-right: 1px solid #e4e4e7; }
+    .spacer { flex: 1; }
+
+    /* ── Cards Grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Card ── */
+    .card {
+      border-radius: 12px; background: #fff; border: 1px solid #e4e4e7;
+      overflow: hidden; cursor: pointer;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .card-image {
+      aspect-ratio: 4/3; background: #f0f0f2;
+      display: flex; align-items: center; justify-content: center;
+      color: #a1a1aa; font-size: 12px;
+    }
+    .card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card-header { display: flex; align-items: center; gap: 10px; }
+    .card-trial-num { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .card-formulation { font-size: 14px; font-weight: 600; }
+    .card-formulation .sep { color: #a1a1aa; font-weight: 400; margin: 0 3px; }
+
+    /* Card score display */
+    .card-scores { display: flex; align-items: center; gap: 14px; }
+    .card-overall {
+      display: flex; flex-direction: column; align-items: center; min-width: 50px;
+    }
+    .card-overall-num { font-size: 28px; font-weight: 800; line-height: 1; }
+    .card-overall-label { font-size: 11px; font-weight: 500; color: #a1a1aa; margin-top: 4px; }
+    .card-divider { width: 1px; height: 36px; background: #e4e4e7; }
+    .card-categories { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .card-cat-row { display: flex; align-items: center; gap: 8px; }
+    .card-cat-label { font-size: 12px; font-weight: 500; color: #a1a1aa; width: 52px; text-align: right; }
+    .card-cat-bar { flex: 1; height: 6px; background: #f4f4f5; border-radius: 999px; overflow: hidden; }
+    .card-cat-bar-fill { height: 100%; border-radius: 999px; }
+    .card-cat-bar-fill.taste { background: #059669; }
+    .card-cat-bar-fill.texture { background: #2563eb; }
+    .card-cat-bar-fill.color-cat { background: #d97706; }
+    .card-cat-value { font-size: 12px; font-weight: 700; width: 26px; text-align: right; }
+    .card-cat-value.taste { color: #059669; }
+    .card-cat-value.texture { color: #2563eb; }
+    .card-cat-value.color-cat { color: #d97706; }
+
+    /* Card score emphasis (when sorted by a specific category) */
+    .card-cat-row.emphasized .card-cat-label { color: #18181b; font-weight: 600; }
+    .card-cat-row.emphasized .card-cat-bar { height: 8px; }
+    .card-cat-row.emphasized .card-cat-value { font-size: 13px; font-weight: 800; }
+    .card-cat-row.dimmed { opacity: 0.4; }
+
+    /* Overall emphasis on card (when sorting by overall) */
+    .card-overall.emphasized .card-overall-num { }
+    .card-overall.dimmed { opacity: 0.4; }
+
+    .card-source { font-size: 11px; color: #a1a1aa; font-style: italic; text-align: right; }
+    .card-meta {
+      display: flex; justify-content: flex-end; align-items: center; gap: 6px; flex-wrap: wrap;
+      padding-top: 10px; border-top: 1px solid #f4f4f5;
+    }
+    .card-meta-dot { font-size: 12px; color: #e4e4e7; }
+    .card-meta-item { font-size: 12px; color: #71717a; font-weight: 500; }
+
+    /* ── Formulation Group Header ── */
+    .formulation-group-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 0 6px; margin-top: 8px;
+    }
+    .formulation-group-header:first-child { margin-top: 0; }
+    .formulation-name { font-size: 13px; font-weight: 700; }
+    .formulation-count { font-size: 11px; color: #a1a1aa; }
+    .formulation-line { flex: 1; height: 1px; background: #e4e4e7; }
+
+    /* ── State label ── */
+    .state-label {
+      text-align: center; font-size: 13px; font-weight: 600; color: #6366f1;
+      padding: 12px 0; background: #eef2ff; border-radius: 8px; margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- STATE 1: Table — Default (sorted by Overall, no filters)  -->
+<!-- ========================================================= -->
+<div class="page">
+  <div class="state-label">State 1 — Table view: Default sort by Overall, no filters</div>
+
+  <div style="border-radius: 12px; overflow: visible; border: 1px solid #e4e4e7;">
+    <div class="topbar">
+      <input class="search-input" placeholder="Search trials, ingredients..." />
+      <div class="popover-anchor">
+        <button class="filter-btn active">
+          <span class="icon">⚙</span> Filter
+        </button>
+        <div class="popover">
+          <div class="filter-section">
+            <div class="filter-label">Sort by Score</div>
+            <div class="chip-group">
+              <button class="chip sort-selected">Overall</button>
+              <button class="chip">Taste</button>
+              <button class="chip">Texture</button>
+              <button class="chip">Color</button>
+            </div>
+          </div>
+          <div class="popover-divider"></div>
+          <div class="filter-section">
+            <div class="filter-label">Processing Type</div>
+            <div class="chip-group">
+              <button class="chip">Benchtop</button>
+              <button class="chip">Industrial</button>
+            </div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-label">Flavor</div>
+            <div class="chip-group">
+              <button class="chip">Chocolate</button>
+              <button class="chip">Vanilla</button>
+            </div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-label">Date Range <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#d4d4d8">(optional)</span></div>
+            <div class="date-row">
+              <input class="date-input" placeholder="From" />
+              <input class="date-input" placeholder="To" />
+            </div>
+          </div>
+          <div class="popover-footer">
+            <button class="clear-btn">Clear all</button>
+            <button class="apply-btn">Apply</button>
+          </div>
+        </div>
+      </div>
+      <div class="view-toggle"><button class="active">≡</button><button>⊞</button></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="results-area">
+      <div class="section-header">
+        <div><span class="section-title">Trials</span><span class="section-count">(12)</span></div>
+        <button class="new-trial-btn">+ New Trial</button>
+      </div>
+
+      <table class="trial-table">
+        <thead>
+          <tr>
+            <th style="width:48px">#</th>
+            <th style="width:180px">Formulation</th>
+            <th style="width:140px">Most Recent Eval</th>
+            <th style="width:300px">Scores</th>
+            <th style="width:80px">Date</th>
+            <th style="width:90px">Processing</th>
+            <th style="width:80px">Flavor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="trial-num">12</span></td>
+            <td><span class="formulation"><span class="abbr">WPI</span> <span class="pct">40%</span><span class="sep">/</span><span class="abbr">CS</span> <span class="pct">8%</span></span></td>
+            <td><span class="eval-label">Day 0 · 0 min</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item"><span class="score-label">Overall</span> <span class="score-value">4.2</span></span>
+                <span class="score-item"><span class="score-label">Taste</span> <span class="score-value taste">4.4</span></span>
+                <span class="score-item"><span class="score-label">Texture</span> <span class="score-value texture">4.1</span></span>
+                <span class="score-item"><span class="score-label">Color</span> <span class="score-value color-cat">3.8</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 28</span></td>
+            <td><span class="badge sky">Benchtop</span></td>
+            <td><span class="badge amber-dark">Chocolate</span></td>
+          </tr>
+          <tr>
+            <td><span class="trial-num">11</span></td>
+            <td><span class="formulation"><span class="abbr">SPI</span> <span class="pct">35%</span><span class="sep">/</span><span class="abbr">MS</span> <span class="pct">6%</span></span></td>
+            <td><span class="eval-label">Day 0 · 0 min</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item"><span class="score-label">Overall</span> <span class="score-value">3.8</span></span>
+                <span class="score-item"><span class="score-label">Taste</span> <span class="score-value taste">3.5</span></span>
+                <span class="score-item"><span class="score-label">Texture</span> <span class="score-value texture">4.3</span></span>
+                <span class="score-item"><span class="score-label">Color</span> <span class="score-value color-cat">3.2</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 25</span></td>
+            <td><span class="badge orange">Industrial</span></td>
+            <td><span class="badge yellow">Vanilla</span></td>
+          </tr>
+          <tr>
+            <td><span class="trial-num">10</span></td>
+            <td><span class="formulation"><span class="abbr">WPI</span> <span class="pct">40%</span><span class="sep">/</span><span class="abbr">TS</span> <span class="pct">5%</span></span></td>
+            <td><span class="eval-label">Day 1 · 24 hrs</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item"><span class="score-label">Overall</span> <span class="score-value">3.5</span></span>
+                <span class="score-item"><span class="score-label">Taste</span> <span class="score-value taste">3.6</span></span>
+                <span class="score-item"><span class="score-label">Texture</span> <span class="score-value texture">3.2</span></span>
+                <span class="score-item"><span class="score-label">Color</span> <span class="score-value color-cat">3.9</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 20</span></td>
+            <td><span class="badge orange">Industrial</span></td>
+            <td><span class="badge amber-dark">Chocolate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================= -->
+<!-- STATE 2: Table — Sorted by Texture (score emphasis only)  -->
+<!-- ========================================================= -->
+<div class="page">
+  <div class="state-label">State 2 — Table view: Sorted by Texture, filtered Chocolate + Benchtop. Table layout unchanged — only Texture score emphasized, others dimmed.</div>
+
+  <div style="border-radius: 12px; overflow: visible; border: 1px solid #e4e4e7;">
+    <div class="topbar">
+      <input class="search-input" placeholder="Search trials, ingredients..." />
+      <div class="popover-anchor">
+        <button class="filter-btn active">
+          <span class="icon">⚙</span> Filter <span class="filter-badge">2</span>
+        </button>
+      </div>
+      <div class="view-toggle"><button class="active">≡</button><button>⊞</button></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="active-filters">
+      <span class="active-label">Filters:</span>
+      <span class="active-chip"><span>Benchtop</span><span class="remove">✕</span></span>
+      <span class="active-chip" style="background:#fef3c7;color:#854d0e"><span>Chocolate</span><span class="remove">✕</span></span>
+      <span class="active-chip" style="background:#f4f4f5;color:#3f3f46">Sort: Texture ↓</span>
+      <button class="clear-btn" style="margin-left:4px">Clear all</button>
+    </div>
+
+    <div class="results-area" style="border-top:1px solid #f4f4f5">
+      <div class="section-header">
+        <div><span class="section-title">Trials</span><span class="section-count">(5)</span></div>
+        <button class="new-trial-btn">+ New Trial</button>
+      </div>
+
+      <table class="trial-table">
+        <thead>
+          <tr>
+            <th style="width:48px">#</th>
+            <th style="width:180px">Formulation</th>
+            <th style="width:140px">Most Recent Eval</th>
+            <th style="width:300px">Scores</th>
+            <th style="width:80px">Date</th>
+            <th style="width:90px">Processing</th>
+            <th style="width:80px">Flavor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sorted by Texture desc: #11(4.3) → #12(4.1) → #8(3.6) -->
+          <tr>
+            <td><span class="trial-num">8</span></td>
+            <td><span class="formulation"><span class="abbr">WPI</span> <span class="pct">40%</span><span class="sep">/</span><span class="abbr">CS</span> <span class="pct">8%</span></span></td>
+            <td><span class="eval-label">Day 0 · 0 min</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item dimmed"><span class="score-label">Overall</span> <span class="score-value">3.9</span></span>
+                <span class="score-item dimmed"><span class="score-label">Taste</span> <span class="score-value taste">3.7</span></span>
+                <span class="score-item emphasized"><span class="score-label">Texture</span> <span class="score-value texture">4.5</span></span>
+                <span class="score-item dimmed"><span class="score-label">Color</span> <span class="score-value color-cat">3.4</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 15</span></td>
+            <td><span class="badge sky">Benchtop</span></td>
+            <td><span class="badge amber-dark">Chocolate</span></td>
+          </tr>
+          <tr>
+            <td><span class="trial-num">12</span></td>
+            <td><span class="formulation"><span class="abbr">WPI</span> <span class="pct">40%</span><span class="sep">/</span><span class="abbr">CS</span> <span class="pct">8%</span></span></td>
+            <td><span class="eval-label">Day 0 · 0 min</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item dimmed"><span class="score-label">Overall</span> <span class="score-value">4.2</span></span>
+                <span class="score-item dimmed"><span class="score-label">Taste</span> <span class="score-value taste">4.4</span></span>
+                <span class="score-item emphasized"><span class="score-label">Texture</span> <span class="score-value texture">4.1</span></span>
+                <span class="score-item dimmed"><span class="score-label">Color</span> <span class="score-value color-cat">3.8</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 28</span></td>
+            <td><span class="badge sky">Benchtop</span></td>
+            <td><span class="badge amber-dark">Chocolate</span></td>
+          </tr>
+          <tr>
+            <td><span class="trial-num">5</span></td>
+            <td><span class="formulation"><span class="abbr">SPI</span> <span class="pct">35%</span><span class="sep">/</span><span class="abbr">MS</span> <span class="pct">6%</span></span></td>
+            <td><span class="eval-label">Day 1 · 24 hrs</span></td>
+            <td>
+              <div class="scores-cell">
+                <span class="score-item dimmed"><span class="score-label">Overall</span> <span class="score-value">3.1</span></span>
+                <span class="score-item dimmed"><span class="score-label">Taste</span> <span class="score-value taste">3.0</span></span>
+                <span class="score-item emphasized"><span class="score-label">Texture</span> <span class="score-value texture">3.3</span></span>
+                <span class="score-item dimmed"><span class="score-label">Color</span> <span class="score-value color-cat">2.9</span></span>
+              </div>
+            </td>
+            <td><span class="date-cell">Mar 5</span></td>
+            <td><span class="badge sky">Benchtop</span></td>
+            <td><span class="badge amber-dark">Chocolate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================= -->
+<!-- STATE 3: Card view — Default (sorted by Overall)          -->
+<!-- ========================================================= -->
+<div class="page">
+  <div class="state-label">State 3 — Card view: Default sort by Overall, no filters. All scores equally visible.</div>
+
+  <div style="border-radius: 12px; overflow: visible; border: 1px solid #e4e4e7;">
+    <div class="topbar">
+      <input class="search-input" placeholder="Search trials, ingredients..." />
+      <div class="popover-anchor">
+        <button class="filter-btn"><span class="icon">⚙</span> Filter</button>
+      </div>
+      <div class="view-toggle"><button>≡</button><button class="active">⊞</button></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="results-area">
+      <div class="section-header">
+        <div><span class="section-title">Trials</span><span class="section-count">(12)</span></div>
+        <button class="new-trial-btn">+ New Trial</button>
+      </div>
+
+      <div class="cards-grid">
+        <!-- Card 1 -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">12</span>
+              <span class="card-formulation">WPI<span class="sep">+</span>CS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall">
+                <span class="card-overall-num">4.2</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:88%"></div></div>
+                  <span class="card-cat-value taste">4.4</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:82%"></div></div>
+                  <span class="card-cat-value texture">4.1</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:76%"></div></div>
+                  <span class="card-cat-value color-cat">3.8</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 0 · 0 min</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 28, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Benchtop</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Chocolate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">11</span>
+              <span class="card-formulation">SPI<span class="sep">+</span>MS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall">
+                <span class="card-overall-num">3.8</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:70%"></div></div>
+                  <span class="card-cat-value taste">3.5</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:86%"></div></div>
+                  <span class="card-cat-value texture">4.3</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:64%"></div></div>
+                  <span class="card-cat-value color-cat">3.2</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 0 · 0 min</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 25, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Industrial</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Vanilla</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">10</span>
+              <span class="card-formulation">WPI<span class="sep">+</span>TS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall">
+                <span class="card-overall-num">3.5</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:72%"></div></div>
+                  <span class="card-cat-value taste">3.6</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:64%"></div></div>
+                  <span class="card-cat-value texture">3.2</span>
+                </div>
+                <div class="card-cat-row">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:78%"></div></div>
+                  <span class="card-cat-value color-cat">3.9</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 1 · 24 hrs</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 20, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Industrial</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Chocolate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================= -->
+<!-- STATE 4: Card view — Sorted by Texture (emphasis)         -->
+<!-- ========================================================= -->
+<div class="page">
+  <div class="state-label">State 4 — Card view: Sorted by Texture. Texture bar emphasized, other categories dimmed. Overall dimmed. Cards reordered by Texture score.</div>
+
+  <div style="border-radius: 12px; overflow: visible; border: 1px solid #e4e4e7;">
+    <div class="topbar">
+      <input class="search-input" placeholder="Search trials, ingredients..." />
+      <div class="popover-anchor">
+        <button class="filter-btn"><span class="icon">⚙</span> Filter</button>
+      </div>
+      <div class="view-toggle"><button>≡</button><button class="active">⊞</button></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="active-filters">
+      <span class="active-chip" style="background:#f4f4f5;color:#3f3f46">Sort: Texture ↓</span>
+    </div>
+
+    <div class="results-area" style="border-top:1px solid #f4f4f5">
+      <div class="section-header">
+        <div><span class="section-title">Trials</span><span class="section-count">(12)</span></div>
+        <button class="new-trial-btn">+ New Trial</button>
+      </div>
+
+      <div class="cards-grid">
+        <!-- Card: #8 — highest texture (4.5) -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">8</span>
+              <span class="card-formulation">WPI<span class="sep">+</span>CS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall dimmed">
+                <span class="card-overall-num">3.9</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:74%"></div></div>
+                  <span class="card-cat-value taste">3.7</span>
+                </div>
+                <div class="card-cat-row emphasized">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:90%"></div></div>
+                  <span class="card-cat-value texture">4.5</span>
+                </div>
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:68%"></div></div>
+                  <span class="card-cat-value color-cat">3.4</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 0 · 0 min</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 15, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Benchtop</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Chocolate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: #11 — second texture (4.3) -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">11</span>
+              <span class="card-formulation">SPI<span class="sep">+</span>MS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall dimmed">
+                <span class="card-overall-num">3.8</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:70%"></div></div>
+                  <span class="card-cat-value taste">3.5</span>
+                </div>
+                <div class="card-cat-row emphasized">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:86%"></div></div>
+                  <span class="card-cat-value texture">4.3</span>
+                </div>
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:64%"></div></div>
+                  <span class="card-cat-value color-cat">3.2</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 0 · 0 min</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 25, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Industrial</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Vanilla</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: #12 — third texture (4.1) -->
+        <div class="card">
+          <div class="card-image">4:3 photo</div>
+          <div class="card-body">
+            <div class="card-header">
+              <span class="card-trial-num">12</span>
+              <span class="card-formulation">WPI<span class="sep">+</span>CS</span>
+            </div>
+            <div class="card-scores">
+              <div class="card-overall dimmed">
+                <span class="card-overall-num">4.2</span>
+                <span class="card-overall-label">Overall</span>
+              </div>
+              <div class="card-divider"></div>
+              <div class="card-categories">
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Taste</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill taste" style="width:88%"></div></div>
+                  <span class="card-cat-value taste">4.4</span>
+                </div>
+                <div class="card-cat-row emphasized">
+                  <span class="card-cat-label">Texture</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill texture" style="width:82%"></div></div>
+                  <span class="card-cat-value texture">4.1</span>
+                </div>
+                <div class="card-cat-row dimmed">
+                  <span class="card-cat-label">Color</span>
+                  <div class="card-cat-bar"><div class="card-cat-bar-fill color-cat" style="width:76%"></div></div>
+                  <span class="card-cat-value color-cat">3.8</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-source">Source: Day 0 · 0 min</div>
+            <div class="card-meta">
+              <span class="card-meta-item">Mar 28, 2026</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Benchtop</span>
+              <span class="card-meta-dot">·</span>
+              <span class="card-meta-item">Chocolate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- DESIGN NOTES                                 -->
+<!-- ============================================ -->
+<div class="page">
+  <div style="background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e4e4e7;">
+    <h2 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">Design Rationale</h2>
+
+    <div style="font-size: 13px; line-height: 1.7; color: #52525b;">
+      <p style="margin-bottom: 12px;">
+        <strong>Table stability:</strong><br />
+        The table layout never changes — same 7 columns, same cell structure. When sorting by a specific score category, only two things change: (1) row order, and (2) the sorted score gets emphasized (bolder label, slightly larger number) while other scores dim to ~45% opacity. This avoids any jarring column shifts or layout reflows.
+      </p>
+
+      <p style="margin-bottom: 12px;">
+        <strong>Card emphasis pattern:</strong><br />
+        On cards, the same emphasis/dim logic applies. When sorting by Texture: the Texture bar row gets a bolder label, thicker bar (6px → 8px), and larger score number. The Overall number and other category rows dim to 40% opacity. When sorting by Overall (default), nothing is dimmed — all scores are equally visible.
+      </p>
+
+      <p style="margin-bottom: 12px;">
+        <strong>Sort by Score — top of the popover:</strong><br />
+        Single-select chips: Overall (default), Taste, Texture, Color. Sits at the top, separated by a divider from filters. Chips are faster than a dropdown for 4 options.
+      </p>
+
+      <p style="margin-bottom: 12px;">
+        <strong>Sort indicator in the active filters bar:</strong><br />
+        When a non-default sort is active, a muted grey chip ("Sort: Texture ↓") appears in the active filters bar. Informational only, not removable. Resets to Overall on "Clear all".
+      </p>
+
+      <p style="margin-bottom: 12px;">
+        <strong>User story alignment:</strong><br />
+        &bull; "Best chocolate benchtop puddings?" → Tap Chocolate + Benchtop, sorted by Overall<br />
+        &bull; "Best texture scores?" → Tap Texture sort, scan the emphasized scores top to bottom<br />
+        &bull; "Best vanilla taste?" → Tap Vanilla filter + Taste sort
+      </p>
+
+      <p style="margin-bottom: 0;">
+        <strong>Interaction model:</strong><br />
+        &bull; Sort chips = single-select (tap one, replaces previous)<br />
+        &bull; Filter chips = multi-select (tap to toggle on/off)<br />
+        &bull; "Clear all" resets both sort (back to Overall) and all filters<br />
+        &bull; Sort is always active — there's no "no sort" state<br />
+        &bull; Emphasis is purely visual — no columns added/removed/rearranged
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { Pencil, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { EVAL_COLORS } from "@/config/trial.config";
 import type { SensoryEvaluation, EvalView } from "@/types/trial";
 import { cn } from "@/lib/utils";
@@ -7,7 +7,6 @@ interface SensoryNavBarProps {
   evaluations: SensoryEvaluation[];
   selectedView: EvalView;
   onSelectView: (view: EvalView) => void;
-  onEdit: (evaluation: SensoryEvaluation) => void;
   onAdd: () => void;
 }
 
@@ -15,27 +14,35 @@ export const SensoryNavBar = ({
   evaluations,
   selectedView,
   onSelectView,
-  onEdit,
   onAdd,
 }: SensoryNavBarProps) => {
-  const selectedEval =
-    selectedView !== "all"
-      ? evaluations.find((e) => e.id === selectedView)
-      : undefined;
+  const isEmpty = evaluations.length === 0;
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/40 rounded-lg ring-1 ring-border/40 flex-wrap">
-      <button
-        onClick={() => onSelectView("all")}
-        className={cn(
-          "text-[11px] font-medium px-2.5 py-1 rounded-md cursor-pointer transition-all",
-          selectedView === "all"
-            ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
-            : "text-muted-foreground hover:text-foreground hover:bg-background/60",
-        )}
-      >
-        All
-      </button>
+    <div
+      className={cn(
+        "flex items-center gap-1.5 px-2 py-1.5 bg-muted/40 rounded-lg ring-1 ring-border/40 flex-wrap",
+        isEmpty && "cursor-pointer hover:bg-muted/60 transition-colors",
+      )}
+      onClick={isEmpty ? onAdd : undefined}
+    >
+      {isEmpty ? (
+        <span className="text-[11px] text-muted-foreground/50 px-1 select-none">
+          No evaluations yet
+        </span>
+      ) : (
+        <button
+          onClick={() => onSelectView("all")}
+          className={cn(
+            "text-[11px] font-medium px-2.5 py-1 rounded-md cursor-pointer transition-all",
+            selectedView === "all"
+              ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+              : "text-muted-foreground hover:text-foreground hover:bg-background/60",
+          )}
+        >
+          All
+        </button>
+      )}
 
       {evaluations.map((ev, i) => {
         const color = EVAL_COLORS[i % EVAL_COLORS.length] ?? EVAL_COLORS[0];
@@ -62,20 +69,11 @@ export const SensoryNavBar = ({
       })}
 
       <div className="flex items-center gap-1 ml-auto">
-        {selectedEval && (
-          <button
-            onClick={() => onEdit(selectedEval)}
-            className="text-[11px] font-medium px-2 py-1 rounded-md cursor-pointer transition-all text-muted-foreground hover:text-foreground hover:bg-background/60 flex items-center gap-1"
-          >
-            <Pencil size={10} />
-            Edit
-          </button>
-        )}
         <button
           onClick={onAdd}
-          className="text-[11px] font-medium px-2 py-1 rounded-md cursor-pointer transition-all text-muted-foreground hover:text-foreground hover:bg-background/60 flex items-center gap-0.5"
+          className="text-[11px] font-medium px-2 py-1 rounded-md cursor-pointer transition-all text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1"
         >
-          <Plus size={10} />
+          <Plus size={11} />
           Add
         </button>
       </div>

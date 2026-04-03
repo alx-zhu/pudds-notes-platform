@@ -7,7 +7,7 @@ import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSe
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import type { SensoryFormState } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
-import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/CommentsCard";
+import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
@@ -17,7 +17,8 @@ export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: trial, isLoading, isError } = useTrial(id ?? "");
-  const [sensoryFormState, setSensoryFormState] = useState<SensoryFormState | null>(null);
+  const [sensoryFormState, setSensoryFormState] =
+    useState<SensoryFormState | null>(null);
 
   if (isLoading) {
     return (
@@ -122,7 +123,9 @@ export const TrialView = () => {
       {sensoryFormState && (
         <SensoryForm
           open={true}
-          onOpenChange={(open) => { if (!open) setSensoryFormState(null); }}
+          onOpenChange={(open) => {
+            if (!open) setSensoryFormState(null);
+          }}
           trialId={trial.id}
           logId={sensoryFormState.logId}
           logLabel={sensoryFormState.logLabel}

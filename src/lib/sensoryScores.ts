@@ -3,11 +3,11 @@ import {
   SENSORY_IDEAL_SCORES,
   SENSORY_SCORE_CATEGORIES,
 } from "@/config/trial.config";
-import type { SensoryMetricKey } from "@/config/trial.config";
+import type { SensoryMetricKey, ScoreCategoryKey } from "@/config/trial.config";
 import type { PartialSensoryMetrics, SensoryEvaluation } from "@/types/trial";
 
 export interface CategoryScore {
-  key: string;
+  key: ScoreCategoryKey;
   label: string;
   score: number | null;
 }
