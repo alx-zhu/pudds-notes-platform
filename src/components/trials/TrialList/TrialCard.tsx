@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, EllipsisVertical } from "lucide-react";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +12,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   FLAVORS,
   SENSORY_CATEGORY_STYLES,
@@ -59,8 +64,33 @@ export const TrialCard = ({ trial, sortBy, onDelete }: TrialCardProps) => {
       onClick={() => navigate(`/trials/${trial.id}`)}
     >
       {/* Image — 4:3 aspect ratio */}
-      <div className="aspect-4/3">
+      <div className="aspect-4/3 relative">
         <ImageCarousel photos={photos.srcs} labels={photos.labels} />
+        <div className="absolute top-2 right-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <EllipsisVertical size={14} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmOpen(true);
+                }}
+              >
+                <Trash2 size={14} />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Content below image */}
@@ -87,29 +117,16 @@ export const TrialCard = ({ trial, sortBy, onDelete }: TrialCardProps) => {
               No pinned ingredients
             </span>
           )}
-          <div className="ml-auto flex items-center gap-1.5">
-            {flavorConfig && (
-              <span
-                className={cn(
-                  "inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium leading-none",
-                  flavorConfig.color,
-                )}
-              >
-                {flavorConfig.label}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmOpen(true);
-              }}
+          {flavorConfig && (
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium leading-none ml-auto",
+                flavorConfig.color,
+              )}
             >
-              <Trash2 size={14} />
-            </Button>
-          </div>
+              {flavorConfig.label}
+            </span>
+          )}
         </div>
 
         {/* Scores */}
