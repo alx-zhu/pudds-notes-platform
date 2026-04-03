@@ -25,9 +25,12 @@ export const IngredientsPage = () => {
   const [isAdding, setIsAdding] = useState(false);
 
   const trialCounts = useMemo(() => {
+    const ids = new Set(ingredients.map((i) => i.id));
     const counts = new Map<string, number>();
     for (const ti of readTrialIngredients()) {
-      counts.set(ti.ingredientId, (counts.get(ti.ingredientId) ?? 0) + 1);
+      if (ids.has(ti.ingredientId)) {
+        counts.set(ti.ingredientId, (counts.get(ti.ingredientId) ?? 0) + 1);
+      }
     }
     return counts;
   }, [ingredients]);
