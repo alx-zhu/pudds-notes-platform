@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sensory Eval v4 — Sidebar + Refined Cards</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: oklch(0.975 0.005 75);
+        --fg: oklch(0.15 0.01 60);
+        --card: #ffffff;
+        --primary: oklch(0.22 0.01 60);
+        --muted: oklch(0.955 0.008 75);
+        --muted-fg: oklch(0.50 0.01 60);
+        --border: oklch(0.91 0.008 75);
+        --border-subtle: oklch(0.94 0.006 75);
+        --green-500: #22c55e;
+        --green-50: #f0fdf4;
+        --green-600: #16a34a;
+        --destructive: oklch(0.58 0.22 27);
+        --radius: 10px;
+        --font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --sidebar-width: 240px;
+      }
+
+      body {
+        font-family: var(--font);
+        background: oklch(0.88 0.005 75);
+        color: var(--fg);
+        min-height: 100vh;
+      }
+
+      /* ─── Sheet ─── */
+      .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.06);
+        backdrop-filter: blur(2px);
+        z-index: 50;
+      }
+
+      .sheet {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 980px;
+        background: var(--bg);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        box-shadow: -4px 0 24px rgba(0,0,0,0.06);
+      }
+
+      /* ─── Header ─── */
+      .sheet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px;
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .close-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted-fg);
+        transition: all 0.15s;
+      }
+      .close-btn:hover { background: var(--muted); color: var(--fg); }
+
+      .header-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .header-meta {
+        font-size: 11px;
+        color: var(--muted-fg);
+        margin-top: 1px;
+      }
+
+      .header-progress-label {
+        font-size: 11px;
+        color: var(--muted-fg);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ─── Progress bar ─── */
+      .progress-track {
+        height: 2px;
+        background: var(--muted);
+        flex-shrink: 0;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--green-500);
+        width: 67%;
+        transition: width 0.4s ease;
+      }
+
+      /* ─── Body (sidebar + main) ─── */
+      .sheet-body {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+
+      /* ─── Sidebar ─── */
+      .sidebar {
+        width: var(--sidebar-width);
+        flex-shrink: 0;
+        background: var(--card);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .sidebar-meta {
+        padding: 20px 18px 16px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .sidebar-eval-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted-fg);
+        margin-bottom: 6px;
+      }
+
+      .sidebar-eval-input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1.5px solid var(--border);
+        border-radius: 7px;
+        font-size: 12px;
+        font-family: var(--font);
+        color: var(--fg);
+        background: var(--bg);
+        outline: none;
+        transition: all 0.15s;
+      }
+      .sidebar-eval-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px oklch(0.22 0.01 60 / 0.06);
+      }
+      .sidebar-eval-input::placeholder {
+        color: oklch(0.65 0.005 75);
+      }
+
+      .sidebar-progress {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .sidebar-progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 7px;
+      }
+
+      .sidebar-progress-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted-fg);
+      }
+
+      .sidebar-progress-count {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sidebar-progress-bar {
+        height: 3px;
+        background: var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .sidebar-progress-fill {
+        height: 100%;
+        width: 67%;
+        background: var(--green-500);
+        border-radius: 999px;
+      }
+
+      /* ─── Sidebar nav groups ─── */
+      .sidebar-nav {
+        flex: 1;
+        padding: 8px 0;
+      }
+
+      .sidebar-group {
+        margin-bottom: 2px;
+      }
+
+      .sidebar-group-label {
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: oklch(0.65 0.006 75);
+        padding: 12px 18px 5px;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 18px;
+        cursor: pointer;
+        transition: background 0.1s;
+        border-radius: 0;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        font-family: var(--font);
+      }
+      .sidebar-item:hover { background: var(--muted); }
+      .sidebar-item.active { background: oklch(0.22 0.01 60 / 0.06); }
+
+      .sidebar-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+        transition: all 0.15s;
+      }
+      .sidebar-dot.unanswered {
+        border: 1.5px solid var(--border);
+        color: var(--muted-fg);
+      }
+      .sidebar-dot.answered {
+        background: var(--green-500);
+        border: none;
+        color: white;
+      }
+      .sidebar-dot.active {
+        background: var(--primary);
+        border: none;
+        color: white;
+      }
+
+      .sidebar-item-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        line-height: 1.3;
+      }
+      .sidebar-item.active .sidebar-item-name { color: var(--fg); font-weight: 600; }
+      .sidebar-item:hover .sidebar-item-name { color: var(--fg); }
+
+      /* ─── Main content ─── */
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+
+      /* ─── Section groups ─── */
+      .section {
+        padding: 0 40px;
+        margin-bottom: 8px;
+      }
+      .section:first-child { padding-top: 36px; }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 0 12px;
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--fg);
+        white-space: nowrap;
+      }
+
+      .section-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .section-count {
+        font-size: 11px;
+        color: var(--muted-fg);
+        font-weight: 500;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .section-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 36px;
+      }
+
+      /* ─── Question cards ─── */
+      .question {
+        padding: 26px 28px;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--border-subtle);
+        transition: all 0.2s;
+      }
+      .question:hover { border-color: var(--border); }
+      .question.active {
+        border-color: oklch(0.22 0.01 60 / 0.2);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      }
+
+      .question-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .q-indicator {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .q-indicator.unanswered {
+        border: 1.5px solid var(--border);
+        color: var(--muted-fg);
+        background: transparent;
+      }
+      .q-indicator.answered {
+        background: var(--green-500);
+        color: white;
+        border: none;
+      }
+
+      .q-text { flex: 1; min-width: 0; }
+
+      .q-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+        line-height: 1.35;
+      }
+
+      .q-desc {
+        font-size: 12.5px;
+        color: var(--muted-fg);
+        margin-top: 2px;
+        line-height: 1.45;
+      }
+
+      /* ─── Rating buttons ─── */
+      .rating-row {
+        display: flex;
+        gap: 8px;
+        margin-left: 36px;
+      }
+
+      .rating-btn {
+        flex: 1;
+        padding: 15px 6px 13px;
+        border: 1.5px solid var(--border-subtle);
+        border-radius: 9px;
+        background: var(--card);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.12s;
+      }
+      .rating-btn:hover {
+        border-color: oklch(0.22 0.01 60 / 0.35);
+        background: oklch(0.22 0.01 60 / 0.02);
+      }
+      .rating-btn.selected {
+        border-color: var(--primary);
+        background: oklch(0.22 0.01 60 / 0.05);
+        box-shadow: 0 0 0 1px var(--primary);
+      }
+
+      .r-score {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--fg);
+        line-height: 1;
+      }
+      .rating-btn.selected .r-score { color: var(--primary); }
+
+      .r-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--muted-fg);
+        text-align: center;
+        line-height: 1.2;
+      }
+      .rating-btn.selected .r-label {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      /* ─── Reference toggle ─── */
+      .ref-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--muted-fg);
+        margin-left: 36px;
+        margin-top: 12px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: var(--font);
+        padding: 0;
+        transition: color 0.12s;
+      }
+      .ref-toggle:hover { color: var(--fg); }
+      .ref-toggle svg { opacity: 0.5; }
+
+      .ref-panel {
+        margin-left: 36px;
+        margin-top: 7px;
+        padding: 9px 12px;
+        background: var(--muted);
+        border-radius: 7px;
+        display: none;
+      }
+      .ref-panel.open { display: block; }
+
+      .ref-row {
+        display: flex;
+        gap: 10px;
+        padding: 3px 0;
+        font-size: 11.5px;
+        align-items: baseline;
+      }
+      .ref-num { font-weight: 700; color: var(--primary); min-width: 12px; }
+      .ref-text { color: var(--muted-fg); }
+
+      /* ─── Comment ─── */
+      .comment-row {
+        margin-left: 36px;
+        margin-top: 12px;
+      }
+
+      .comment-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: oklch(0.65 0.005 75);
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: var(--font);
+        padding: 2px 0;
+        transition: color 0.12s;
+      }
+      .comment-trigger:hover { color: var(--muted-fg); }
+
+      .comment-input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 12px;
+        font-family: var(--font);
+        color: var(--fg);
+        background: var(--card);
+        outline: none;
+        resize: none;
+        min-height: 34px;
+        transition: all 0.15s;
+        display: none;
+        margin-top: 5px;
+      }
+      .comment-input.visible { display: block; }
+      .comment-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px oklch(0.22 0.01 60 / 0.06);
+        min-height: 56px;
+      }
+      .comment-input::placeholder { color: oklch(0.68 0.005 75); }
+
+      /* ─── Footer ─── */
+      .sheet-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        border-top: 1px solid var(--border);
+        background: var(--card);
+        flex-shrink: 0;
+      }
+
+      .btn {
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: var(--font);
+        cursor: pointer;
+        transition: all 0.12s;
+        border: 1px solid transparent;
+      }
+      .btn:active { transform: translateY(0.5px); }
+
+      .btn-ghost {
+        background: none;
+        color: var(--muted-fg);
+        padding: 8px 14px;
+        border-color: var(--border);
+      }
+      .btn-ghost:hover { background: var(--muted); color: var(--fg); }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+      .btn-primary:hover { opacity: 0.85; }
+
+      .btn-danger {
+        background: none;
+        color: var(--destructive);
+        font-weight: 500;
+        padding: 8px 12px;
+      }
+      .btn-danger:hover { background: oklch(0.58 0.22 27 / 0.06); }
+
+      .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="sheet-overlay"></div>
+
+    <div class="sheet">
+
+      <!-- Header -->
+      <div class="sheet-header">
+        <div class="header-left">
+          <button class="close-btn" title="Close">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <div>
+            <div class="header-title">Sensory Evaluation</div>
+            <div class="header-meta">Thermomix · 6 days</div>
+          </div>
+        </div>
+        <span class="header-progress-label">6 / 9 rated</span>
+      </div>
+
+      <!-- Thin progress bar -->
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+
+      <!-- Body: sidebar + main -->
+      <div class="sheet-body">
+
+        <!-- ─── Sidebar ─── -->
+        <div class="sidebar">
+
+          <!-- Eval name -->
+          <div class="sidebar-meta">
+            <div class="sidebar-eval-label">Evaluation Name</div>
+            <input class="sidebar-eval-input" type="text" placeholder="e.g. Mar 25, 2026 Evaluation" value="">
+          </div>
+
+          <!-- Progress -->
+          <div class="sidebar-progress">
+            <div class="sidebar-progress-row">
+              <span class="sidebar-progress-label">Progress</span>
+              <span class="sidebar-progress-count">6 / 9</span>
+            </div>
+            <div class="sidebar-progress-bar">
+              <div class="sidebar-progress-fill"></div>
+            </div>
+          </div>
+
+          <!-- Question nav -->
+          <nav class="sidebar-nav">
+
+            <!-- Taste & Flavor group -->
+            <div class="sidebar-group">
+              <div class="sidebar-group-label">Taste &amp; Flavor</div>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Taste Rating</span>
+              </button>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Sweetness Intensity</span>
+              </button>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Sweetness Rating</span>
+              </button>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Flavor Intensity</span>
+              </button>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Aftertaste Intensity</span>
+              </button>
+            </div>
+
+            <!-- Texture group -->
+            <div class="sidebar-group">
+              <div class="sidebar-group-label">Texture</div>
+              <button class="sidebar-item">
+                <div class="sidebar-dot answered">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span class="sidebar-item-name">Thickness Intensity</span>
+              </button>
+              <button class="sidebar-item active">
+                <div class="sidebar-dot active">7</div>
+                <span class="sidebar-item-name">Texture Intensity</span>
+              </button>
+              <button class="sidebar-item">
+                <div class="sidebar-dot unanswered">8</div>
+                <span class="sidebar-item-name">Texture Rating</span>
+              </button>
+            </div>
+
+            <!-- Color group -->
+            <div class="sidebar-group">
+              <div class="sidebar-group-label">Color</div>
+              <button class="sidebar-item">
+                <div class="sidebar-dot unanswered">9</div>
+                <span class="sidebar-item-name">Color Rating</span>
+              </button>
+            </div>
+
+          </nav>
+        </div>
+
+        <!-- ─── Main content ─── -->
+        <div class="main-content">
+
+          <!-- ══════ TASTE & FLAVOR ══════ -->
+          <div class="section" style="padding-top: 28px;">
+            <div class="section-header">
+              <span class="section-title">Taste &amp; Flavor</span>
+              <div class="section-line"></div>
+              <span class="section-count">5 / 5</span>
+            </div>
+            <div class="section-cards">
+
+              <!-- Q1 -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Taste Rating</div>
+                    <div class="q-desc">Rate how much you liked the taste of the product.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Dislike extremely</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Dislike moderately</span></button>
+                  <button class="rating-btn selected"><span class="r-score">3</span><span class="r-label">Neither like nor dislike</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Like moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Like extremely</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q2 — with references -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Sweetness Intensity</div>
+                    <div class="q-desc">Rate how sweet the product was.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Not sweet at all</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Slightly sweet</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Moderately sweet</span></button>
+                  <button class="rating-btn selected"><span class="r-score">4</span><span class="r-label">Very sweet</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Extremely sweet</span></button>
+                </div>
+                <button class="ref-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  References
+                </button>
+                <div class="ref-panel">
+                  <div class="ref-row"><span class="ref-num">1</span><span class="ref-text">Unsweetened plain Greek yogurt</span></div>
+                  <div class="ref-row"><span class="ref-num">2</span><span class="ref-text">Regular vanilla yogurt</span></div>
+                  <div class="ref-row"><span class="ref-num">3</span><span class="ref-text">Vanilla milkshake</span></div>
+                  <div class="ref-row"><span class="ref-num">4</span><span class="ref-text">Ice cream</span></div>
+                  <div class="ref-row"><span class="ref-num">5</span><span class="ref-text">Frosting / syrup</span></div>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q3 -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Sweetness Rating</div>
+                    <div class="q-desc">Rate how much you liked the sweetness of the product.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Dislike extremely</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Dislike moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Neither like nor dislike</span></button>
+                  <button class="rating-btn selected"><span class="r-score">4</span><span class="r-label">Like moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Like extremely</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q4 — with references -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Flavor Intensity</div>
+                    <div class="q-desc">Rate how intense the flavor of the product was.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">None</span></button>
+                  <button class="rating-btn selected"><span class="r-score">2</span><span class="r-label">Slight</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Moderate</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Strong</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Extremely strong</span></button>
+                </div>
+                <button class="ref-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  References
+                </button>
+                <div class="ref-panel">
+                  <div class="ref-row"><span class="ref-num">1</span><span class="ref-text">Plain milk</span></div>
+                  <div class="ref-row"><span class="ref-num">2</span><span class="ref-text">Light vanilla hint</span></div>
+                  <div class="ref-row"><span class="ref-num">3</span><span class="ref-text">Standard vanilla yogurt</span></div>
+                  <div class="ref-row"><span class="ref-num">4</span><span class="ref-text">Pudding</span></div>
+                  <div class="ref-row"><span class="ref-num">5</span><span class="ref-text">Cake batter ice cream</span></div>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q5 -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Aftertaste Intensity</div>
+                    <div class="q-desc">Rate how much of an aftertaste the product had.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">None</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Slight</span></button>
+                  <button class="rating-btn selected"><span class="r-score">3</span><span class="r-label">Moderate</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Strong</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Very strong</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ══════ TEXTURE ══════ -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-title">Texture</span>
+              <div class="section-line"></div>
+              <span class="section-count">1 / 3</span>
+            </div>
+            <div class="section-cards">
+
+              <!-- Q6 — with references -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator answered">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="q-text">
+                    <div class="q-title">Thickness Intensity</div>
+                    <div class="q-desc">Rate how thick the product was.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Very thin</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Slightly thick</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Moderately thick</span></button>
+                  <button class="rating-btn selected"><span class="r-score">4</span><span class="r-label">Thick</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Very thick</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q7 — active/current -->
+              <div class="question active">
+                <div class="question-top">
+                  <div class="q-indicator unanswered">7</div>
+                  <div class="q-text">
+                    <div class="q-title">Texture Intensity</div>
+                    <div class="q-desc">Rate how pronounced the texture of the product was.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Very smooth</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Slightly textured</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Moderate</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Textured</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Very textured</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+              <!-- Q8 -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator unanswered">8</div>
+                  <div class="q-text">
+                    <div class="q-title">Texture Rating</div>
+                    <div class="q-desc">Rate how much you liked the texture of the product.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Dislike extremely</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Dislike moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Neither like nor dislike</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Like moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Like extremely</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ══════ COLOR ══════ -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-title">Color</span>
+              <div class="section-line"></div>
+              <span class="section-count">0 / 1</span>
+            </div>
+            <div class="section-cards">
+
+              <!-- Q9 -->
+              <div class="question">
+                <div class="question-top">
+                  <div class="q-indicator unanswered">9</div>
+                  <div class="q-text">
+                    <div class="q-title">Color Rating</div>
+                    <div class="q-desc">Rate how much you liked the color of the product.</div>
+                  </div>
+                </div>
+                <div class="rating-row">
+                  <button class="rating-btn"><span class="r-score">1</span><span class="r-label">Dislike extremely</span></button>
+                  <button class="rating-btn"><span class="r-score">2</span><span class="r-label">Dislike moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">3</span><span class="r-label">Neither like nor dislike</span></button>
+                  <button class="rating-btn"><span class="r-score">4</span><span class="r-label">Like moderately</span></button>
+                  <button class="rating-btn"><span class="r-score">5</span><span class="r-label">Like extremely</span></button>
+                </div>
+                <div class="comment-row">
+                  <button class="comment-trigger" onclick="this.nextElementSibling.classList.toggle('visible'); if(this.nextElementSibling.classList.contains('visible')) this.nextElementSibling.focus();">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Add note
+                  </button>
+                  <textarea class="comment-input" placeholder="Optional note..."></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div><!-- end main-content -->
+      </div><!-- end sheet-body -->
+
+      <!-- Footer -->
+      <div class="sheet-footer">
+        <button class="btn btn-danger">Delete</button>
+        <div class="footer-right">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+
+    </div><!-- end sheet -->
+
+  </body>
+</html>

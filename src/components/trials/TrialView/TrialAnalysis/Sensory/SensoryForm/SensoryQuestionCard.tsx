@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Collapsible,
@@ -15,9 +15,7 @@ interface ScoreOption {
 }
 
 interface Props {
-  id: string;
   index: number;
-  total: number;
   metric: {
     key: SensoryMetricKey;
     label: string;
@@ -31,10 +29,12 @@ interface Props {
   onCommentChange: (comment: string) => void;
 }
 
+// Extract the parenthetical reference text from a label like "Not sweet at all (Unsweetened plain Greek yogurt)"
+const extractReference = (label: string): string | null =>
+  label.match(/\((.+)\)/)?.[1] ?? null;
+
 export const SensoryQuestionCard = ({
-  id,
   index,
-  total,
   metric,
   options,
   value,
@@ -42,89 +42,50 @@ export const SensoryQuestionCard = ({
   onRate,
   onCommentChange,
 }: Props) => {
-  const [descOpen, setDescOpen] = useState(false);
+  const [refOpen, setRefOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(() => Boolean(comment?.trim()));
   const isAnswered = value != null && value >= 1;
 
+  const references = options
+    .map((opt) => ({ score: opt.score, ref: extractReference(opt.label) }))
+    .filter((r): r is { score: number; ref: string } => r.ref !== null);
+
+  const hasReferences = references.length > 0;
+
   return (
     <div
-      id={id}
       className={cn(
-        "rounded-xl border bg-card p-6 transition-colors scroll-mt-7",
-        isAnswered && "border-l-3 border-l-green-500",
+        "rounded-xl border bg-card transition-colors",
+        isAnswered && "border-l-[3px] border-l-green-500",
       )}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-bold uppercase tracking-wider text-primary mb-1">
-            Question {index + 1} of {total}
-          </div>
-          <div className="text-base font-semibold text-foreground">
-            {metric.label}
-          </div>
-          <div className="text-sm text-muted-foreground mt-0.5">
-            {metric.description}
-          </div>
-
-          {/* Expandable rating descriptions */}
-          <Collapsible open={descOpen} onOpenChange={setDescOpen}>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="mt-2.5 inline-flex items-center gap-1.5 text-xs text-primary cursor-pointer hover:underline"
-              >
-                <ChevronDown
-                  size={12}
-                  className={cn(
-                    "transition-transform",
-                    descOpen && "rotate-180",
-                  )}
-                />
-                {descOpen ? "Hide rating descriptions" : "View rating descriptions"}
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="mt-3 p-3 bg-muted/50 border rounded-lg">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {options.map((opt) => (
-                    <div
-                      key={opt.score}
-                      className="flex gap-2 p-2 bg-card border rounded-md"
-                    >
-                      <span className="font-bold text-primary text-sm min-w-[16px]">
-                        {opt.score}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {opt.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-
-        {/* Answered badge */}
-        {isAnswered && (
-          <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-200">
-            <Check size={12} />
-            Answered
+      <div className="p-6">
+        {/* Question header */}
+        <div className="flex items-start gap-3 mb-5">
+          <span
+            className={cn(
+              "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5",
+              isAnswered
+                ? "bg-green-500 text-white"
+                : "border border-border text-muted-foreground",
+            )}
+          >
+            {isAnswered ? <Check size={10} /> : index + 1}
           </span>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="h-px bg-border my-5" />
-
-      {/* Rating scale */}
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Your rating
+          <div className="min-w-0">
+            <div className="text-[15px] font-semibold text-foreground leading-snug">
+              {metric.label}
+            </div>
+            <div className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+              {metric.description}
+            </div>
+          </div>
         </div>
+
+        {/* Rating buttons */}
         <div className="flex gap-2">
           {options.map((opt) => {
+            const mainLabel = opt.label.split("(")[0].trim();
             const isSelected = value === opt.score;
             return (
               <button
@@ -132,15 +93,15 @@ export const SensoryQuestionCard = ({
                 type="button"
                 onClick={() => onRate(isSelected ? 0 : opt.score)}
                 className={cn(
-                  "flex-1 flex flex-col items-center gap-1 py-3 px-1.5 rounded-lg border-2 cursor-pointer transition-all text-center",
+                  "flex-1 flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-lg border-2 cursor-pointer transition-all text-center",
                   isSelected
                     ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-card hover:border-primary/50 hover:bg-primary/5",
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/[0.03]",
                 )}
               >
                 <span
                   className={cn(
-                    "text-lg font-bold leading-none",
+                    "text-[17px] font-bold leading-none",
                     isSelected ? "text-primary" : "text-foreground",
                   )}
                 >
@@ -148,51 +109,80 @@ export const SensoryQuestionCard = ({
                 </span>
                 <span
                   className={cn(
-                    "text-[11px] font-medium leading-tight",
+                    "text-[10.5px] font-medium leading-tight",
                     isSelected ? "text-primary" : "text-muted-foreground",
                   )}
                 >
-                  {opt.label.split("(")[0].trim()}
+                  {mainLabel}
                 </span>
               </button>
             );
           })}
         </div>
-        <div className="flex justify-between mt-1.5 text-[11px] text-muted-foreground">
-          <span>1 — {options[0].label.split("(")[0].trim()}</span>
-          <span>5 — {options[options.length - 1].label.split("(")[0].trim()}</span>
-        </div>
-      </div>
 
-      {/* Comment section */}
-      <div className="mt-4">
-        <Collapsible open={commentOpen} onOpenChange={setCommentOpen}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer hover:text-foreground"
-            >
-              <ChevronDown
-                size={12}
-                className={cn(
-                  "transition-transform",
-                  commentOpen && "rotate-180",
-                )}
-              />
-              {commentOpen ? "Hide note" : "Add a note or comment"}
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2.5">
-              <Textarea
-                placeholder="Optional — share any context, specific examples, or suggestions..."
-                value={comment ?? ""}
-                onChange={(e) => onCommentChange(e.target.value)}
-                className="min-h-[72px] text-sm resize-y"
-              />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        {/* References — only shown for metrics with physical reference standards */}
+        {hasReferences && (
+          <Collapsible open={refOpen} onOpenChange={setRefOpen}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="mt-3.5 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <ChevronDown
+                  size={11}
+                  className={cn(
+                    "transition-transform",
+                    refOpen && "rotate-180",
+                  )}
+                />
+                References
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 space-y-0.5">
+                {references.map(({ score, ref }) => (
+                  <div key={score} className="flex gap-2.5 text-xs py-0.5">
+                    <span className="font-bold text-primary min-w-[14px]">
+                      {score}
+                    </span>
+                    <span className="text-muted-foreground">{ref}</span>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* Note */}
+        <div className="mt-3.5">
+          <Collapsible open={commentOpen} onOpenChange={setCommentOpen}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <ChevronDown
+                  size={11}
+                  className={cn(
+                    "transition-transform",
+                    commentOpen && "rotate-180",
+                  )}
+                />
+                {commentOpen ? "Hide note" : "Add note"}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2">
+                <Textarea
+                  placeholder="Optional note..."
+                  value={comment ?? ""}
+                  onChange={(e) => onCommentChange(e.target.value)}
+                  className="min-h-[64px] text-sm resize-none"
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
       </div>
     </div>
   );
