@@ -65,19 +65,11 @@ const SidebarIcon = ({
 
 /* ── Role banner (all authenticated roles) ──────────────────────── */
 
-const RoleBanner = () => {
-  const { session, role } = useAuth();
-  const qc = useQueryClient();
-  const pushMutation = usePublishSnapshot();
+const ReadOnlyBanner = () => {
   const pullMutation = usePullSnapshot();
   const latestSnapshot = useLatestSnapshot();
+  const [eraseConfirm, setEraseConfirm] = useState(false);
   const lastSync = localStorage.getItem("pudds:last-sync");
-
-  useEffect(() => {
-    if (!pushMutation.isSuccess) return;
-    const t = setTimeout(() => pushMutation.reset(), 2000);
-    return () => clearTimeout(t);
-  }, [pushMutation.isSuccess, pushMutation]);
 
   const fmt = (iso: string) =>
     new Intl.DateTimeFormat(undefined, {
