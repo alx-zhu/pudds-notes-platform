@@ -1,30 +1,40 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   LayoutGrid,
   TestTubes,
-  Cloud,
   Save,
   RotateCcw,
   Loader2,
   LogOut,
   Lock,
   RefreshCw,
+  User,
+  Pencil,
+  Check,
+  Trash2,
 } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { useReadOnly } from "@/contexts/ReadOnlyContext";
-import { usePublishSnapshot, usePullSnapshot, useLatestSnapshot } from "@/hooks/useSnapshot";
+import {
+  usePublishSnapshot,
+  usePullSnapshot,
+  useLatestSnapshot,
+} from "@/hooks/useSnapshot";
 
 /* ── Sidebar icon ───────────────────────────────────────────────── */
 
@@ -53,227 +63,195 @@ const SidebarIcon = ({
   </Button>
 );
 
-/* ── Read-only banner ───────────────────────────────────────────── */
+/* ── Role banner (all authenticated roles) ──────────────────────── */
 
-const ReadOnlyBanner = () => {
-  const pullMutation = usePullSnapshot();
-  const latestSnapshot = useLatestSnapshot();
-  const lastSync = localStorage.getItem("pudds:last-sync");
-
-  const fmt = (iso: string) =>
-    new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-
-  const hasNewerVersion =
-    latestSnapshot.data && lastSync
-      ? new Date(latestSnapshot.data.created_at) > new Date(lastSync)
-      : latestSnapshot.data && !lastSync;
-
-  const statusText = pullMutation.isError
-    ? <span className="text-xs text-destructive">Sync failed</span>
-    : hasNewerVersion
-    ? <span className="text-xs text-amber-600 font-medium">New version available</span>
-    : lastSync
-    ? <span className="text-xs text-muted-foreground">Synced {fmt(lastSync)}</span>
-    : null;
-
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-card border-b border-border text-sm text-muted-foreground shrink-0">
-      <Lock size={12} className="shrink-0" />
-      <span className="font-medium text-foreground/70">Read-only</span>
-      <div className="ml-auto flex items-center gap-1.5">
-        {statusText}
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-xs gap-1.5"
-          onClick={() => pullMutation.mutate()}
-          disabled={pullMutation.isPending}
-        >
-          {pullMutation.isPending ? (
-            <Loader2 size={11} className="animate-spin" />
-          ) : (
-            <RefreshCw size={11} />
-          )}
-          Sync
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-xs gap-1.5 text-muted-foreground"
-          onClick={() => supabase.auth.signOut()}
-        >
-          <LogOut size={11} />
-          Sign out
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-/* ── Sync modal (owner only) ────────────────────────────────────── */
-
-const SyncModal = ({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) => {
-  const { session } = useAuth();
+const RoleBanner = () => {
+  const { session, role } = useAuth();
   const qc = useQueryClient();
   const pushMutation = usePublishSnapshot();
   const pullMutation = usePullSnapshot();
   const latestSnapshot = useLatestSnapshot();
-  const [eraseConfirm, setEraseConfirm] = useState(false);
+  const lastSync = localStorage.getItem("pudds:last-sync");
 
-  const lastSaved = latestSnapshot.data?.created_at
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-        new Date(latestSnapshot.data.created_at),
-      )
-    : null;
-
-  // Close after successful pull — only updates parent state, no local setState
-  useEffect(() => {
-    if (pullMutation.isSuccess) onOpenChange(false);
-  }, [pullMutation.isSuccess, onOpenChange]);
-
-  // Auto-clear push success (async, not synchronous setState)
   useEffect(() => {
     if (!pushMutation.isSuccess) return;
     const t = setTimeout(() => pushMutation.reset(), 2000);
     return () => clearTimeout(t);
   }, [pushMutation.isSuccess, pushMutation]);
 
+  const fmt = (iso: string) =>
+    new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(iso));
+
+  const hasNewerVersion =
+    latestSnapshot.data && lastSync
+      ? new Date(latestSnapshot.data.created_at) > new Date(lastSync)
+      : latestSnapshot.data && !lastSync;
+
+  const statusText = pullMutation.isError ? (
+    <span className="text-xs text-red-300">Sync failed</span>
+  ) : hasNewerVersion ? (
+    <span className="text-xs text-amber-300 font-medium">
+      New version available
+    </span>
+  ) : lastSync ? (
+    <span className="text-xs text-indigo-200/70">Synced {fmt(lastSync)}</span>
+  ) : null;
+
   const handleErase = () => {
     localStorage.removeItem("pudds:trials");
     localStorage.removeItem("pudds:ingredients");
     localStorage.removeItem("pudds:trial-ingredients");
     qc.invalidateQueries();
-    onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm gap-0 p-0 overflow-hidden">
-        <DialogHeader className="px-5 py-4 border-b">
-          <DialogTitle className="text-sm font-semibold">Cloud backup</DialogTitle>
-        </DialogHeader>
+  const btn =
+    "h-7 text-xs gap-1.5 bg-white/10 border-white/25 text-white hover:bg-white/20 hover:text-white";
+  const ghost =
+    "h-7 text-xs gap-1.5 text-white/70 hover:text-white hover:bg-white/10";
 
-        {/* Cloud actions */}
-        <div className="px-5 py-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">Save to cloud</p>
-              <p className="text-xs text-muted-foreground">
-                {lastSaved ? `Last saved: ${lastSaved}` : "Saves a copy of your data to the cloud"}
-              </p>
-              {pushMutation.isError && (
-                <p className="text-xs text-destructive mt-0.5">
-                  {pushMutation.error.message}
-                </p>
-              )}
-              {pushMutation.isSuccess && (
-                <p className="text-xs text-green-600 mt-0.5">Saved ✓</p>
-              )}
-            </div>
+  const syncButton = (
+    <Button
+      size="sm"
+      variant="outline"
+      className={btn}
+      onClick={() => pullMutation.mutate()}
+      disabled={pullMutation.isPending}
+    >
+      {pullMutation.isPending ? (
+        <Loader2 size={11} className="animate-spin" />
+      ) : (
+        <RefreshCw size={11} />
+      )}
+      Sync
+    </Button>
+  );
+
+  const signOutButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      className={ghost}
+      onClick={() => supabase.auth.signOut()}
+    >
+      <LogOut size={11} />
+      Sign out
+    </Button>
+  );
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-700 border-b border-indigo-900 text-sm shrink-0">
+      {role === "viewer" && (
+        <>
+          <Lock size={12} className="shrink-0 text-white/80" />
+          <span className="font-medium text-white">Read-only</span>
+          <div className="ml-auto flex items-center gap-1.5">
+            {statusText}
+            {syncButton}
+            {signOutButton}
+          </div>
+        </>
+      )}
+      {role === "editor" && (
+        <>
+          <Pencil size={12} className="shrink-0 text-white/80" />
+          <span className="font-medium text-white">Editor</span>
+          <div className="ml-auto flex items-center gap-1.5">
+            {statusText}
+            {syncButton}
+            {signOutButton}
+          </div>
+        </>
+      )}
+      {role === "owner" && (
+        <>
+          <span className="text-xs text-indigo-200/70 truncate min-w-0">
+            {session?.user.email}
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            {statusText}
+            {pushMutation.isError && (
+              <span className="text-xs text-red-300">
+                {pushMutation.error.message}
+              </span>
+            )}
             <Button
               size="sm"
               variant="outline"
-              className="shrink-0 gap-1.5"
+              className={
+                pushMutation.isSuccess
+                  ? cn(
+                      btn,
+                      "bg-green-500/20 border-green-400/40 text-green-200 hover:bg-green-500/20 hover:text-green-200",
+                    )
+                  : btn
+              }
               onClick={() => pushMutation.mutate()}
-              disabled={pushMutation.isPending}
+              disabled={pushMutation.isPending || pushMutation.isSuccess}
             >
               {pushMutation.isPending ? (
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 size={11} className="animate-spin" />
+              ) : pushMutation.isSuccess ? (
+                <Check size={11} />
               ) : (
-                <Save size={13} />
+                <Save size={11} />
               )}
-              Save
+              {pushMutation.isSuccess ? "Saved" : "Save"}
             </Button>
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">Restore latest version</p>
-              <p className="text-xs text-muted-foreground">
-                Replaces local data with the last saved version
-              </p>
-              {pullMutation.isError && (
-                <p className="text-xs text-destructive mt-0.5">
-                  {pullMutation.error.message}
-                </p>
-              )}
-            </div>
             <Button
               size="sm"
               variant="outline"
-              className="shrink-0 gap-1.5"
+              className={btn}
               onClick={() => pullMutation.mutate()}
               disabled={pullMutation.isPending}
             >
               {pullMutation.isPending ? (
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 size={11} className="animate-spin" />
               ) : (
-                <RotateCcw size={13} />
+                <RotateCcw size={11} />
               )}
               Restore
             </Button>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Account + danger */}
-        <div className="px-5 py-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">Erase local data</p>
-              <p className="text-xs text-muted-foreground">
-                Clears all trials and ingredients
-              </p>
-            </div>
-            {eraseConfirm ? (
-              <div className="flex gap-1.5 shrink-0">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button
                   size="sm"
-                  variant="ghost"
-                  onClick={() => setEraseConfirm(false)}
+                  variant="outline"
+                  className={cn(
+                    btn,
+                    "bg-red-500/20 border-red-400/40 text-red-200 hover:bg-red-500/30 hover:text-red-200",
+                  )}
                 >
-                  Cancel
-                </Button>
-                <Button size="sm" variant="destructive" onClick={handleErase}>
+                  <Trash2 size={11} />
                   Erase
                 </Button>
-              </div>
-            ) : (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => setEraseConfirm(true)}
-              >
-                Erase
-              </Button>
-            )}
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Erase local data?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This clears all trials and ingredients from local storage.
+                    This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleErase}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Erase
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            {signOutButton}
           </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground truncate min-w-0">
-              {session?.user.email}
-            </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="shrink-0 gap-1.5 text-muted-foreground"
-              onClick={() => supabase.auth.signOut()}
-            >
-              <LogOut size={13} />
-              Sign out
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </>
+      )}
+    </div>
   );
 };
 
@@ -282,59 +260,41 @@ const SyncModal = ({
 export const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isReadOnly = useReadOnly();
+  const { role } = useAuth();
   const isTrials = location.pathname.startsWith("/trials");
   const isIngredients = location.pathname === "/ingredients";
-  const [syncOpen, setSyncOpen] = useState(false);
-  const saveMutation = usePublishSnapshot();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/60">
-      <aside className="w-16 bg-card border-r border-border flex flex-col items-center py-4 gap-2 shrink-0">
-        <SidebarIcon
-          icon={<LayoutGrid size={18} />}
-          active={isTrials}
-          onClick={() => navigate("/trials")}
-          title="Trials"
-        />
-        <SidebarIcon
-          icon={<TestTubes size={18} />}
-          active={isIngredients}
-          onClick={() => navigate("/ingredients")}
-          title="Ingredients"
-        />
-        {!isReadOnly && (
-          <div className="mt-auto flex flex-col gap-2">
-            <SidebarIcon
-              icon={
-                saveMutation.isPending ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <Save size={18} />
-                )
-              }
-              onClick={() => saveMutation.mutate()}
-              title="Save to cloud"
-            />
-            <SidebarIcon
-              icon={<Cloud size={18} />}
-              onClick={() => setSyncOpen(true)}
-              title="Cloud backup"
-            />
-          </div>
-        )}
-      </aside>
-
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {isReadOnly && <ReadOnlyBanner />}
-        <Outlet />
+    <div className="flex flex-col h-screen overflow-hidden bg-muted/60">
+      {role !== "guest" && <RoleBanner />}
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-16 bg-card border-r border-border flex flex-col items-center py-4 gap-2 shrink-0">
+          <SidebarIcon
+            icon={<LayoutGrid size={18} />}
+            active={isTrials}
+            onClick={() => navigate("/trials")}
+            title="Trials"
+          />
+          <SidebarIcon
+            icon={<TestTubes size={18} />}
+            active={isIngredients}
+            onClick={() => navigate("/ingredients")}
+            title="Ingredients"
+          />
+          {role === "guest" && (
+            <div className="mt-auto">
+              <SidebarIcon
+                icon={<User size={18} />}
+                onClick={() => navigate("/login")}
+                title="Sign in"
+              />
+            </div>
+          )}
+        </aside>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <Outlet />
+        </div>
       </div>
-
-      <SyncModal
-        key={String(syncOpen)}
-        open={syncOpen}
-        onOpenChange={setSyncOpen}
-      />
     </div>
   );
 };
