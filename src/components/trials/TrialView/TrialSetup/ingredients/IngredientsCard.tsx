@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pencil, Plus, Layers } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import {
   Card,
   CardContent,
@@ -18,6 +19,7 @@ interface Props {
 export const IngredientsCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
+  const isReadOnly = useReadOnly();
 
   const setup = trial?.setup;
   const ingredients = trial?.ingredients ?? [];
@@ -65,19 +67,25 @@ export const IngredientsCard = ({ trialId }: Props) => {
           )}
         </CardContent>
 
-        <CardFooter className="flex justify-center shrink-0">
-          <Button
-            size="sm"
-            variant={ingredients.length > 0 ? "outline" : "default"}
-            onClick={() => setModalOpen(true)}
-            disabled={!setup}
-            className="gap-2"
-            title={!setup ? "Complete trial setup first" : undefined}
-          >
-            {ingredients.length > 0 ? <Pencil size={14} /> : <Plus size={14} />}
-            {ingredients.length > 0 ? "Edit Ingredients" : "Add Ingredients"}
-          </Button>
-        </CardFooter>
+        {!isReadOnly && (
+          <CardFooter className="flex justify-center shrink-0">
+            <Button
+              size="sm"
+              variant={ingredients.length > 0 ? "outline" : "default"}
+              onClick={() => setModalOpen(true)}
+              disabled={!setup}
+              className="gap-2"
+              title={!setup ? "Complete trial setup first" : undefined}
+            >
+              {ingredients.length > 0 ? (
+                <Pencil size={14} />
+              ) : (
+                <Plus size={14} />
+              )}
+              {ingredients.length > 0 ? "Edit Ingredients" : "Add Ingredients"}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       {setup && (

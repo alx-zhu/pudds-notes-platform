@@ -15,7 +15,12 @@ import { getPinnedFormulation, getMostRecentEval } from "@/lib/trialDisplay";
 
 const columnHelper = createColumnHelper<Trial>();
 
-export const createColumns = (sortBy: SortByScore, onDelete: (id: string) => void) => [
+export const createColumns = (
+  sortBy: SortByScore,
+  onDelete: (id: string) => void,
+  readOnly = false,
+) => {
+  const baseCols = [
   columnHelper.accessor("trialNumber", {
     header: "#",
     size: 48,
@@ -196,22 +201,29 @@ export const createColumns = (sortBy: SortByScore, onDelete: (id: string) => voi
     },
   }),
 
-  columnHelper.display({
-    id: "actions",
-    size: 48,
-    header: "",
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(row.original.id);
-        }}
-      >
-        <Trash2 size={14} />
-      </Button>
-    ),
-  }),
-];
+  ];
+
+  if (readOnly) return baseCols;
+
+  return [
+    ...baseCols,
+    columnHelper.display({
+      id: "actions",
+      size: 48,
+      header: "",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(row.original.id);
+          }}
+        >
+          <Trash2 size={14} />
+        </Button>
+      ),
+    }),
+  ];
+};

@@ -7,7 +7,7 @@ interface SensoryNavBarProps {
   evaluations: SensoryEvaluation[];
   selectedView: EvalView;
   onSelectView: (view: EvalView) => void;
-  onAdd: () => void;
+  onAdd?: () => void;
 }
 
 export const SensoryNavBar = ({
@@ -22,9 +22,9 @@ export const SensoryNavBar = ({
     <div
       className={cn(
         "flex items-center gap-1.5 px-2 py-1.5 bg-muted/40 rounded-lg ring-1 ring-border/40 flex-wrap",
-        isEmpty && "cursor-pointer hover:bg-muted/60 transition-colors",
+        isEmpty && onAdd && "cursor-pointer hover:bg-muted/60 transition-colors",
       )}
-      onClick={isEmpty ? onAdd : undefined}
+      onClick={isEmpty && onAdd ? onAdd : undefined}
     >
       {isEmpty ? (
         <span className="text-[11px] text-muted-foreground/50 px-1 select-none">
@@ -68,15 +68,17 @@ export const SensoryNavBar = ({
         );
       })}
 
-      <div className="flex items-center gap-1 ml-auto">
-        <button
-          onClick={onAdd}
-          className="text-[11px] font-medium px-2 py-1 rounded-md cursor-pointer transition-all text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1"
-        >
-          <Plus size={11} />
-          Add
-        </button>
-      </div>
+      {onAdd && (
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={onAdd}
+            className="text-[11px] font-medium px-2 py-1 rounded-md cursor-pointer transition-all text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1"
+          >
+            <Plus size={11} />
+            Add
+          </button>
+        </div>
+      )}
     </div>
   );
 };

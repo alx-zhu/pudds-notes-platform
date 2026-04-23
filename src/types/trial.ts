@@ -52,3 +52,12 @@ export interface TrialRecord {
 export interface Trial extends TrialRecord {
   ingredients: TrialIngredient[];
 }
+
+/* ── UI state ────────────────────────────────────────────────────── */
+
+export interface SensoryFormState {
+  logId: string;
+  logLabel: string;
+  evaluation?: SensoryEvaluation;
+  onDelete?: () => void;
+}

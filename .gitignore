@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 package-lock.json
 .claude
+.env
+skills-lock.json
+.agents/*

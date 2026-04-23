@@ -239,3 +239,9 @@ export const STORAGE_TIME_PRESETS = [
 export type ProcessingType = (typeof PROCESSING_TYPES)[number]["value"];
 export type Flavor = (typeof FLAVORS)[number]["value"];
 export type SensoryMetricKey = (typeof SENSORY_METRICS)[number]["key"];
+export type SensoryMetric = (typeof SENSORY_METRICS)[number];
+
+// O(1) lookup from metric key → global index in SENSORY_METRICS
+export const SENSORY_METRIC_INDEX: ReadonlyMap<SensoryMetricKey, number> = new Map(
+  SENSORY_METRICS.map((m, i) => [m.key, i]),
+);

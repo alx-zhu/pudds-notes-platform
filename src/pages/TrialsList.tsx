@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus, List, LayoutGrid } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -14,8 +15,13 @@ import { EMPTY_FILTERS, DEFAULT_SORT } from "@/types/filters";
 import type { TrialFilters, SortByScore } from "@/types/filters";
 import { filterTrials, sortTrialsByScore } from "@/lib/filterTrials";
 
-export const TrialsList = () => {
+interface TrialsListProps {
+  onSelectTrial?: (id: string) => void;
+}
+
+export const TrialsList = ({ onSelectTrial }: TrialsListProps = {}) => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const { data: trials = [], isLoading } = useTrials();
   const deleteTrial = useDeleteTrial();
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,16 +72,6 @@ export const TrialsList = () => {
             <LayoutGrid size={14} />
           </ToggleGroupItem>
         </ToggleGroup>
-        <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full h-9 w-9"
-          >
-            🔔
-          </Button>
-          <div className="w-9 h-9 rounded-full bg-muted" />
-        </div>
       </header>
 
       {/* Content */}
@@ -88,14 +84,16 @@ export const TrialsList = () => {
                 ({displayTrials.length})
               </span>
             </h2>
-            <Button
-              size="sm"
-              className="rounded-full"
-              onClick={() => setModalOpen(true)}
-            >
-              <Plus size={14} className="mr-1" />
-              New Trial
-            </Button>
+            {!isReadOnly && (
+              <Button
+                size="sm"
+                className="rounded-full"
+                onClick={() => setModalOpen(true)}
+              >
+                <Plus size={14} className="mr-1" />
+                New Trial
+              </Button>
+            )}
           </div>
 
           <ActiveFiltersBar
@@ -112,6 +110,7 @@ export const TrialsList = () => {
               trials={displayTrials}
               sortBy={sortBy}
               onDelete={deleteTrial.mutate}
+              onSelect={onSelectTrial}
             />
           ) : (
             <div
@@ -126,17 +125,20 @@ export const TrialsList = () => {
                   trial={t}
                   sortBy={sortBy}
                   onDelete={deleteTrial.mutate}
+                  onSelect={onSelectTrial}
                 />
               ))}
-              <div
-                className="rounded-xl border-2 border-dashed border-border bg-transparent cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-center min-h-40"
-                onClick={() => setModalOpen(true)}
-              >
-                <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                  <Plus size={28} />
-                  <span className="text-xs font-semibold">New Trial</span>
+              {!isReadOnly && (
+                <div
+                  className="rounded-xl border-2 border-dashed border-border bg-transparent cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-center min-h-40"
+                  onClick={() => setModalOpen(true)}
+                >
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                    <Plus size={28} />
+                    <span className="text-xs font-semibold">New Trial</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </section>

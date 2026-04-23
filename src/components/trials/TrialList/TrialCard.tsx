@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2, EllipsisVertical } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
 import {
   AlertDialog,
@@ -37,10 +38,17 @@ interface TrialCardProps {
   trial: Trial;
   sortBy: SortByScore;
   onDelete: (id: string) => void;
+  onSelect?: (id: string) => void;
 }
 
-export const TrialCard = ({ trial, sortBy, onDelete }: TrialCardProps) => {
+export const TrialCard = ({
+  trial,
+  sortBy,
+  onDelete,
+  onSelect,
+}: TrialCardProps) => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const formulation = useMemo(
@@ -61,36 +69,40 @@ export const TrialCard = ({ trial, sortBy, onDelete }: TrialCardProps) => {
     <>
     <div
       className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-border transition-all"
-      onClick={() => navigate(`/trials/${trial.id}`)}
+      onClick={() =>
+        onSelect ? onSelect(trial.id) : navigate(`/trials/${trial.id}`)
+      }
     >
       {/* Image — 4:3 aspect ratio */}
       <div className="aspect-4/3 relative">
         <ImageCarousel photos={photos.srcs} labels={photos.labels} />
-        <div className="absolute top-2 right-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <EllipsisVertical size={14} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setConfirmOpen(true);
-                }}
-              >
-                <Trash2 size={14} />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {!isReadOnly && (
+          <div className="absolute top-2 right-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <EllipsisVertical size={14} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmOpen(true);
+                  }}
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
 
       {/* Content below image */}

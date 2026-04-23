@@ -7,7 +7,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import type { SensoryMetricKey } from "@/config/trial.config";
+import type { SensoryMetric } from "@/config/trial.config";
 
 interface ScoreOption {
   readonly score: number;
@@ -16,12 +16,7 @@ interface ScoreOption {
 
 interface Props {
   index: number;
-  metric: {
-    key: SensoryMetricKey;
-    label: string;
-    description: string;
-    max: number;
-  };
+  metric: SensoryMetric;
   options: readonly ScoreOption[];
   value: number | undefined;
   comment: string | undefined;

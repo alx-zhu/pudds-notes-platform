@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { FlaskConical } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { useMemo, useState } from "react";
 import type { Trial } from "@/types/trial";
 import type { SortByScore } from "@/types/filters";
@@ -26,15 +27,22 @@ interface TrialsTableProps {
   trials: Trial[];
   sortBy: SortByScore;
   onDelete: (id: string) => void;
+  onSelect?: (id: string) => void;
 }
 
-export const TrialsTable = ({ trials, sortBy, onDelete }: TrialsTableProps) => {
+export const TrialsTable = ({
+  trials,
+  sortBy,
+  onDelete,
+  onSelect,
+}: TrialsTableProps) => {
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const columns = useMemo(
-    () => createColumns(sortBy, (id) => setPendingDeleteId(id)),
-    [sortBy],
+    () => createColumns(sortBy, (id) => setPendingDeleteId(id), isReadOnly),
+    [sortBy, isReadOnly],
   );
 
   const table = useReactTable({
@@ -85,7 +93,11 @@ export const TrialsTable = ({ trials, sortBy, onDelete }: TrialsTableProps) => {
               <tr
                 key={row.id}
                 className="border-b border-border/40 last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => navigate(`/trials/${row.original.id}`)}
+                onClick={() =>
+                  onSelect
+                    ? onSelect(row.original.id)
+                    : navigate(`/trials/${row.original.id}`)
+                }
               >
                 {row.getVisibleCells().map((cell) => (
                   <td

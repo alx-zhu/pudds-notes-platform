@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Activity, Plus, Trash2 } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogTimeline } from "./Timeline/LogTimeline";
@@ -13,14 +14,7 @@ import {
   useDeleteAnalysisLog,
   useDeleteEvaluation,
 } from "@/hooks/useTrials";
-import type { AnalysisLog, SensoryEvaluation } from "@/types/trial";
-
-export interface SensoryFormState {
-  logId: string;
-  logLabel: string;
-  evaluation?: SensoryEvaluation;
-  onDelete?: () => void;
-}
+import type { AnalysisLog, SensoryEvaluation, SensoryFormState } from "@/types/trial";
 
 interface Props {
   trialId: string;
@@ -29,6 +23,7 @@ interface Props {
 
 export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
   const { data: trial } = useTrial(trialId);
+  const isReadOnly = useReadOnly();
 
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -106,7 +101,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                 Sensory Evaluation
               </p>
             </div>
-            {logs.length > 0 && (
+            {logs.length > 0 && !isReadOnly && (
               <Button
                 size="xs"
                 onClick={() => openCreateModal()}
@@ -133,14 +128,16 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                 Create your first log to start tracking sensory evaluations.
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => openCreateModal()}
-              className="gap-1.5 mt-1"
-            >
-              <Plus size={14} />
-              Create First Log
-            </Button>
+            {!isReadOnly && (
+              <Button
+                size="sm"
+                onClick={() => openCreateModal()}
+                className="gap-1.5 mt-1"
+              >
+                <Plus size={14} />
+                Create First Log
+              </Button>
+            )}
           </div>
         ) : (
           <>
@@ -161,7 +158,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                     <TrialImage
                       photos={activeLog.photos}
                       label={getLogLabel(activeLog)}
-                      onAddPhoto={() => setPhotosLog(activeLog)}
+                      onAddPhoto={isReadOnly ? undefined : () => setPhotosLog(activeLog)}
                     />
                   </div>
 
@@ -188,16 +185,18 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                 <span className="text-[11px] text-muted-foreground font-medium">
                   {getLogLabel(activeLog)}
                 </span>
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  onClick={() => deleteMutation.mutate(activeLog.id)}
-                  disabled={deleteMutation.isPending}
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 size={12} />
-                  Delete Log
-                </Button>
+                {!isReadOnly && (
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={() => deleteMutation.mutate(activeLog.id)}
+                    disabled={deleteMutation.isPending}
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 size={12} />
+                    Delete Log
+                  </Button>
+                )}
               </div>
             )}
           </>

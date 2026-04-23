@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pencil, Trash2, CircleHelp } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { CardTabToggle } from "@/components/trials/shared/CardTabToggle";
 import {
   Tooltip,
@@ -50,6 +51,7 @@ export const SensoryScores = ({
 }: Props) => {
   const [selectedEvalView, setSelectedEvalView] = useState<EvalView>("all");
   const [scoreView, setScoreView] = useState<ScoreView>("summary");
+  const isReadOnly = useReadOnly();
 
   const evaluations = useMemo(() => activeLog.evaluations ?? [], [activeLog]);
   const hasData = hasEvaluationData(evaluations);
@@ -83,7 +85,7 @@ export const SensoryScores = ({
       ? "All (Avg)"
       : "This Log";
 
-  const evalActions = hasData ? (
+  const evalActions = hasData && !isReadOnly ? (
     <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1">
       {selectedEval ? (
         <>
@@ -145,7 +147,7 @@ export const SensoryScores = ({
           evaluations={evaluations}
           selectedView={selectedEvalView}
           onSelectView={setSelectedEvalView}
-          onAdd={onOpenSensoryCreate}
+          onAdd={isReadOnly ? undefined : onOpenSensoryCreate}
         />
 
         {/* Content */}
@@ -153,9 +155,9 @@ export const SensoryScores = ({
           <div
             className={cn(
               "relative bg-muted/20 rounded-xl ring-1 ring-border/40 p-5 flex flex-col justify-center flex-1",
-              !hasData && "cursor-pointer hover:bg-muted/40 transition-colors",
+              !hasData && !isReadOnly && "cursor-pointer hover:bg-muted/40 transition-colors",
             )}
-            onClick={!hasData ? onOpenSensoryCreate : undefined}
+            onClick={!hasData && !isReadOnly ? onOpenSensoryCreate : undefined}
           >
             {evalActions}
             <SummaryChart evaluations={displayEvaluations} />

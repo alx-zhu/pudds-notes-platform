@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { Pencil, FlaskConical, Plus } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import {
   Card,
   CardContent,
@@ -38,6 +39,7 @@ const getDefaultTrialName = (trial: Trial): string => {
 export const TrialSetupCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
+  const isReadOnly = useReadOnly();
 
   const setup = trial?.setup;
   const defaultName = trial ? getDefaultTrialName(trial) : "";
@@ -123,17 +125,19 @@ export const TrialSetupCard = ({ trialId }: Props) => {
           )}
         </CardContent>
 
-        <CardFooter className="flex justify-center shrink-0">
-          <Button
-            size="sm"
-            variant={setup ? "outline" : "default"}
-            onClick={() => setModalOpen(true)}
-            className="gap-2"
-          >
-            {setup ? <Pencil size={14} /> : <Plus size={14} />}
-            {setup ? "Edit Setup" : "Add Setup"}
-          </Button>
-        </CardFooter>
+        {!isReadOnly && (
+          <CardFooter className="flex justify-center shrink-0">
+            <Button
+              size="sm"
+              variant={setup ? "outline" : "default"}
+              onClick={() => setModalOpen(true)}
+              className="gap-2"
+            >
+              {setup ? <Pencil size={14} /> : <Plus size={14} />}
+              {setup ? "Edit Setup" : "Add Setup"}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       <TrialSetupModal

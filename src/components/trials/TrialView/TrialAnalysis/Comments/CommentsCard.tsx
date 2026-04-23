@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { MessageSquare, Pencil, FlaskConical, Clock } from "lucide-react";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +66,7 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
   const updateMutation = useUpdateEvaluation(trialId);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftText, setDraftText] = useState("");
+  const isReadOnly = useReadOnly();
 
   const { categories, totalComments } = useMemo(() => {
     const logs = trial?.analysisLogs ?? [];
@@ -199,7 +201,7 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
                                 className={`relative flex flex-col gap-2.5 py-3 pr-7 ${i < thread.comments.length - 1 ? "border-b border-border/40" : ""}`}
                               >
                                 {/* Edit button */}
-                                {!isEditing && (
+                                {!isEditing && !isReadOnly && (
                                   <button
                                     className="absolute top-3 right-0 h-6 w-6 rounded flex items-center justify-center text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted transition-colors"
                                     onClick={() => startEdit(entry)}
@@ -211,14 +213,23 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
 
                                 {/* Evaluator row */}
                                 <div className="flex items-center gap-2">
-                                  <button
-                                    className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center text-[9px] font-bold text-white hover:opacity-75 transition-opacity"
-                                    style={{ background: entry.evalColor }}
-                                    onClick={() => onOpenEval(entry.logId, entry.logLabel, entry.evaluation)}
-                                    title={`Open ${entry.evalLabel}`}
-                                  >
-                                    {getInitials(entry.evalLabel)}
-                                  </button>
+                                  {isReadOnly ? (
+                                    <span
+                                      className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center text-[9px] font-bold text-white"
+                                      style={{ background: entry.evalColor }}
+                                    >
+                                      {getInitials(entry.evalLabel)}
+                                    </span>
+                                  ) : (
+                                    <button
+                                      className="w-[22px] h-[22px] rounded-md shrink-0 flex items-center justify-center text-[9px] font-bold text-white hover:opacity-75 transition-opacity"
+                                      style={{ background: entry.evalColor }}
+                                      onClick={() => onOpenEval(entry.logId, entry.logLabel, entry.evaluation)}
+                                      title={`Open ${entry.evalLabel}`}
+                                    >
+                                      {getInitials(entry.evalLabel)}
+                                    </button>
+                                  )}
                                   <span className="text-xs font-semibold text-foreground">
                                     {entry.evalLabel}
                                   </span>

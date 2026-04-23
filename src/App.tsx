@@ -1,6 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ReadOnlyProvider } from "@/contexts/ReadOnlyContext";
 import { AppShell } from "@/components/AppShell";
+import { LoginPage } from "@/pages/LoginPage";
 import { TrialsList } from "@/pages/TrialsList";
 import { TrialView } from "@/pages/TrialView";
 import { IngredientsPage } from "@/pages/IngredientsPage";
@@ -15,20 +24,52 @@ const queryClient = new QueryClient({
   },
 });
 
+const AuthGate = ({ children }: { children: React.ReactNode }) => {
+  const { session, isLoading, role } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-muted/60 flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session && location.pathname !== "/login") {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (session && location.pathname === "/login") {
+    return <Navigate to="/trials" replace />;
+  }
+
+  return (
+    <ReadOnlyProvider value={role === "viewer"}>
+      {children}
+    </ReadOnlyProvider>
+  );
+};
+
 export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/trials" replace />} />
-          <Route element={<AppShell />}>
-            <Route path="/trials" element={<TrialsList />} />
-            <Route path="/trials/:id" element={<TrialView />} />
-            <Route path="/ingredients" element={<IngredientsPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/trials" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AuthGate>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Navigate to="/trials" replace />} />
+                <Route path="/trials" element={<TrialsList />} />
+                <Route path="/trials/:id" element={<TrialView />} />
+                <Route path="/ingredients" element={<IngredientsPage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/trials" replace />} />
+            </Routes>
+          </AuthGate>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

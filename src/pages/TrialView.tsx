@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
-import type { SensoryFormState } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
 import { useTrial } from "@/hooks/useTrials";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
-import type { SensoryEvaluation } from "@/types/trial";
+import type { SensoryEvaluation, SensoryFormState } from "@/types/trial";
 
 export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
@@ -122,6 +121,7 @@ export const TrialView = () => {
 
       {sensoryFormState && (
         <SensoryForm
+          key={`${sensoryFormState.logId}-${sensoryFormState.evaluation?.id ?? "new"}`}
           open={true}
           onOpenChange={(open) => {
             if (!open) setSensoryFormState(null);
