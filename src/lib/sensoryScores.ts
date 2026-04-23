@@ -77,8 +77,9 @@ export function calcSensoryScores(metrics: PartialSensoryMetrics): SensoryScores
 }
 
 /**
- * Average metrics across multiple evaluations, then calculate scores.
- * This is the main entry point for the SensoryScores component.
+ * Calculate scores per evaluation, then average category scores across evals.
+ * This ensures the "all" score matches the intuitive average of per-eval scores
+ * even when evaluations have different subsets of metrics filled in.
  */
 export function calcScoresFromEvaluations(
   evaluations: SensoryEvaluation[],
@@ -87,19 +88,30 @@ export function calcScoresFromEvaluations(
     return calcSensoryScores({});
   }
 
-  // Average each metric across all evaluations
-  const averaged: PartialSensoryMetrics = {};
+  const perEvalScores = evaluations.map((ev) => calcSensoryScores(ev.metrics));
 
-  for (const metric of SENSORY_METRICS) {
-    const values: number[] = [];
-    for (const ev of evaluations) {
-      const val = ev.metrics[metric.key];
-      if (val != null) values.push(val);
-    }
-    if (values.length > 0) {
-      averaged[metric.key] = values.reduce((sum, v) => sum + v, 0) / values.length;
-    }
-  }
+  const categories: CategoryScore[] = SENSORY_SCORE_CATEGORIES.map((cat) => {
+    const scores = perEvalScores
+      .map((s) => s.categories.find((c) => c.key === cat.key)?.score ?? null)
+      .filter((s): s is number => s !== null);
+    return {
+      key: cat.key,
+      label: cat.label,
+      score:
+        scores.length > 0
+          ? scores.reduce((sum, s) => sum + s, 0) / scores.length
+          : null,
+    };
+  });
 
-  return calcSensoryScores(averaged);
+  const validScores = categories
+    .map((c) => c.score)
+    .filter((s): s is number => s !== null);
+
+  const overall =
+    validScores.length > 0
+      ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length
+      : null;
+
+  return { categories, overall };
 }
