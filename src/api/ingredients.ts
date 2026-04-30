@@ -28,7 +28,7 @@ const toIngredient = (record: IngredientRecord): Ingredient => ({
   pinned: record.pinned,
   type: record.type,
   solid: record.solid,
-  costPerLb: record.costPerLb,
+  cost: record.cost,
 });
 
 /* ── CRUD (RESTful) ──────────────────────────────────────────────── */

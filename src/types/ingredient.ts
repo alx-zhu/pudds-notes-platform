@@ -9,7 +9,7 @@ export interface IngredientRecord {
   pinned?: boolean;
   type?: IngredientType;
   solid?: boolean;
-  costPerLb?: number;
+  cost?: number;
 }
 
 export interface TrialIngredientRecord {
@@ -28,7 +28,7 @@ export interface Ingredient {
   pinned?: boolean;
   type?: IngredientType;
   solid?: boolean;
-  costPerLb?: number;
+  cost?: number;
 }
 
 export interface TrialIngredient {

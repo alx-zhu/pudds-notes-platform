@@ -83,7 +83,7 @@ export const IngredientsTable = ({
               className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
               style={{ width: COL_WIDTHS.cost }}
             >
-              Cost / lb
+              Cost / g
             </th>
             <th
               className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
@@ -152,7 +152,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       pinned: pinned || undefined,
       type: type,
       solid: solid || undefined,
-      costPerLb: !isNaN(cost) ? cost : undefined,
+      cost: !isNaN(cost) ? cost : undefined,
     });
   };
 
@@ -348,13 +348,13 @@ const IngredientRow = ({
       <td className="px-4 py-3" style={{ width: COL_WIDTHS.cost }}>
         <InlineInput
           value={
-            ingredient.costPerLb != null
-              ? `$${ingredient.costPerLb.toFixed(2)}`
+            ingredient.cost != null
+              ? `$${ingredient.cost.toFixed(2)}`
               : ""
           }
           onCommit={(raw) => {
             const num = parseFloat(raw.replace(/[$,]/g, ""));
-            if (!isNaN(num)) onUpdate(id, { costPerLb: num });
+            if (!isNaN(num)) onUpdate(id, { cost: num });
           }}
           placeholder="—"
           className="tabular-nums"
