@@ -8,8 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
 import { TrialsTable } from "@/components/trials/TrialList/TrialsTable";
 import { TrialCard } from "@/components/trials/TrialList/TrialCard";
-import { FilterPopover } from "@/components/trials/TrialList/FilterPopover";
-import { ActiveFiltersBar } from "@/components/trials/TrialList/ActiveFiltersBar";
+import { TrialControls } from "@/components/trials/TrialList/TrialControls";
 import { useTrials, useDeleteTrial } from "@/hooks/useTrials";
 import { EMPTY_FILTERS, DEFAULT_SORT } from "@/types/filters";
 import type { TrialFilters, SortByScore } from "@/types/filters";
@@ -42,12 +41,6 @@ export const TrialsList = ({ onSelectTrial }: TrialsListProps = {}) => {
           placeholder="Search trials, ingredients..."
           className="max-w-95 h-9 bg-muted border-0 rounded-full"
         />
-        <FilterPopover
-          filters={filters}
-          onFiltersChange={setFilters}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-        />
         <ToggleGroup
           type="single"
           value={viewMode}
@@ -77,17 +70,23 @@ export const TrialsList = ({ onSelectTrial }: TrialsListProps = {}) => {
       {/* Content */}
       <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
         <section>
-          <div className="flex items-baseline justify-between mb-4">
-            <h2 className="text-xl font-extrabold tracking-tight">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <h2 className="text-xl font-extrabold tracking-tight shrink-0">
               Trials
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 ({displayTrials.length})
               </span>
             </h2>
+            <TrialControls
+              filters={filters}
+              onFiltersChange={setFilters}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
             {!isReadOnly && (
               <Button
                 size="sm"
-                className="rounded-full"
+                className="rounded-full ml-auto"
                 onClick={() => setModalOpen(true)}
               >
                 <Plus size={14} className="mr-1" />
@@ -95,13 +94,6 @@ export const TrialsList = ({ onSelectTrial }: TrialsListProps = {}) => {
               </Button>
             )}
           </div>
-
-          <ActiveFiltersBar
-            filters={filters}
-            onFiltersChange={setFilters}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-          />
 
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>

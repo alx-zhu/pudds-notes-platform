@@ -5,18 +5,13 @@ import type {
 } from "@/config/trial.config";
 
 export interface TrialFilters {
-  processingTypes: ProcessingType[];
-  flavors: Flavor[];
-  dateRange: {
-    from: string | null; // ISO date string
-    to: string | null;
-  };
+  processingType: ProcessingType | null;
+  flavor: Flavor | null;
 }
 
 export const EMPTY_FILTERS: TrialFilters = {
-  processingTypes: [],
-  flavors: [],
-  dateRange: { from: null, to: null },
+  processingType: null,
+  flavor: null,
 };
 
 export type SortByScore = ScoreCategoryKey | "overall" | null;

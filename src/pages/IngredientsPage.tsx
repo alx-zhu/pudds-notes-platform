@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IngredientsTable } from "@/components/ingredients/IngredientsTable";
+import { IngredientControls } from "@/components/ingredients/IngredientControls";
 import {
   useIngredients,
   useCreateIngredient,
@@ -12,6 +13,14 @@ import {
 import { useTrials } from "@/hooks/useTrials";
 import { readTrialIngredients } from "@/api/trialIngredients";
 import { getMostRecentEval } from "@/lib/trialDisplay";
+import {
+  EMPTY_INGREDIENT_FILTERS,
+  DEFAULT_INGREDIENT_SORT,
+} from "@/types/ingredientFilters";
+import type {
+  IngredientFilters,
+  IngredientSort,
+} from "@/types/ingredientFilters";
 import type {
   CreateIngredientInput,
   UpdateIngredientInput,
@@ -26,6 +35,8 @@ export const IngredientsPage = () => {
 
   const [search, setSearch] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [filters, setFilters] = useState<IngredientFilters>(EMPTY_INGREDIENT_FILTERS);
+  const [sort, setSort] = useState<IngredientSort>(DEFAULT_INGREDIENT_SORT);
 
   const trialCounts = useMemo(() => {
     const ids = new Set(ingredients.map((i) => i.id));
@@ -59,28 +70,57 @@ export const IngredientsPage = () => {
     return result;
   }, [trials]);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return ingredients;
-    const q = search.toLowerCase();
-    return ingredients.filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        i.abbreviation?.toLowerCase().includes(q) ||
-        i.type?.toLowerCase().includes(q),
-    );
-  }, [ingredients, search]);
+  const displayed = useMemo(() => {
+    let result = [...ingredients];
 
-  const handleUpdate = (id: string, input: UpdateIngredientInput) => {
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.abbreviation?.toLowerCase().includes(q) ||
+          i.type?.toLowerCase().includes(q),
+      );
+    }
+
+    if (filters.type !== null) {
+      result = result.filter((i) => i.type === filters.type);
+    }
+
+    if (filters.solid !== null) {
+      result = result.filter((i) => (i.solid ?? false) === filters.solid);
+    }
+
+    result.sort((a, b) => {
+      const dir = sort.dir === "asc" ? 1 : -1;
+      switch (sort.field) {
+        case "name":
+          return a.name.localeCompare(b.name) * dir;
+        case "cost":
+          return ((a.cost ?? -Infinity) - (b.cost ?? -Infinity)) * dir;
+        case "avgScore":
+          return (
+            ((avgScores.get(a.id) ?? -Infinity) -
+              (avgScores.get(b.id) ?? -Infinity)) *
+            dir
+          );
+        case "trials":
+          return (
+            ((trialCounts.get(a.id) ?? 0) - (trialCounts.get(b.id) ?? 0)) * dir
+          );
+      }
+    });
+
+    return result;
+  }, [ingredients, search, filters, sort, avgScores, trialCounts]);
+
+  const handleUpdate = (id: string, input: UpdateIngredientInput) =>
     updateIngredient.mutate({ id, ...input });
-  };
 
-  const handleDelete = (id: string) => {
-    deleteIngredient.mutate(id);
-  };
+  const handleDelete = (id: string) => deleteIngredient.mutate(id);
 
-  const handleCreate = (input: CreateIngredientInput) => {
+  const handleCreate = (input: CreateIngredientInput) =>
     createIngredient.mutate(input, { onSuccess: () => setIsAdding(false) });
-  };
 
   return (
     <>
@@ -92,23 +132,29 @@ export const IngredientsPage = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-95 h-9 bg-muted border-0 rounded-full"
         />
-        <span className="text-xs text-muted-foreground">
-          {filtered.length} ingredient{filtered.length !== 1 && "s"}
+        <span className="text-xs text-muted-foreground ml-auto">
+          {displayed.length} ingredient{displayed.length !== 1 && "s"}
         </span>
       </header>
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto p-5">
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-xl font-extrabold tracking-tight">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <h2 className="text-xl font-extrabold tracking-tight shrink-0">
             Ingredients
             <span className="text-sm font-normal text-muted-foreground ml-2">
-              ({filtered.length})
+              ({displayed.length})
             </span>
           </h2>
+          <IngredientControls
+            filters={filters}
+            onFiltersChange={setFilters}
+            sort={sort}
+            onSortChange={setSort}
+          />
           <Button
             size="sm"
-            className="rounded-full"
+            className="rounded-full ml-auto"
             onClick={() => setIsAdding(true)}
             disabled={isAdding}
           >
@@ -121,7 +167,7 @@ export const IngredientsPage = () => {
           <p className="text-sm text-muted-foreground">Loading...</p>
         ) : (
           <IngredientsTable
-            ingredients={filtered}
+            ingredients={displayed}
             trialCounts={trialCounts}
             avgScores={avgScores}
             isAdding={isAdding}

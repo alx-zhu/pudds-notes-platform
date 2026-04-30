@@ -6,35 +6,12 @@ export const filterTrials = (
   trials: Trial[],
   filters: TrialFilters,
 ): Trial[] => {
-  const hasFilters =
-    filters.processingTypes.length > 0 ||
-    filters.flavors.length > 0 ||
-    filters.dateRange.from !== null ||
-    filters.dateRange.to !== null;
-
-  if (!hasFilters) return trials;
+  if (filters.processingType === null && filters.flavor === null) return trials;
 
   return trials.filter((trial) => {
     if (!trial.setup) return false;
-
-    if (
-      filters.processingTypes.length > 0 &&
-      !filters.processingTypes.includes(trial.setup.processingType)
-    )
-      return false;
-
-    if (
-      filters.flavors.length > 0 &&
-      !filters.flavors.includes(trial.setup.flavor)
-    )
-      return false;
-
-    if (filters.dateRange.from && trial.setup.date < filters.dateRange.from)
-      return false;
-
-    if (filters.dateRange.to && trial.setup.date > filters.dateRange.to)
-      return false;
-
+    if (filters.processingType !== null && trial.setup.processingType !== filters.processingType) return false;
+    if (filters.flavor !== null && trial.setup.flavor !== filters.flavor) return false;
     return true;
   });
 };
@@ -76,9 +53,7 @@ function getScoreValue(trial: Trial, sortBy: NonNullable<SortByScore>): number |
 
 export const countActiveFilters = (filters: TrialFilters): number => {
   let count = 0;
-  count += filters.processingTypes.length;
-  count += filters.flavors.length;
-  if (filters.dateRange.from) count++;
-  if (filters.dateRange.to) count++;
+  if (filters.processingType !== null) count++;
+  if (filters.flavor !== null) count++;
   return count;
 };
