@@ -23,7 +23,7 @@ export const IngredientTypeSelect = ({ value, onChange }: Props) => {
 
   return (
     <Select value={value ?? ""} onValueChange={(v) => onChange(v as IngredientType)}>
-      <SelectTrigger className="h-7 text-xs border-0 bg-transparent shadow-none px-0 gap-1.5 w-fit cursor-pointer">
+      <SelectTrigger className="h-6 text-xs border-0 bg-transparent shadow-none px-0 gap-1.5 w-fit cursor-pointer">
         <SelectValue placeholder="Select type...">
           {config && (
             <span className={cn(BADGE_BASE, config.style)}>

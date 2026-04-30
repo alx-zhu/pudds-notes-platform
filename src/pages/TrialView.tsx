@@ -1,23 +1,27 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, FlaskConical } from "lucide-react";
+import { ChevronLeft, FlaskConical, Pencil } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { TrialSetupCard } from "@/components/trials/TrialView/TrialSetup/TrialSetupCard";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
+import { CostCard } from "@/components/trials/TrialView/CostCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
+import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
 import { useTrial } from "@/hooks/useTrials";
+import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
 import type { SensoryEvaluation, SensoryFormState } from "@/types/trial";
 
 export const TrialView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isReadOnly = useReadOnly();
   const { data: trial, isLoading, isError } = useTrial(id ?? "");
   const [sensoryFormState, setSensoryFormState] =
     useState<SensoryFormState | null>(null);
+  const [setupModalOpen, setSetupModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -50,12 +54,18 @@ export const TrialView = () => {
   const pageTitle =
     trial.name || generatedName || `Trial #${trial.trialNumber}`;
 
-  // Subtitle: always show trial number; include generated name when title is custom
+  // Subtitle: trial number + setup details when available
   const subtitleParts = [`Trial #${trial.trialNumber}`];
-  if (trial.name && generatedName) {
-    subtitleParts.push(generatedName);
+  if (setup) {
+    const flavorLabel = FLAVORS.find((f) => f.value === setup.flavor)?.label;
+    const processingLabel = PROCESSING_TYPES.find(
+      (p) => p.value === setup.processingType,
+    )?.label;
+    if (flavorLabel) subtitleParts.push(flavorLabel);
+    if (processingLabel) subtitleParts.push(processingLabel);
+    subtitleParts.push(format(parseISO(setup.date), "MMM d, yyyy"));
   }
-  const subtitle = subtitleParts.length > 0 ? subtitleParts.join(" · ") : "";
+  const subtitle = subtitleParts.join(" · ");
 
   return (
     <>
@@ -86,6 +96,18 @@ export const TrialView = () => {
               )}
             </div>
           </div>
+
+          {!isReadOnly && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 shrink-0"
+              onClick={() => setSetupModalOpen(true)}
+            >
+              <Pencil size={14} />
+              Edit Setup
+            </Button>
+          )}
         </div>
       </header>
 
@@ -97,10 +119,10 @@ export const TrialView = () => {
             gridTemplateColumns: "minmax(320px, 380px) 1fr",
           }}
         >
-          {/* Left column: Setup + Ingredients, sticky */}
+          {/* Left column: Ingredients + Cost, sticky */}
           <div className="sticky top-0 flex flex-col gap-5">
-            <TrialSetupCard trialId={trial.id} />
             <IngredientsCard trialId={trial.id} />
+            <CostCard trialId={trial.id} />
           </div>
 
           {/* Right column: unified category view */}
@@ -118,6 +140,15 @@ export const TrialView = () => {
           </div>
         </div>
       </div>
+
+      <TrialSetupModal
+        open={setupModalOpen}
+        onOpenChange={setSetupModalOpen}
+        trialId={trial.id}
+        initialSetup={setup}
+        initialName={trial.name}
+        key={setupModalOpen ? "open" : "closed"}
+      />
 
       {sensoryFormState && (
         <SensoryForm

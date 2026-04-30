@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getPinnedFormulation, getMostRecentEval } from "@/lib/trialDisplay";
+import { getPinnedFormulation, getMostRecentEval, calcTrialCost } from "@/lib/trialDisplay";
 
 const columnHelper = createColumnHelper<Trial>();
 
@@ -197,6 +197,23 @@ export const createColumns = (
         <Badge className={cn("text-[11px] font-medium", config.color)}>
           {config.label}
         </Badge>
+      );
+    },
+  }),
+
+  columnHelper.display({
+    id: "cost",
+    header: "Cost / 170g",
+    size: 100,
+    cell: ({ row }) => {
+      const cost = calcTrialCost(row.original.ingredients);
+      if (cost == null) {
+        return <span className="text-sm text-muted-foreground">—</span>;
+      }
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-50 text-red-600 text-[12px] font-semibold tabular-nums ring-1 ring-red-200">
+          ${cost.toFixed(3)}
+        </span>
       );
     },
   }),

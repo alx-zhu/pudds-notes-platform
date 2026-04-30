@@ -28,6 +28,7 @@ import {
   getPinnedFormulation,
   getMostRecentEval,
   getTrialPhotos,
+  calcTrialCost,
 } from "@/lib/trialDisplay";
 import type { Trial } from "@/types/trial";
 import type { SortByScore } from "@/types/filters";
@@ -57,6 +58,8 @@ export const TrialCard = ({
   );
 
   const recentEval = useMemo(() => getMostRecentEval(trial), [trial]);
+
+  const cost = useMemo(() => calcTrialCost(trial.ingredients), [trial.ingredients]);
 
   const photos = useMemo(() => {
     const items = getTrialPhotos(trial.analysisLogs);
@@ -148,16 +151,25 @@ export const TrialCard = ({
           <ScoreEmptyState />
         )}
 
-        {/* Score source */}
-        {recentEval ? (
-          <p className="text-[11px] text-muted-foreground italic flex justify-end">
-            Source: {recentEval.label}
-          </p>
-        ) : (
-          <p className="text-[11px] text-muted-foreground/40 italic flex justify-end">
-            No evaluations yet
-          </p>
-        )}
+        {/* Cost + source row */}
+        <div className="flex items-center justify-between">
+          {cost != null ? (
+            <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-50 text-red-600 text-[12px] font-semibold tabular-nums ring-1 ring-red-200">
+              ${cost.toFixed(3)} / 170g
+            </span>
+          ) : (
+            <span />
+          )}
+          {recentEval ? (
+            <p className="text-[11px] text-muted-foreground italic">
+              Source: {recentEval.label}
+            </p>
+          ) : (
+            <p className="text-[11px] text-muted-foreground/40 italic">
+              No evaluations yet
+            </p>
+          )}
+        </div>
       </div>
 
     </div>

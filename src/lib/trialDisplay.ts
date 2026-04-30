@@ -54,6 +54,25 @@ export function getMostRecentEval(trial: Trial): MostRecentEval | null {
 }
 
 /**
+ * Calculate the cost of a trial formulation per serving.
+ * Returns null if no ingredients have cost data.
+ */
+export function calcTrialCost(
+  ingredients: TrialIngredient[],
+  servingGrams = 170,
+): number | null {
+  let total = 0;
+  let hasAnyCost = false;
+  for (const ti of ingredients) {
+    if (ti.ingredient.cost != null) {
+      total += ti.ingredient.cost * (ti.percentage / 100) * servingGrams;
+      hasAnyCost = true;
+    }
+  }
+  return hasAnyCost ? total : null;
+}
+
+/**
  * Get all photos from a trial's analysis logs with their labels.
  * Returns the first photo from each log, sorted by log creation date.
  */

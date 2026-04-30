@@ -20,7 +20,8 @@ const COL_WIDTHS = {
   abbreviation: 110,
   type: 140,
   solid: 70,
-  cost: 100,
+  cost: 110,
+  avgScore: 140,
   trials: 70,
   actions: 48,
 } as const;
@@ -30,6 +31,7 @@ const COL_WIDTHS = {
 interface Props {
   ingredients: Ingredient[];
   trialCounts: Map<string, number>;
+  avgScores: Map<string, number>;
   isAdding: boolean;
   onUpdate: (id: string, input: UpdateIngredientInput) => void;
   onDelete: (id: string) => void;
@@ -40,6 +42,7 @@ interface Props {
 export const IngredientsTable = ({
   ingredients,
   trialCounts,
+  avgScores,
   isAdding,
   onUpdate,
   onDelete,
@@ -48,11 +51,11 @@ export const IngredientsTable = ({
 }: Props) => {
   return (
     <div className="rounded-xl bg-card ring-1 ring-border/60 overflow-hidden overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border">
             <th
-              className="px-4 py-3 bg-muted/30"
+              className="px-4 py-3 bg-muted/30 w-12"
               style={{ width: COL_WIDTHS.pin }}
             />
             <th
@@ -86,6 +89,12 @@ export const IngredientsTable = ({
               Cost / g
             </th>
             <th
+              className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
+              style={{ width: COL_WIDTHS.avgScore }}
+            >
+              Avg Score
+            </th>
+            <th
               className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30"
               style={{ width: COL_WIDTHS.trials }}
             >
@@ -104,7 +113,7 @@ export const IngredientsTable = ({
           {ingredients.length === 0 && !isAdding ? (
             <tr>
               <td
-                colSpan={8}
+                colSpan={9}
                 className="text-center py-12 text-muted-foreground text-sm"
               >
                 No ingredients yet. Click "Add Ingredient" to create one.
@@ -116,6 +125,7 @@ export const IngredientsTable = ({
                 key={ing.id}
                 ingredient={ing}
                 trialCount={trialCounts.get(ing.id) ?? 0}
+                avgScore={avgScores.get(ing.id)}
                 onUpdate={onUpdate}
                 onDelete={onDelete}
               />
@@ -170,7 +180,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
   return (
     <tr className="border-b border-border/40 bg-primary/5">
       {/* Pin */}
-      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.pin }}>
+      <td className="px-4 py-3 text-center align-middle w-12" style={{ width: COL_WIDTHS.pin }}>
         <Button
           variant="ghost"
           size="icon"
@@ -189,7 +199,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Name */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.name }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.name }}>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -201,7 +211,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Abbreviation */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.abbreviation }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.abbreviation }}>
         <Input
           value={abbreviation}
           onChange={(e) => setAbbreviation(e.target.value)}
@@ -212,12 +222,12 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Type */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.type }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.type }}>
         <IngredientTypeSelect value={type} onChange={setType} />
       </td>
 
       {/* Solid */}
-      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.solid }}>
+      <td className="px-4 py-3 text-center align-middle" style={{ width: COL_WIDTHS.solid }}>
         <Checkbox
           checked={solid}
           onCheckedChange={(checked) => setSolid(checked === true)}
@@ -225,7 +235,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
       </td>
 
       {/* Cost */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.cost }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.cost }}>
         <Input
           value={costRaw}
           onChange={(e) => setCostRaw(e.target.value)}
@@ -235,16 +245,21 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
         />
       </td>
 
+      {/* Avg Score (empty for new) */}
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.avgScore }}>
+        <span className="text-muted-foreground text-xs">—</span>
+      </td>
+
       {/* Trials (empty for new) */}
       <td
-        className="px-4 py-3 text-right text-muted-foreground"
+        className="px-4 py-3 text-right text-muted-foreground align-middle"
         style={{ width: COL_WIDTHS.trials }}
       >
         —
       </td>
 
       {/* Actions: submit / cancel */}
-      <td className="px-2 py-3" style={{ width: COL_WIDTHS.actions }}>
+      <td className="px-2 py-3 align-middle" style={{ width: COL_WIDTHS.actions }}>
         <div className="flex flex-col items-center gap-0.5">
           <Button
             variant="ghost"
@@ -274,6 +289,7 @@ const NewIngredientRow = ({ onCreate, onCancel }: NewRowProps) => {
 interface RowProps {
   ingredient: Ingredient;
   trialCount: number;
+  avgScore?: number;
   onUpdate: (id: string, input: UpdateIngredientInput) => void;
   onDelete: (id: string) => void;
 }
@@ -281,6 +297,7 @@ interface RowProps {
 const IngredientRow = ({
   ingredient,
   trialCount,
+  avgScore,
   onUpdate,
   onDelete,
 }: RowProps) => {
@@ -290,7 +307,7 @@ const IngredientRow = ({
   return (
     <tr className="border-b border-border/40 last:border-b-0 hover:bg-muted/50 transition-colors">
       {/* Pin */}
-      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.pin }}>
+      <td className="px-4 py-3 text-center align-middle w-12" style={{ width: COL_WIDTHS.pin }}>
         <Button
           variant="ghost"
           size="icon"
@@ -309,7 +326,7 @@ const IngredientRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-4 py-3 font-medium" style={{ width: COL_WIDTHS.name }}>
+      <td className="px-4 py-3 font-medium align-middle" style={{ width: COL_WIDTHS.name }}>
         <InlineInput
           value={ingredient.name}
           onCommit={(name) => onUpdate(id, { name })}
@@ -317,7 +334,7 @@ const IngredientRow = ({
       </td>
 
       {/* Abbreviation */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.abbreviation }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.abbreviation }}>
         <InlineInput
           value={ingredient.abbreviation ?? ""}
           onCommit={(abbreviation) => onUpdate(id, { abbreviation })}
@@ -327,7 +344,7 @@ const IngredientRow = ({
       </td>
 
       {/* Type */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.type }}>
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.type }}>
         <IngredientTypeSelect
           value={ingredient.type}
           onChange={(type) => onUpdate(id, { type })}
@@ -335,7 +352,7 @@ const IngredientRow = ({
       </td>
 
       {/* Solid */}
-      <td className="px-4 py-3 text-center" style={{ width: COL_WIDTHS.solid }}>
+      <td className="px-4 py-3 text-center align-middle" style={{ width: COL_WIDTHS.solid }}>
         <Checkbox
           checked={ingredient.solid ?? false}
           onCheckedChange={(checked) =>
@@ -344,12 +361,12 @@ const IngredientRow = ({
         />
       </td>
 
-      {/* Cost / lb */}
-      <td className="px-4 py-3" style={{ width: COL_WIDTHS.cost }}>
+      {/* Cost / g */}
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.cost }}>
         <InlineInput
           value={
             ingredient.cost != null
-              ? `$${ingredient.cost.toFixed(2)}`
+              ? `$${ingredient.cost.toFixed(4)}`
               : ""
           }
           onCommit={(raw) => {
@@ -361,16 +378,35 @@ const IngredientRow = ({
         />
       </td>
 
+      {/* Avg Score */}
+      <td className="px-4 py-3 align-middle" style={{ width: COL_WIDTHS.avgScore }}>
+        {avgScore != null ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full"
+                style={{ width: `${(avgScore / 5) * 100}%` }}
+              />
+            </div>
+            <span className="text-xs font-bold tabular-nums text-green-600 w-[26px] text-right">
+              {avgScore.toFixed(1)}
+            </span>
+          </div>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </td>
+
       {/* Trials (read-only) */}
       <td
-        className="px-4 py-3 text-right text-muted-foreground tabular-nums"
+        className="px-4 py-3 text-right text-muted-foreground tabular-nums align-middle"
         style={{ width: COL_WIDTHS.trials }}
       >
         {trialCount}
       </td>
 
       {/* Delete */}
-      <td className="px-2 py-3" style={{ width: COL_WIDTHS.actions }}>
+      <td className="px-2 py-3 align-middle" style={{ width: COL_WIDTHS.actions }}>
         <Button
           variant="ghost"
           size="icon"

@@ -9,7 +9,9 @@ import {
   useUpdateIngredient,
   useDeleteIngredient,
 } from "@/hooks/useIngredients";
+import { useTrials } from "@/hooks/useTrials";
 import { readTrialIngredients } from "@/api/trialIngredients";
+import { getMostRecentEval } from "@/lib/trialDisplay";
 import type {
   CreateIngredientInput,
   UpdateIngredientInput,
@@ -17,6 +19,7 @@ import type {
 
 export const IngredientsPage = () => {
   const { data: ingredients = [], isLoading } = useIngredients();
+  const { data: trials = [] } = useTrials();
   const createIngredient = useCreateIngredient();
   const updateIngredient = useUpdateIngredient();
   const deleteIngredient = useDeleteIngredient();
@@ -34,6 +37,27 @@ export const IngredientsPage = () => {
     }
     return counts;
   }, [ingredients]);
+
+  const avgScores = useMemo(() => {
+    const sums = new Map<string, { total: number; count: number }>();
+    for (const trial of trials) {
+      const evalResult = getMostRecentEval(trial);
+      if (evalResult?.scores.overall == null) continue;
+      for (const ti of trial.ingredients) {
+        const id = ti.ingredient.id;
+        const prev = sums.get(id) ?? { total: 0, count: 0 };
+        sums.set(id, {
+          total: prev.total + evalResult.scores.overall,
+          count: prev.count + 1,
+        });
+      }
+    }
+    const result = new Map<string, number>();
+    for (const [id, { total, count }] of sums) {
+      result.set(id, total / count);
+    }
+    return result;
+  }, [trials]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return ingredients;
@@ -99,6 +123,7 @@ export const IngredientsPage = () => {
           <IngredientsTable
             ingredients={filtered}
             trialCounts={trialCounts}
+            avgScores={avgScores}
             isAdding={isAdding}
             onUpdate={handleUpdate}
             onDelete={handleDelete}
