@@ -36,8 +36,13 @@ export const publishSnapshot = async (): Promise<void> => {
     trialIngredients: localStorage.getItem("pudds:trial-ingredients") ?? "[]",
   };
 
-  const { error } = await supabase.from("snapshots").insert({ data: payload });
+  const { data, error } = await supabase
+    .from("snapshots")
+    .insert({ data: payload })
+    .select("created_at")
+    .single();
   if (error) throw new Error(error.message);
+  localStorage.setItem("pudds:last-sync", data.created_at);
 };
 
 export const fetchLatestSnapshot = async (): Promise<SnapshotRow> => {
