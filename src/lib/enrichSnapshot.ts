@@ -3,6 +3,7 @@ import type { SensoryScores } from "@/lib/sensoryScores";
 import type { PartialSensoryMetrics } from "@/types/trial";
 import { calcScoresFromEvaluations } from "@/lib/sensoryScores";
 import { averageEvaluationMetrics, hasEvaluationData } from "@/lib/analysisLog";
+import { calcTrialCost } from "@/lib/trialDisplay";
 
 export interface EnrichedAnalysisLog extends AnalysisLog {
   computedScores: SensoryScores;
@@ -12,6 +13,7 @@ export interface EnrichedAnalysisLog extends AnalysisLog {
 export interface EnrichedTrial extends Omit<Trial, "analysisLogs"> {
   analysisLogs: EnrichedAnalysisLog[];
   mostRecentScores: SensoryScores | null;
+  costPerServing: number | null;
 }
 
 const enrichLog = (log: AnalysisLog): EnrichedAnalysisLog => ({
@@ -34,5 +36,6 @@ export const enrichTrialsForSnapshot = (trials: Trial[]): EnrichedTrial[] => {
     ...trial,
     analysisLogs: trial.analysisLogs.map(enrichLog),
     mostRecentScores: findMostRecentScores(trial.analysisLogs),
+    costPerServing: calcTrialCost(trial.ingredients),
   }));
 };
