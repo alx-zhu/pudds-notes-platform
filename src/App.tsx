@@ -4,6 +4,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ReadOnlyProvider } from "@/contexts/ReadOnlyContext";
@@ -24,7 +25,8 @@ const queryClient = new QueryClient({
 });
 
 const AuthGate = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading, role } = useAuth();
+  const { session, isLoading, role } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -32,6 +34,10 @@ const AuthGate = ({ children }: { children: React.ReactNode }) => {
         <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
+  }
+
+  if (session && location.pathname === "/login") {
+    return <Navigate to="/trials" replace />;
   }
 
   return (
