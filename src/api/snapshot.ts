@@ -1,4 +1,7 @@
 import { supabase } from "@/lib/supabase";
+import type { Trial } from "@/types/trial";
+import { resolveForTrial } from "@/api/trialIngredients";
+import { enrichTrialsForSnapshot, type EnrichedTrial } from "@/lib/enrichSnapshot";
 
 export interface SnapshotPayload {
   trials: string;
@@ -13,8 +16,22 @@ export interface SnapshotRow {
 }
 
 export const publishSnapshot = async (): Promise<void> => {
+  const rawTrials = localStorage.getItem("pudds:trials") ?? "[]";
+
+  let enrichedTrials: EnrichedTrial[] = [];
+  try {
+    const parsed = JSON.parse(rawTrials) as Trial[];
+    const resolvedTrials: Trial[] = parsed.map((trial) => ({
+      ...trial,
+      ingredients: resolveForTrial(trial.id),
+    }));
+    enrichedTrials = enrichTrialsForSnapshot(resolvedTrials);
+  } catch {
+    enrichedTrials = [];
+  }
+
   const payload: SnapshotPayload = {
-    trials: localStorage.getItem("pudds:trials") ?? "[]",
+    trials: JSON.stringify(enrichedTrials),
     ingredients: localStorage.getItem("pudds:ingredients") ?? "[]",
     trialIngredients: localStorage.getItem("pudds:trial-ingredients") ?? "[]",
   };

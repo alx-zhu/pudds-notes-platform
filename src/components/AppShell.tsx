@@ -212,7 +212,7 @@ const RoleBanner = () => {
               ) : (
                 <RotateCcw size={11} />
               )}
-              Restore
+              Sync
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
