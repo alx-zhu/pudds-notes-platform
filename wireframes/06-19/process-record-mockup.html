@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Record — PLN Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --background:oklch(0.975 0.005 75);
+  --foreground:oklch(0.15 0.01 60);
+  --card:oklch(1 0 0);
+  --muted:oklch(0.955 0.008 75);
+  --muted-fg:oklch(0.50 0.01 60);
+  --border:oklch(0.91 0.008 75);
+  --primary:oklch(0.22 0.01 60);
+  --primary-fg:oklch(0.985 0.003 75);
+  --ring:oklch(0.65 0.01 60);
+  --radius:0.625rem;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 1px rgba(0,0,0,0.035);
+}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--background);-webkit-font-smoothing:antialiased;font-size:14px;color:var(--foreground)}
+svg{display:block}
+
+/* PAGE */
+.page{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* HEADER */
+.page-header{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted-fg);transition:background 0.12s,color 0.12s}
+.back-btn:hover{background:var(--muted);color:var(--foreground)}
+.trial-icon{width:36px;height:36px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.trial-meta{flex:1;min-width:0}
+.trial-name{font-size:15px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trial-sub{font-size:12px;color:var(--muted-fg);margin-top:1px}
+.header-btn{padding:0 12px;height:32px;border:1px solid var(--border);border-radius:7px;background:var(--card);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--foreground);font-family:inherit;transition:background 0.12s;flex-shrink:0}
+.header-btn:hover{background:var(--muted)}
+
+/* BODY */
+.page-body{flex:1;overflow-y:auto;padding:20px 24px}
+.two-col{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:16px;align-items:start;max-width:1100px}
+.left-col{position:sticky;top:0;display:flex;flex-direction:column;gap:12px}
+.right-col{display:flex;flex-direction:column;gap:12px}
+
+/* CARD */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
+.card-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header-left{display:flex;align-items:center;gap:8px}
+.card-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:13px;font-weight:600}
+.card-body{padding:12px 14px}
+
+/* STUB */
+.stub-row{height:10px;border-radius:3px;background:var(--muted);margin-bottom:7px}
+.stub-row:last-child{margin-bottom:0}
+
+/* ICON BUTTON */
+.icon-btn{padding:0 10px;height:26px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--muted-fg);font-family:inherit;transition:background 0.12s,color 0.12s,border-color 0.12s;white-space:nowrap}
+.icon-btn:hover{background:var(--muted);color:var(--foreground);border-color:oklch(0.75 0.008 60)}
+.icon-btn:active{transform:translateY(0.5px)}
+
+/* ── PROCESS CARD ── */
+
+/* Collapsed summary row — always visible */
+.process-summary{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 14px;
+  cursor:pointer;
+  user-select:none;
+  transition:background 0.1s;
+}
+.process-summary:hover{background:var(--muted)}
+
+.process-summary-text{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.summary-count{font-size:12px;font-weight:600;color:var(--foreground)}
+.summary-names{
+  font-size:11px;
+  color:var(--muted-fg);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.summary-timerange{font-size:11px;color:var(--muted-fg);flex-shrink:0;font-variant-numeric:tabular-nums}
+
+.chevron{
+  color:var(--muted-fg);
+  flex-shrink:0;
+  transition:transform 0.18s ease;
+}
+.chevron.open{transform:rotate(180deg)}
+
+/* Expandable step list */
+.steps-expand{overflow:hidden;max-height:0;transition:max-height 0.22s ease}
+.steps-expand.open{max-height:2000px}
+
+/* border only appears when expanded */
+.steps-expand.open .steps-inner{border-top:1px solid var(--border)}
+
+/* STEP ROWS */
+.step-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  cursor:default;transition:background 0.1s;
+}
+.step-row:last-child{border-bottom:none}
+.step-row:hover{background:var(--muted)}
+.step-num{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--muted);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:600;color:var(--muted-fg);
+  flex-shrink:0;margin-top:1px;
+  transition:background 0.1s,border-color 0.1s;
+}
+.step-row:hover .step-num{background:var(--card);border-color:oklch(0.75 0.008 60)}
+.step-content{flex:1;min-width:0}
+.step-name{font-size:12px;font-weight:600;color:var(--foreground);line-height:1.35;margin-bottom:3px}
+.step-params{font-size:11px;color:var(--muted-fg);line-height:1.6}
+.step-params .pval{color:var(--foreground);font-weight:500}
+.step-params .dot{margin:0 5px;color:var(--border)}
+.step-note{font-size:11px;color:var(--muted-fg);font-style:italic;margin-top:5px;padding-top:5px;border-top:1px solid var(--border);line-height:1.5}
+.step-ts{font-size:10px;color:var(--muted-fg);flex-shrink:0;padding-top:2px;font-variant-numeric:tabular-nums}
+
+/* empty state */
+.empty-process{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 14px;text-align:center}
+.empty-icon{width:38px;height:38px;border-radius:10px;background:var(--muted);display:flex;align-items:center;justify-content:center}
+.empty-title{font-size:12px;font-weight:500}
+.empty-sub{font-size:11px;color:var(--muted-fg);margin-top:2px}
+.start-btn{padding:0 12px;height:28px;background:var(--primary);color:var(--primary-fg);border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity 0.12s}
+.start-btn:hover{opacity:0.85}
+
+/* ── SHEET ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.22);z-index:50;display:none;align-items:stretch;justify-content:flex-end;backdrop-filter:blur(1.5px)}
+.overlay.open{display:flex;animation:fade-in 0.15s ease}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--card);width:500px;max-width:96vw;display:flex;flex-direction:column;box-shadow:-6px 0 32px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.04);animation:slide-in 0.2s cubic-bezier(0.32,0.72,0,1)}
+@keyframes slide-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.sheet-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.close-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted-fg);font-family:inherit;transition:background 0.12s,color 0.12s;flex-shrink:0}
+.close-btn:hover{background:var(--muted);color:var(--foreground)}
+.sheet-title{font-size:13px;font-weight:600}
+.sheet-sub{font-size:11px;color:var(--muted-fg);margin-top:1px}
+.sheet-body{flex:1;overflow-y:auto}
+.sheet-step{padding:16px 18px;border-bottom:1px solid var(--border)}
+.sheet-step:last-of-type{border-bottom:none}
+.step-header-row{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+.sheet-step-num{width:20px;height:20px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0}
+.step-del-btn{width:26px;height:26px;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted-fg);display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;transition:background 0.1s,color 0.1s,border-color 0.1s}
+.step-del-btn:hover{color:oklch(0.55 0.22 27);background:oklch(0.97 0.01 27);border-color:oklch(0.85 0.05 27)}
+.field-group{margin-bottom:11px}
+.field-label{font-size:10px;font-weight:500;color:var(--muted-fg);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+.finput{height:30px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--foreground);outline:none;font-family:inherit;transition:border-color 0.12s,box-shadow 0.12s;width:100%}
+.finput:focus{border-color:var(--ring);box-shadow:0 0 0 3px oklch(0.65 0.01 60 / 0.12)}
+.finput::placeholder{color:oklch(0.72 0.005 60)}
+.finput.step-name-field{font-weight:600}
+.finput.w-time{width:108px}
+.finput.w-key{flex:2;min-width:0}
+.finput.w-val{flex:1;min-width:0}
+.finput.w-unit{width:64px;flex-shrink:0}
+.ftextarea{width:100%;padding:7px 9px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--foreground);outline:none;font-family:inherit;resize:none;min-height:54px;line-height:1.5;transition:border-color 0.12s,box-shadow 0.12s}
+.ftextarea:focus{border-color:var(--ring);box-shadow:0 0 0 3px oklch(0.65 0.01 60 / 0.12)}
+.ftextarea::placeholder{color:oklch(0.72 0.005 60)}
+.param-col-hdrs{display:flex;gap:6px;margin-bottom:4px;padding-right:30px}
+.pcol{font-size:9.5px;font-weight:500;color:oklch(0.68 0.007 60);text-transform:uppercase;letter-spacing:0.04em}
+.pcol.k{flex:2}.pcol.v{flex:1}.pcol.u{width:64px}
+.param-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.param-del{width:24px;height:24px;flex-shrink:0;background:none;border:none;cursor:pointer;color:var(--muted-fg);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:color 0.1s,background 0.1s}
+.param-del:hover{color:oklch(0.55 0.22 27);background:oklch(0.97 0.01 27)}
+.add-param-btn{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted-fg);background:none;border:none;cursor:pointer;padding:2px 0;font-family:inherit;margin-top:3px;transition:color 0.1s}
+.add-param-btn:hover{color:var(--foreground)}
+.add-step-wrap{padding:12px 18px}
+.add-step-btn{width:100%;height:32px;background:none;border:1.5px dashed var(--border);border-radius:7px;font-size:11px;font-weight:500;color:var(--muted-fg);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:background 0.12s,border-color 0.12s,color 0.12s}
+.add-step-btn:hover{background:var(--muted);border-style:solid;color:var(--foreground)}
+.sheet-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;background:var(--card)}
+.btn-cancel{padding:0 12px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:12px;font-weight:500;cursor:pointer;color:var(--muted-fg);font-family:inherit;transition:background 0.12s,color 0.12s}
+.btn-cancel:hover{background:var(--muted);color:var(--foreground)}
+.btn-save{padding:0 16px;height:30px;background:var(--primary);color:var(--primary-fg);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity 0.12s}
+.btn-save:hover{opacity:0.85}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <button class="back-btn" title="Back">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 2.5L4.5 7.5L9 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="trial-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 1v5L2.5 13.5a1 1 0 00.9 1.5h9.2a1 1 0 00.9-1.5L10 6V1M5 1h6" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="trial-meta">
+      <div class="trial-name">Chocolate Industrial — Jun 25, 2026</div>
+      <div class="trial-sub">Trial #14 · Chocolate · Industrial</div>
+    </div>
+    <button class="header-btn">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9 1.5L10.5 3L4.5 9H3V7.5L9 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Edit Setup
+    </button>
+  </header>
+
+  <!-- BODY -->
+  <div class="page-body">
+    <div class="two-col">
+
+      <!-- LEFT: Ingredients + Cost (stubbed) -->
+      <div class="left-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.06 145)">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10h8M6 2v8M3.5 4.5L6 2l2.5 2.5" stroke="oklch(0.40 0.13 145)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="card-title">Ingredients</span>
+            </div>
+            <button class="icon-btn">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="stub-row" style="width:85%"></div>
+            <div class="stub-row" style="width:62%"></div>
+            <div class="stub-row" style="width:91%"></div>
+            <div class="stub-row" style="width:74%"></div>
+            <div class="stub-row" style="width:58%"></div>
+            <div class="stub-row" style="width:80%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2.5" width="9" height="7" rx="1" stroke="var(--muted-fg)" stroke-width="1.2"/><path d="M4 5.5h4M4 7.5h2.5" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="card-title">Cost</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="stub-row" style="width:60%"></div>
+            <div class="stub-row" style="width:44%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT col -->
+      <div class="right-col">
+
+        <!-- PROCESS RECORD CARD -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.95 0.04 55)">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M1.5 6h6.5M1.5 9h4" stroke="oklch(0.58 0.13 55)" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <span class="card-title">Process Record</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="icon-btn" onclick="openSheet()">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Edit
+              </button>
+            </div>
+          </div>
+
+          <!-- COLLAPSED SUMMARY ROW (always visible when steps exist) -->
+          <div id="process-summary" class="process-summary" onclick="toggleExpand()">
+            <div class="process-summary-text">
+              <span class="summary-count" id="summary-count"></span>
+              <span class="summary-names" id="summary-names"></span>
+            </div>
+            <span class="summary-timerange" id="summary-timerange"></span>
+            <span class="chevron" id="chevron">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+
+          <!-- EXPANDED STEP LIST -->
+          <div class="steps-expand" id="steps-expand">
+            <div class="steps-inner" id="steps-inner"></div>
+          </div>
+
+          <!-- EMPTY STATE (shown when no steps) -->
+          <div id="empty-process" style="display:none">
+            <div class="empty-process">
+              <div class="empty-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="var(--muted-fg)" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="empty-title">No process steps yet</div>
+                <div class="empty-sub">Record what happened during this run.</div>
+              </div>
+              <button class="start-btn" onclick="openSheet()">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Add First Step
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENSORY EVAL (stubbed) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.05 290)">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5l1.18 2.38 2.63.38-1.9 1.85.45 2.61L6 7.4l-2.36 1.32.45-2.61L2.19 4.26l2.63-.38L6 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="card-title">Sensory Evaluation</span>
+            </div>
+            <button class="icon-btn" style="opacity:0.45;pointer-events:none">+ Add Log</button>
+          </div>
+          <div class="card-body">
+            <div class="stub-row" style="width:100%"></div>
+            <div class="stub-row" style="width:78%"></div>
+            <div class="stub-row" style="width:86%"></div>
+            <div style="height:6px"></div>
+            <div class="stub-row" style="width:55%"></div>
+          </div>
+        </div>
+
+        <!-- COMMENTS (stubbed) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 2.5a1 1 0 011-1h7a1 1 0 011 1v5a1 1 0 01-1 1H4L1.5 10.5V2.5z" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="card-title">Comments</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="stub-row" style="width:90%"></div>
+            <div class="stub-row" style="width:55%"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SHEET -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <button class="close-btn" onclick="closeSheet()">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div>
+        <div class="sheet-title">Edit Process Record</div>
+        <div class="sheet-sub">Chocolate Industrial · Jun 25, 2026</div>
+      </div>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+    <div class="sheet-footer">
+      <button class="btn-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="btn-save" onclick="save()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SVG_PLUS = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+const SVG_X = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+const SVG_TRASH = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 3h8M3.5 3V2h4v1M4.5 5v3.5M6.5 5v3.5M2.5 3l.5 6.5h5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+let expanded = false;
+let draft = [];
+
+let steps = [
+  {name:"Liquifier",        ts:"06:45", params:[{k:"Duration",v:"8",u:"min"},{k:"Temp",v:"85",u:"°C"},{k:"Speed",v:"3500",u:"rpm"}], notes:""},
+  {name:"DSI",              ts:"06:55", params:[{k:"Duration",v:"45",u:"sec"},{k:"Temp in",v:"82",u:"°C"},{k:"Temp out",v:"140",u:"°C"}], notes:"Slight temp overshoot on exit — monitor next run."},
+  {name:"Vacuum Cooler",    ts:"07:00", params:[{k:"Duration",v:"2",u:"min"},{k:"Pressure",v:"0.6",u:"bar"},{k:"Temp out",v:"90",u:"°C"}], notes:""},
+  {name:"Pump",             ts:"07:03", params:[{k:"Duration",v:"1",u:"min"},{k:"Flow rate",v:"200",u:"L/hr"}], notes:""},
+  {name:"Cooler",           ts:"07:05", params:[{k:"Duration",v:"12",u:"min"},{k:"Temp out",v:"10",u:"°C"}], notes:""},
+  {name:"Filler",           ts:"07:18", params:[{k:"Duration",v:"20",u:"min"},{k:"Volume",v:"100",u:"mL"},{k:"Fill weight",v:"98.4",u:"g"}], notes:"Two cups slightly underfilled near end of run."},
+];
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderAll() {
+  const hasSt = steps.length > 0;
+
+  // empty state
+  document.getElementById('empty-process').style.display = hasSt ? 'none' : 'block';
+  document.getElementById('process-summary').style.display = hasSt ? 'flex' : 'none';
+
+  if (!hasSt) return;
+
+  // summary row
+  const names = steps.map(s => s.name).join(' → ');
+  const times = steps.map(s => s.ts).filter(Boolean);
+  const timeRange = times.length >= 2 ? `${times[0]}–${times[times.length-1]}` : times[0] || '';
+
+  document.getElementById('summary-count').textContent = `${steps.length} steps`;
+  document.getElementById('summary-names').textContent = names;
+  document.getElementById('summary-timerange').textContent = timeRange;
+
+  // expanded step list
+  document.getElementById('steps-inner').innerHTML = steps.map((s, i) => {
+    const paramParts = s.params
+      .filter(p => p.k || p.v)
+      .map(p => {
+        const val = [p.v, p.u].filter(Boolean).join(' ');
+        return `${esc(p.k)}<span style="margin:0 2px;color:var(--border)">:</span><span class="pval">${esc(val)}</span>`;
+      });
+    const paramStr = paramParts.join(`<span class="dot">&middot;</span>`);
+    return `
+      <div class="step-row">
+        <div class="step-num">${i+1}</div>
+        <div class="step-content">
+          <div class="step-name">${esc(s.name)||'Untitled step'}</div>
+          ${paramStr ? `<div class="step-params">${paramStr}</div>` : ''}
+          ${s.notes ? `<div class="step-note">${esc(s.notes)}</div>` : ''}
+        </div>
+        ${s.ts ? `<div class="step-ts">${esc(s.ts)}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  // sync expand state
+  const expandEl = document.getElementById('steps-expand');
+  const chevronEl = document.getElementById('chevron');
+  if (expanded) {
+    expandEl.classList.add('open');
+    chevronEl.classList.add('open');
+  } else {
+    expandEl.classList.remove('open');
+    chevronEl.classList.remove('open');
+  }
+}
+
+function toggleExpand() {
+  expanded = !expanded;
+  renderAll();
+}
+
+function renderSheet() {
+  document.getElementById('sheet-body').innerHTML = draft.map((s, i) => `
+    <div class="sheet-step" id="ss-${i}">
+      <div class="step-header-row">
+        <div class="sheet-step-num">${i+1}</div>
+        <input class="finput step-name-field" value="${esc(s.name)}" placeholder="Step name…" oninput="draft[${i}].name=this.value">
+        <button class="step-del-btn" onclick="removeStep(${i})" title="Remove step">${SVG_TRASH}</button>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Time</div>
+        <input class="finput w-time" type="time" value="${esc(s.ts)}" oninput="draft[${i}].ts=this.value">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Parameters</div>
+        <div class="param-col-hdrs">
+          <span class="pcol k">Name</span><span class="pcol v">Value</span><span class="pcol u">Unit</span>
+        </div>
+        <div id="pb-${i}">
+          ${s.params.map((p, pi) => `
+            <div class="param-row">
+              <input class="finput w-key" placeholder="e.g. Temperature" value="${esc(p.k)}" oninput="draft[${i}].params[${pi}].k=this.value">
+              <input class="finput w-val" placeholder="72" value="${esc(p.v)}" oninput="draft[${i}].params[${pi}].v=this.value">
+              <input class="finput w-unit" placeholder="°C" value="${esc(p.u)}" oninput="draft[${i}].params[${pi}].u=this.value">
+              <button class="param-del" onclick="removeParam(${i},${pi})">${SVG_X}</button>
+            </div>`).join('')}
+        </div>
+        <button class="add-param-btn" onclick="addParam(${i})">${SVG_PLUS} Add parameter</button>
+      </div>
+      <div class="field-group" style="margin-bottom:0">
+        <div class="field-label">Notes</div>
+        <textarea class="ftextarea" placeholder="Observations about this step…" oninput="draft[${i}].notes=this.value">${esc(s.notes)}</textarea>
+      </div>
+    </div>`).join('')
+  + `<div class="add-step-wrap">
+      <button class="add-step-btn" onclick="addStep()">${SVG_PLUS} Add step</button>
+     </div>`;
+}
+
+function openSheet() {
+  draft = JSON.parse(JSON.stringify(steps));
+  if (!draft.length) draft.push({name:'',ts:'',params:[{k:'Duration',v:'',u:'min'}],notes:''});
+  renderSheet();
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function save() {
+  steps = JSON.parse(JSON.stringify(draft));
+  expanded = false;
+  renderAll();
+  closeSheet();
+}
+function addStep() {
+  draft.push({name:'',ts:'',params:[{k:'Duration',v:'',u:'min'}],notes:''});
+  renderSheet();
+  setTimeout(() => {
+    const all = document.querySelectorAll('.sheet-step');
+    all[all.length-1]?.scrollIntoView({behavior:'smooth',block:'start'});
+    all[all.length-1]?.querySelector('.finput')?.focus();
+  }, 40);
+}
+function removeStep(i) {
+  draft.splice(i,1);
+  if (!draft.length) draft.push({name:'',ts:'',params:[{k:'Duration',v:'',u:'min'}],notes:''});
+  renderSheet();
+}
+function addParam(i) {
+  draft[i].params.push({k:'',v:'',u:''});
+  renderSheet();
+  setTimeout(() => {
+    const pb = document.getElementById('pb-'+i);
+    const rows = pb?.querySelectorAll('.param-row');
+    rows?.[rows.length-1]?.querySelector('.finput')?.focus();
+  }, 20);
+}
+function removeParam(i, pi) {
+  draft[i].params.splice(pi,1);
+  renderSheet();
+}
+
+renderAll();
+</script>
+</body>
+</html>

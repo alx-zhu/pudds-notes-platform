@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V2 – Property table</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; background: #f5f5f4; color: #0f0f0e; padding: 28px 20px; }
+h2 { font-size: 13px; font-weight: 600; color: #0f0f0e; margin-bottom: 2px; }
+.desc { font-size: 11px; color: #888780; margin-bottom: 20px; }
+.frame { width: 340px; display: flex; flex-direction: column; gap: 10px; }
+
+.card { background: #fff; border: 0.5px solid #e2e2de; border-radius: 12px; overflow: hidden; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid #e2e2de; }
+.title-row { display: flex; align-items: center; gap: 6px; }
+.icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+.icon-orange { background: #ffedd5; }
+.icon-blue { background: #dbeafe; }
+.title-text { font-size: 12px; font-weight: 600; color: #0f0f0e; }
+.actions { display: flex; align-items: center; gap: 5px; }
+.ghost-btn { width: 24px; height: 24px; border: none; background: none; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #888780; font-size: 10px; cursor: pointer; }
+.ghost-btn:hover { background: #f1efe8; }
+.pill-toggle { display: inline-flex; background: rgba(0,0,0,0.05); border-radius: 7px; padding: 2px; }
+.pill-tab { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 5px; color: #888780; cursor: pointer; }
+.pill-tab.active { background: #fff; color: #0f0f0e; box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
+
+/* ── INGREDIENTS v2: mini donut + legend side by side ── */
+.ing-body { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; }
+.mini-donut { flex-shrink: 0; }
+.donut-svg { width: 72px; height: 72px; }
+.legend { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.legend-row { display: flex; align-items: center; gap: 6px; font-size: 10.5px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.leg-name { flex: 1; color: #0f0f0e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.leg-pct { color: #888780; font-variant-numeric: tabular-nums; font-size: 10px; flex-shrink: 0; }
+.card-footer { display: flex; align-items: center; justify-content: center; gap: 3px; padding: 7px; border-top: 0.5px solid #e2e2de; font-size: 10.5px; color: #888780; cursor: pointer; }
+
+/* ── PROCESS v2: property-table rows ── */
+.steps { }
+.step { padding: 9px 14px; border-top: 0.5px solid rgba(0,0,0,0.05); }
+.step:first-child { border-top: none; }
+.step-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.num { width: 18px; height: 18px; border-radius: 50%; background: #0f0f0e; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-name { font-size: 12px; font-weight: 600; color: #0f0f0e; flex: 1; }
+.ts { font-size: 10.5px; color: #888780; font-variant-numeric: tabular-nums; }
+
+/* Property table */
+.prop-table { width: 100%; border-collapse: collapse; }
+.prop-table tr { }
+.prop-key { font-size: 10px; color: #b4b2a9; padding: 2px 0; width: 42%; vertical-align: top; }
+.prop-val { font-size: 11px; font-weight: 600; color: #2c2c2a; padding: 2px 0; text-align: right; font-variant-numeric: tabular-nums; }
+.prop-unit { font-size: 10px; font-weight: 400; color: #888780; margin-left: 2px; }
+
+/* Separator between key and val */
+.prop-rule { width: 1px; background: rgba(0,0,0,0.07); padding: 0 6px; }
+.prop-dash { display: block; width: 100%; height: 0.5px; background: rgba(0,0,0,0.07); margin-top: 5px; }
+
+/* Note callout */
+.note { display: flex; align-items: flex-start; gap: 5px; margin-top: 5px; padding: 4px 7px; background: #fef3c7; border-left: 2px solid #f59e0b; border-radius: 0 4px 4px 0; font-size: 10px; color: #78350f; }
+
+/* Annotations */
+.notes-section { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.ann { display: flex; align-items: flex-start; gap: 5px; font-size: 10.5px; color: #5f5e5a; line-height: 1.4; }
+.ann::before { content: "·"; color: #888780; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h2>V2 – Compact donut · Property table</h2>
+<p class="desc">72px inline donut beside legend · params as key → value rows, right-aligned values</p>
+
+<div class="frame">
+
+  <!-- Ingredients -->
+  <div class="card">
+    <div class="card-header">
+      <div class="title-row">
+        <div class="icon icon-orange">⬛</div>
+        <span class="title-text">Ingredients</span>
+      </div>
+      <div class="actions">
+        <div class="pill-toggle">
+          <div class="pill-tab active">Formula</div>
+          <div class="pill-tab">Cost</div>
+        </div>
+        <button class="ghost-btn">✏</button>
+      </div>
+    </div>
+
+    <div class="ing-body">
+      <!-- Small donut: Water dominates so it's mostly one color -->
+      <div class="mini-donut">
+        <svg class="donut-svg" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="26" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+          <!-- Water 73.91% = 266° -->
+          <circle cx="36" cy="36" r="26" fill="none" stroke="#6366f1" stroke-width="12"
+            stroke-dasharray="163.36 63.46" stroke-dashoffset="40.84" transform="rotate(-90 36 36)"/>
+          <!-- Protein A 18% = 64.8° -->
+          <circle cx="36" cy="36" r="26" fill="none" stroke="#f59e0b" stroke-width="12"
+            stroke-dasharray="39.79 186.83" stroke-dashoffset="-122.52" transform="rotate(-90 36 36)"/>
+          <!-- Fat A 4% = 14.4° -->
+          <circle cx="36" cy="36" r="26" fill="none" stroke="#22c55e" stroke-width="12"
+            stroke-dasharray="8.84 217.98" stroke-dashoffset="-162.31" transform="rotate(-90 36 36)"/>
+          <!-- Flavor A 3% = 10.8° -->
+          <circle cx="36" cy="36" r="26" fill="none" stroke="#a855f7" stroke-width="12"
+            stroke-dasharray="6.63 220.19" stroke-dashoffset="-171.15" transform="rotate(-90 36 36)"/>
+        </svg>
+      </div>
+
+      <!-- Legend beside donut -->
+      <div class="legend">
+        <div class="legend-row"><div class="dot" style="background:#6366f1"></div><span class="leg-name">Water</span><span class="leg-pct">73.91%</span></div>
+        <div class="legend-row"><div class="dot" style="background:#f59e0b"></div><span class="leg-name">Protein A</span><span class="leg-pct">18%</span></div>
+        <div class="legend-row"><div class="dot" style="background:#22c55e"></div><span class="leg-name">Fat A</span><span class="leg-pct">4%</span></div>
+        <div class="legend-row"><div class="dot" style="background:#a855f7"></div><span class="leg-name">Flavor A</span><span class="leg-pct">3%</span></div>
+        <div class="legend-row"><div class="dot" style="background:#ec4899"></div><span class="leg-name">Texture H</span><span class="leg-pct">0.8%</span></div>
+      </div>
+    </div>
+
+    <div class="card-footer">↓ 3 more</div>
+  </div>
+
+  <!-- Process -->
+  <div class="card">
+    <div class="card-header">
+      <div class="title-row">
+        <div class="icon icon-blue">≡</div>
+        <span class="title-text">Process</span>
+      </div>
+      <div class="actions">
+        <button class="ghost-btn">✏</button>
+      </div>
+    </div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-header">
+          <div class="num">1</div>
+          <div class="step-name">Liquifier</div>
+          <span class="ts">06:45</span>
+        </div>
+        <table class="prop-table">
+          <tr>
+            <td class="prop-key">Duration</td>
+            <td class="prop-val">3 <span class="prop-unit">min</span></td>
+          </tr>
+          <tr>
+            <td class="prop-key">Shear velocity</td>
+            <td class="prop-val">3600 <span class="prop-unit">rpm</span></td>
+          </tr>
+          <tr>
+            <td class="prop-key">Temperature</td>
+            <td class="prop-val">500 <span class="prop-unit">F</span></td>
+          </tr>
+        </table>
+        <div class="note">⚠ Temperature might be too high</div>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <div class="num">2</div>
+          <div class="step-name">DSI</div>
+        </div>
+        <table class="prop-table">
+          <tr>
+            <td class="prop-key">Duration</td>
+            <td class="prop-val">13 <span class="prop-unit">s</span></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="step">
+        <div class="step-header">
+          <div class="num">3</div>
+          <div class="step-name">Vacuum Cooler</div>
+        </div>
+        <table class="prop-table">
+          <tr>
+            <td class="prop-key">Duration</td>
+            <td class="prop-val">24.1 <span class="prop-unit">s</span></td>
+          </tr>
+          <tr>
+            <td class="prop-key">Shear velocity</td>
+            <td class="prop-val">2800 <span class="prop-unit">rpm</span></td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="notes-section">
+    <div class="ann">Donut shrinks from 180px to 72px by moving it inline — preserves the visual familiarity of the chart without dominating the card</div>
+    <div class="ann">Property table: key is left-muted, value is right-aligned bold — eye naturally jumps to the right column to scan numbers</div>
+    <div class="ann">Tradeoff: property rows take more vertical space per step than chips, but each value is easier to read individually (no wrapping, clear alignment)</div>
+    <div class="ann">Works best when param names are consistent length — if "Shear velocity" vs "Duration" skews the key column width, abbreviations help</div>
+  </div>
+
+</div>
+</body>
+</html>

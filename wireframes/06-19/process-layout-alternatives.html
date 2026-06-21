@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Record — Layout Alternatives</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:oklch(0.975 0.005 75);
+  --fg:oklch(0.15 0.01 60);
+  --card:oklch(1 0 0);
+  --muted:oklch(0.955 0.008 75);
+  --muted-fg:oklch(0.50 0.01 60);
+  --border:oklch(0.91 0.008 75);
+  --primary:oklch(0.22 0.01 60);
+  --primary-fg:oklch(0.985 0.003 75);
+  --ring:oklch(0.65 0.01 60);
+  --r:0.625rem;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 1px rgba(0,0,0,0.035);
+}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);-webkit-font-smoothing:antialiased;font-size:14px;color:var(--fg)}
+svg{display:block}
+
+/* ── SWITCHER BAR ── */
+.switcher{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--card);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;height:44px;padding:0 20px;
+}
+.switcher-label{font-size:11px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:0.06em;margin-right:12px}
+.sw-btn{
+  padding:0 14px;height:28px;border:1px solid var(--border);background:var(--card);
+  font-size:12px;font-weight:500;color:var(--muted-fg);cursor:pointer;font-family:inherit;
+  transition:all 0.12s;white-space:nowrap;
+}
+.sw-btn:first-of-type{border-radius:6px 0 0 6px;border-right:none}
+.sw-btn:last-of-type{border-radius:0 6px 6px 0}
+.sw-btn.active{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.sw-note{margin-left:auto;font-size:11px;color:var(--muted-fg);font-style:italic}
+
+/* ── PAGE ── */
+.layout{display:none;flex-direction:column;height:100vh;padding-top:44px}
+.layout.visible{display:flex}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.back-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted-fg);transition:background 0.12s,color 0.12s}
+.back-btn:hover{background:var(--muted);color:var(--fg)}
+.trial-icon{width:36px;height:36px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.trial-meta{flex:1;min-width:0}
+.trial-name{font-size:15px;font-weight:600;line-height:1.2}
+.trial-sub{font-size:12px;color:var(--muted-fg);margin-top:1px}
+.header-btn{padding:0 12px;height:32px;border:1px solid var(--border);border-radius:7px;background:var(--card);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--fg);font-family:inherit;transition:background 0.12s;flex-shrink:0}
+.header-btn:hover{background:var(--muted)}
+
+/* ── BODY ── */
+.page-body{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ── GRID VARIANTS ── */
+.two-col{display:grid;gap:16px;align-items:start;max-width:1100px}
+.two-col-std{grid-template-columns:minmax(280px,340px) 1fr}
+
+.left-col{display:flex;flex-direction:column;gap:12px}
+.left-col-sticky{position:sticky;top:0}
+.right-col{display:flex;flex-direction:column;gap:12px}
+
+/* ── CARD ── */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
+.card-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header-left{display:flex;align-items:center;gap:8px}
+.card-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:13px;font-weight:600}
+.card-body{padding:12px 14px}
+
+/* ── ICON BTN ── */
+.icon-btn{padding:0 10px;height:26px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--muted-fg);font-family:inherit;transition:background 0.12s,color 0.12s,border-color 0.12s;white-space:nowrap}
+.icon-btn:hover{background:var(--muted);color:var(--fg);border-color:oklch(0.75 0.008 60)}
+
+/* ── STUB ROWS ── */
+.stub{height:10px;border-radius:3px;background:var(--muted);margin-bottom:7px}
+.stub:last-child{margin-bottom:0}
+
+/* ── PROCESS CARD INTERNALS ── */
+.process-summary{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;user-select:none;transition:background 0.1s}
+.process-summary:hover{background:var(--muted)}
+.summary-count{font-size:12px;font-weight:600;color:var(--fg)}
+.summary-names{font-size:11px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.summary-time{font-size:11px;color:var(--muted-fg);flex-shrink:0;font-variant-numeric:tabular-nums}
+.chevron{color:var(--muted-fg);flex-shrink:0;transition:transform 0.18s ease}
+.chevron.open{transform:rotate(180deg)}
+
+.steps-expand{overflow:hidden;max-height:0;transition:max-height 0.22s ease}
+.steps-expand.open{max-height:2000px}
+.steps-expand.open .steps-inner{border-top:1px solid var(--border)}
+
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:default;transition:background 0.1s}
+.step-row:last-child{border-bottom:none}
+.step-row:hover{background:var(--muted)}
+.step-num{width:18px;height:18px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0;margin-top:1px;transition:background 0.1s,border-color 0.1s}
+.step-row:hover .step-num{background:var(--card);border-color:oklch(0.75 0.008 60)}
+.step-content{flex:1;min-width:0}
+.step-name-d{font-size:12px;font-weight:600;color:var(--fg);margin-bottom:2px}
+.step-params-d{font-size:11px;color:var(--muted-fg);line-height:1.6}
+.step-params-d .pval{color:var(--fg);font-weight:500}
+.step-params-d .dot{margin:0 5px;color:var(--border)}
+.step-note-d{font-size:11px;color:var(--muted-fg);font-style:italic;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);line-height:1.5}
+.step-ts-d{font-size:10px;color:var(--muted-fg);flex-shrink:0;padding-top:2px;font-variant-numeric:tabular-nums}
+
+/* ── TRADEOFF NOTICE ── */
+.tradeoff{
+  font-size:11px;color:oklch(0.50 0.10 55);
+  background:oklch(0.97 0.03 75);border:1px solid oklch(0.88 0.05 75);
+  border-radius:6px;padding:7px 10px;margin-bottom:12px;line-height:1.5;
+}
+.tradeoff strong{font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- SWITCHER -->
+<div class="switcher">
+  <span class="switcher-label">Layout</span>
+  <button class="sw-btn active" onclick="show('a')">A — Process below Sensory Eval</button>
+  <button class="sw-btn" onclick="show('b')">B — Process in left column</button>
+  <span class="sw-note">Click "Edit" to open the edit sheet · Click summary row to expand steps</span>
+</div>
+
+<!-- ════════════════════════════════════
+     LAYOUT A — Process below Sensory Eval, above Comments
+     ════════════════════════════════════ -->
+<div class="layout visible" id="layout-a">
+  <header class="page-header">
+    <button class="back-btn"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 2.5L4.5 7.5L9 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="trial-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 1v5L2.5 13.5a1 1 0 00.9 1.5h9.2a1 1 0 00.9-1.5L10 6V1M5 1h6" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="trial-meta">
+      <div class="trial-name">Chocolate Industrial — Jun 25, 2026</div>
+      <div class="trial-sub">Trial #14 · Chocolate · Industrial</div>
+    </div>
+    <button class="header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9 1.5L10.5 3L4.5 9H3V7.5L9 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit Setup</button>
+  </header>
+  <div class="page-body">
+    <div class="two-col two-col-std">
+      <!-- LEFT sticky -->
+      <div class="left-col left-col-sticky">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.06 145)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10h8M6 2v8M3.5 4.5L6 2l2.5 2.5" stroke="oklch(0.40 0.13 145)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Ingredients</span>
+            </div>
+            <button class="icon-btn"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit</button>
+          </div>
+          <div class="card-body">
+            <div class="stub" style="width:85%"></div><div class="stub" style="width:62%"></div><div class="stub" style="width:91%"></div><div class="stub" style="width:74%"></div><div class="stub" style="width:58%"></div><div class="stub" style="width:80%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2.5" width="9" height="7" rx="1" stroke="var(--muted-fg)" stroke-width="1.2"/><path d="M4 5.5h4M4 7.5h2.5" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+              <span class="card-title">Cost</span>
+            </div>
+          </div>
+          <div class="card-body"><div class="stub" style="width:60%"></div><div class="stub" style="width:44%"></div></div>
+        </div>
+      </div>
+      <!-- RIGHT: Sensory → Process → Comments -->
+      <div class="right-col">
+        <!-- Sensory first -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.05 290)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5l1.18 2.38 2.63.38-1.9 1.85.45 2.61L6 7.4l-2.36 1.32.45-2.61L2.19 4.26l2.63-.38L6 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Sensory Evaluation</span>
+            </div>
+            <button class="icon-btn" style="opacity:0.45;pointer-events:none">+ Add Log</button>
+          </div>
+          <div class="card-body">
+            <div class="stub" style="width:100%"></div><div class="stub" style="width:78%"></div><div class="stub" style="width:86%"></div><div style="height:6px"></div><div class="stub" style="width:55%"></div>
+          </div>
+        </div>
+        <!-- Process second -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.95 0.04 55)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M1.5 6h6.5M1.5 9h4" stroke="oklch(0.58 0.13 55)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+              <span class="card-title">Process Record</span>
+            </div>
+            <button class="icon-btn" onclick="openSheet()"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit</button>
+          </div>
+          <div class="process-summary" onclick="toggleA()">
+            <span class="summary-count">6 steps</span>
+            <span class="summary-names">Liquifier → DSI → Vacuum Cooler → Pump → Cooler → Filler</span>
+            <span class="summary-time">06:45–07:18</span>
+            <span class="chevron" id="chevron-a"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="steps-expand" id="expand-a"><div class="steps-inner" id="inner-a"></div></div>
+        </div>
+        <!-- Comments last -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 2.5a1 1 0 011-1h7a1 1 0 011 1v5a1 1 0 01-1 1H4L1.5 10.5V2.5z" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Comments</span>
+            </div>
+          </div>
+          <div class="card-body"><div class="stub" style="width:90%"></div><div class="stub" style="width:55%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LAYOUT B — Process in left column below Cost
+     ════════════════════════════════════ -->
+<div class="layout" id="layout-b">
+  <header class="page-header">
+    <button class="back-btn"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 2.5L4.5 7.5L9 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="trial-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 1v5L2.5 13.5a1 1 0 00.9 1.5h9.2a1 1 0 00.9-1.5L10 6V1M5 1h6" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="trial-meta">
+      <div class="trial-name">Chocolate Industrial — Jun 25, 2026</div>
+      <div class="trial-sub">Trial #14 · Chocolate · Industrial</div>
+    </div>
+    <button class="header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9 1.5L10.5 3L4.5 9H3V7.5L9 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit Setup</button>
+  </header>
+  <div class="page-body">
+    <div class="two-col two-col-std">
+      <!-- LEFT: non-sticky (process makes it too tall) -->
+      <div class="left-col">
+        <div class="tradeoff">
+          <strong>Note:</strong> Left column can no longer be sticky once Process is here — it's too tall to stay fixed while the right column scrolls. Left col will scroll with the page.
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.06 145)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10h8M6 2v8M3.5 4.5L6 2l2.5 2.5" stroke="oklch(0.40 0.13 145)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Ingredients</span>
+            </div>
+            <button class="icon-btn"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit</button>
+          </div>
+          <div class="card-body">
+            <div class="stub" style="width:85%"></div><div class="stub" style="width:62%"></div><div class="stub" style="width:91%"></div><div class="stub" style="width:74%"></div><div class="stub" style="width:58%"></div><div class="stub" style="width:80%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2.5" width="9" height="7" rx="1" stroke="var(--muted-fg)" stroke-width="1.2"/><path d="M4 5.5h4M4 7.5h2.5" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+              <span class="card-title">Cost</span>
+            </div>
+          </div>
+          <div class="card-body"><div class="stub" style="width:60%"></div><div class="stub" style="width:44%"></div></div>
+        </div>
+        <!-- Process in left col -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.95 0.04 55)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M1.5 6h6.5M1.5 9h4" stroke="oklch(0.58 0.13 55)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+              <span class="card-title">Process Record</span>
+            </div>
+            <button class="icon-btn" onclick="openSheet()"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1L9 2.5L3.5 8H2V6.5L7.5 1Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit</button>
+          </div>
+          <div class="process-summary" onclick="toggleB()">
+            <span class="summary-count">6 steps</span>
+            <span class="summary-names">Liquifier → DSI → Vacuum Cooler → Pump → Cooler → Filler</span>
+            <span class="chevron" id="chevron-b"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="steps-expand" id="expand-b"><div class="steps-inner" id="inner-b"></div></div>
+        </div>
+      </div>
+      <!-- RIGHT: Sensory + Comments only -->
+      <div class="right-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:oklch(0.93 0.05 290)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5l1.18 2.38 2.63.38-1.9 1.85.45 2.61L6 7.4l-2.36 1.32.45-2.61L2.19 4.26l2.63-.38L6 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Sensory Evaluation</span>
+            </div>
+            <button class="icon-btn" style="opacity:0.45;pointer-events:none">+ Add Log</button>
+          </div>
+          <div class="card-body">
+            <div class="stub" style="width:100%"></div><div class="stub" style="width:78%"></div><div class="stub" style="width:86%"></div><div style="height:6px"></div><div class="stub" style="width:55%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon" style="background:var(--muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 2.5a1 1 0 011-1h7a1 1 0 011 1v5a1 1 0 01-1 1H4L1.5 10.5V2.5z" stroke="var(--muted-fg)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+              <span class="card-title">Comments</span>
+            </div>
+          </div>
+          <div class="card-body"><div class="stub" style="width:90%"></div><div class="stub" style="width:55%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SHEET (shared) -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,0.22);z-index:200;display:none;align-items:stretch;justify-content:flex-end;backdrop-filter:blur(1.5px)" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div style="background:var(--card);width:500px;max-width:96vw;display:flex;flex-direction:column;box-shadow:-6px 0 32px rgba(0,0,0,0.1);animation:slide-in 0.2s cubic-bezier(0.32,0.72,0,1)" onclick="event.stopPropagation()">
+    <div style="padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <button onclick="closeSheet()" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted-fg);transition:background 0.12s" onmouseover="this.style.background='var(--muted)'" onmouseout="this.style.background='none'">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div>
+        <div style="font-size:13px;font-weight:600">Edit Process Record</div>
+        <div style="font-size:11px;color:var(--muted-fg);margin-top:1px">Chocolate Industrial · Jun 25, 2026</div>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 18px">
+      <p style="font-size:12px;color:var(--muted-fg);line-height:1.6">The full step-by-step edit form lives here — same as the main mockup. Each step has: name, time, parameters (key / value / unit), notes. Scroll to see all steps. Add step button at the bottom.</p>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="padding:12px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0">1</div>
+          <div style="font-size:12px;font-weight:600;flex:1">Liquifier</div>
+          <div style="font-size:11px;color:var(--muted-fg)">06:45</div>
+        </div>
+        <div style="padding:12px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0">2</div>
+          <div style="font-size:12px;font-weight:600;flex:1">DSI</div>
+          <div style="font-size:11px;color:var(--muted-fg)">06:55</div>
+        </div>
+        <div style="padding:10px 12px;border:1.5px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--muted-fg)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          + 4 more steps · Add step
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0">
+      <button onclick="closeSheet()" style="padding:0 12px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:12px;font-weight:500;cursor:pointer;color:var(--muted-fg);font-family:inherit;transition:background 0.12s" onmouseover="this.style.background='var(--muted)'" onmouseout="this.style.background='var(--card)'">Cancel</button>
+      <button onclick="closeSheet()" style="padding:0 16px;height:30px;background:var(--primary);color:var(--primary-fg);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes slide-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+</style>
+
+<script>
+const STEPS = [
+  {name:"Liquifier",ts:"06:45",params:[{k:"Duration",v:"8",u:"min"},{k:"Temp",v:"85",u:"°C"},{k:"Speed",v:"3500",u:"rpm"}],notes:""},
+  {name:"DSI",ts:"06:55",params:[{k:"Duration",v:"45",u:"sec"},{k:"Temp in",v:"82",u:"°C"},{k:"Temp out",v:"140",u:"°C"}],notes:"Slight temp overshoot on exit — monitor next run."},
+  {name:"Vacuum Cooler",ts:"07:00",params:[{k:"Duration",v:"2",u:"min"},{k:"Pressure",v:"0.6",u:"bar"},{k:"Temp out",v:"90",u:"°C"}],notes:""},
+  {name:"Pump",ts:"07:03",params:[{k:"Duration",v:"1",u:"min"},{k:"Flow rate",v:"200",u:"L/hr"}],notes:""},
+  {name:"Cooler",ts:"07:05",params:[{k:"Duration",v:"12",u:"min"},{k:"Temp out",v:"10",u:"°C"}],notes:""},
+  {name:"Filler",ts:"07:18",params:[{k:"Duration",v:"20",u:"min"},{k:"Volume",v:"100",u:"mL"},{k:"Fill weight",v:"98.4",u:"g"}],notes:"Two cups slightly underfilled near end of run."},
+];
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function stepsHtml(){
+  return STEPS.map((s,i)=>{
+    const params = s.params.filter(p=>p.k||p.v).map(p=>{
+      const v=[p.v,p.u].filter(Boolean).join(' ');
+      return `${esc(p.k)}<span style="margin:0 2px;color:var(--border)">:</span><span class="pval">${esc(v)}</span>`;
+    }).join('<span class="dot">&middot;</span>');
+    return `<div class="step-row">
+      <div class="step-num">${i+1}</div>
+      <div class="step-content">
+        <div class="step-name-d">${esc(s.name)}</div>
+        ${params?`<div class="step-params-d">${params}</div>`:''}
+        ${s.notes?`<div class="step-note-d">${esc(s.notes)}</div>`:''}
+      </div>
+      ${s.ts?`<div class="step-ts-d">${esc(s.ts)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// populate both expand containers
+document.getElementById('inner-a').innerHTML = stepsHtml();
+document.getElementById('inner-b').innerHTML = stepsHtml();
+
+let expandA = false, expandB = false;
+
+function toggleA(){
+  expandA = !expandA;
+  document.getElementById('expand-a').classList.toggle('open', expandA);
+  document.getElementById('chevron-a').classList.toggle('open', expandA);
+}
+function toggleB(){
+  expandB = !expandB;
+  document.getElementById('expand-b').classList.toggle('open', expandB);
+  document.getElementById('chevron-b').classList.toggle('open', expandB);
+}
+
+function show(id){
+  document.querySelectorAll('.layout').forEach(el=>el.classList.remove('visible'));
+  document.getElementById('layout-'+id).classList.add('visible');
+  document.querySelectorAll('.sw-btn').forEach((btn,i)=>{
+    btn.classList.toggle('active', (i===0&&id==='a')||(i===1&&id==='b'));
+  });
+}
+
+function openSheet(){
+  const ov = document.getElementById('overlay');
+  ov.style.display='flex';
+  ov.style.animation='fade-in 0.15s ease';
+  document.body.style.overflow='hidden';
+}
+function closeSheet(){
+  document.getElementById('overlay').style.display='none';
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>

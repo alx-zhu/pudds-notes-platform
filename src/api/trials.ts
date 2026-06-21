@@ -6,6 +6,7 @@ import type {
   SensoryEvaluation,
   PartialSensoryMetrics,
   PartialSensoryComments,
+  ProcessStep,
 } from "@/types/trial";
 import { simulateApiCall } from "./client";
 import { resolveForTrial, removeAllForTrial } from "./trialIngredients";
@@ -51,8 +52,17 @@ const migrateTrials = (
   trials: TrialRecord[],
 ): { trials: TrialRecord[]; migrated: boolean } => {
   let migrated = false;
-  const result = trials.map((trial) => ({
-    ...trial,
+  const result = trials.map((trial) => {
+    let current = trial as unknown as Record<string, unknown>;
+
+    // Backfill processSteps for records created before this feature
+    if ((trial as unknown as Record<string, unknown>).processSteps === undefined) {
+      migrated = true;
+      current = { ...current, processSteps: [] };
+    }
+
+    return {
+      ...(current as unknown as TrialRecord),
     analysisLogs: trial.analysisLogs.map((log) => {
       let current = log as unknown as Record<string, unknown>;
       const legacy = log as unknown as LegacyAnalysisLog;
@@ -102,7 +112,8 @@ const migrateTrials = (
 
       return current as unknown as AnalysisLog;
     }),
-  }));
+    };
+  });
   return { trials: result, migrated };
 };
 
@@ -164,6 +175,7 @@ export const createTrial = async (): Promise<Trial> => {
     trialNumber: nextTrialNumber(data),
     setup: undefined,
     analysisLogs: [],
+    processSteps: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -183,6 +195,7 @@ export const createTrialWithSetup = async (
     name: name || undefined,
     setup,
     analysisLogs: [],
+    processSteps: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -200,6 +213,23 @@ export const updateTrialSetup = async (
   const updated: TrialRecord = {
     ...data[idx],
     setup,
+    updatedAt: new Date().toISOString(),
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(resolveTrial(updated));
+};
+
+export const upsertProcessSteps = async (
+  trialId: string,
+  steps: ProcessStep[],
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const updated: TrialRecord = {
+    ...data[idx],
+    processSteps: steps,
     updatedAt: new Date().toISOString(),
   };
   data[idx] = updated;

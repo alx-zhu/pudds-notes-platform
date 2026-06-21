@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V3 – Timeline process</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; background: #f5f5f4; color: #0f0f0e; padding: 28px 20px; }
+h2 { font-size: 13px; font-weight: 600; color: #0f0f0e; margin-bottom: 2px; }
+.desc { font-size: 11px; color: #888780; margin-bottom: 20px; }
+.frame { width: 340px; display: flex; flex-direction: column; gap: 10px; }
+
+.card { background: #fff; border: 0.5px solid #e2e2de; border-radius: 12px; overflow: hidden; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid #e2e2de; }
+.title-row { display: flex; align-items: center; gap: 6px; }
+.icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+.icon-orange { background: #ffedd5; }
+.icon-blue { background: #dbeafe; }
+.title-text { font-size: 12px; font-weight: 600; color: #0f0f0e; }
+.actions { display: flex; align-items: center; gap: 5px; }
+.ghost-btn { width: 24px; height: 24px; border: none; background: none; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #888780; font-size: 10px; cursor: pointer; }
+.ghost-btn:hover { background: #f1efe8; }
+.pill-toggle { display: inline-flex; background: rgba(0,0,0,0.05); border-radius: 7px; padding: 2px; }
+.pill-tab { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 5px; color: #888780; cursor: pointer; }
+.pill-tab.active { background: #fff; color: #0f0f0e; box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
+
+/* ── INGREDIENTS v3: stacked bar, no chart ── */
+.bar-wrap { padding: 10px 14px 0; }
+.bar { display: flex; height: 20px; border-radius: 6px; overflow: hidden; gap: 1px; }
+.seg { display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.9); overflow: hidden; white-space: nowrap; }
+.legend { padding: 6px 14px 10px; }
+.legend-row { display: flex; align-items: center; gap: 7px; padding: 4px 0; border-top: 0.5px solid rgba(0,0,0,0.05); font-size: 11px; }
+.legend-row:first-child { border-top: none; }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.leg-name { flex: 1; color: #0f0f0e; }
+.leg-pct { color: #888780; font-variant-numeric: tabular-nums; font-size: 10.5px; }
+.card-footer { display: flex; align-items: center; justify-content: center; gap: 3px; padding: 7px; border-top: 0.5px solid #e2e2de; font-size: 10.5px; color: #888780; cursor: pointer; }
+
+/* ── PROCESS v3: timeline ── */
+.timeline { padding: 10px 14px 12px; }
+
+.tl-step { display: flex; gap: 0; }
+.tl-left { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+.tl-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #0f0f0e;
+  color: #fff;
+  font-size: 9px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.tl-line {
+  width: 1.5px;
+  flex: 1;
+  background: #e2e2de;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  min-height: 8px;
+}
+/* No line after last step */
+.tl-step:last-child .tl-line { display: none; }
+
+.tl-content { flex: 1; min-width: 0; padding-bottom: 14px; padding-left: 8px; }
+.tl-step:last-child .tl-content { padding-bottom: 0; }
+
+.tl-name-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; padding-top: 1px; }
+.tl-name { font-size: 12px; font-weight: 600; color: #0f0f0e; }
+.ts { font-size: 10.5px; color: #888780; font-variant-numeric: tabular-nums; }
+
+/* Chips inside timeline — same value-forward style */
+.chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.chip { display: inline-flex; align-items: baseline; gap: 3px; padding: 2px 6px; background: #f1efe8; border-radius: 5px; }
+.chip-key { font-size: 9.5px; color: #b4b2a9; font-weight: 400; }
+.chip-val { font-size: 10.5px; color: #2c2c2a; font-weight: 600; }
+.chip-unit { font-size: 9.5px; color: #888780; font-weight: 400; }
+
+/* Note callout */
+.note { display: flex; align-items: flex-start; gap: 5px; margin-top: 5px; padding: 4px 7px; background: #fef3c7; border-left: 2px solid #f59e0b; border-radius: 0 4px 4px 0; font-size: 10px; color: #78350f; }
+
+/* Annotations */
+.notes-section { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.ann { display: flex; align-items: flex-start; gap: 5px; font-size: 10.5px; color: #5f5e5a; line-height: 1.4; }
+.ann::before { content: "·"; color: #888780; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h2>V3 – Stacked bar · Timeline process</h2>
+<p class="desc">Connecting line makes sequential order explicit · chips inside each step node</p>
+
+<div class="frame">
+
+  <!-- Ingredients (same stacked bar as V1) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="title-row">
+        <div class="icon icon-orange">⬛</div>
+        <span class="title-text">Ingredients</span>
+      </div>
+      <div class="actions">
+        <div class="pill-toggle">
+          <div class="pill-tab active">Formula</div>
+          <div class="pill-tab">Cost</div>
+        </div>
+        <button class="ghost-btn">✏</button>
+      </div>
+    </div>
+
+    <div class="bar-wrap">
+      <div class="bar">
+        <div class="seg" style="flex:73.91; background:#6366f1; border-radius:6px 0 0 6px;">73.9%</div>
+        <div class="seg" style="flex:18;    background:#f59e0b;">18%</div>
+        <div class="seg" style="flex:4;     background:#22c55e;"></div>
+        <div class="seg" style="flex:3;     background:#a855f7;"></div>
+        <div class="seg" style="flex:0.8;   background:#ec4899;"></div>
+        <div class="seg" style="flex:0.29;  background:#e5e7eb; border-radius:0 6px 6px 0;"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-row"><div class="dot" style="background:#6366f1"></div><span class="leg-name">Water</span><span class="leg-pct">73.91%</span></div>
+      <div class="legend-row"><div class="dot" style="background:#f59e0b"></div><span class="leg-name">Protein A</span><span class="leg-pct">18%</span></div>
+      <div class="legend-row"><div class="dot" style="background:#22c55e"></div><span class="leg-name">Fat A</span><span class="leg-pct">4%</span></div>
+      <div class="legend-row"><div class="dot" style="background:#a855f7"></div><span class="leg-name">Flavor A</span><span class="leg-pct">3%</span></div>
+      <div class="legend-row"><div class="dot" style="background:#ec4899"></div><span class="leg-name">Texture H</span><span class="leg-pct">0.8%</span></div>
+    </div>
+    <div class="card-footer">↓ 3 more</div>
+  </div>
+
+  <!-- Process – timeline -->
+  <div class="card">
+    <div class="card-header">
+      <div class="title-row">
+        <div class="icon icon-blue">≡</div>
+        <span class="title-text">Process</span>
+      </div>
+      <div class="actions">
+        <button class="ghost-btn">✏</button>
+      </div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-step">
+        <div class="tl-left">
+          <div class="tl-dot">1</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-name-row">
+            <span class="tl-name">Liquifier</span>
+            <span class="ts">06:45</span>
+          </div>
+          <div class="chips">
+            <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">3</span><span class="chip-unit">min</span></div>
+            <div class="chip"><span class="chip-key">Shear velocity</span><span class="chip-val">3600</span><span class="chip-unit">rpm</span></div>
+            <div class="chip"><span class="chip-key">Temperature</span><span class="chip-val">500</span><span class="chip-unit">F</span></div>
+          </div>
+          <div class="note">⚠ Temperature might be too high</div>
+        </div>
+      </div>
+
+      <div class="tl-step">
+        <div class="tl-left">
+          <div class="tl-dot">2</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-name-row">
+            <span class="tl-name">DSI</span>
+          </div>
+          <div class="chips">
+            <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">13</span><span class="chip-unit">s</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-step">
+        <div class="tl-left">
+          <div class="tl-dot">3</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-name-row">
+            <span class="tl-name">Vacuum Cooler</span>
+          </div>
+          <div class="chips">
+            <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">24.1</span><span class="chip-unit">s</span></div>
+            <div class="chip"><span class="chip-key">Shear velocity</span><span class="chip-val">2800</span><span class="chip-unit">rpm</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="notes-section">
+    <div class="ann">Timeline connecting line explicitly encodes sequence — useful when the order of steps matters to the outcome (and it does here)</div>
+    <div class="ann">More vertical than V1 (line takes space between steps) — tradeoff for clearer flow</div>
+    <div class="ann">Chips are identical to V1 — value-forward, muted key prefix. The timeline is purely a structural change to the step layout</div>
+    <div class="ann">The line stopping at the last step dot (no tail below) is a meaningful signal that the process is complete</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TrialSetup } from "@/types/trial";
+import type { TrialSetup, ProcessStep } from "@/types/trial";
 import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
 import type {
   ProcessingType,
@@ -47,6 +47,17 @@ export const useUpdateTrialSetup = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (setup: TrialSetup) => api.updateTrialSetup(trialId, setup),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useUpsertProcessSteps = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (steps: ProcessStep[]) => api.upsertProcessSteps(trialId, steps),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });
@@ -156,6 +167,45 @@ export const useDeleteTrial = () => {
   });
 };
 
+
+export interface ProcessRecordSuggestions {
+  stepNames: string[];
+  paramKeys: string[];
+  getParamValues: (key: string) => string[];
+  getParamUnits: (key: string) => string[];
+}
+
+export const useProcessRecordSuggestions = (): ProcessRecordSuggestions => {
+  const { data: trials = [] } = useTrials();
+  return useMemo(() => {
+    const stepNames = new Set<string>();
+    const paramKeys = new Set<string>();
+    const valuesByKey = new Map<string, Set<string>>();
+    const unitsByKey = new Map<string, Set<string>>();
+
+    for (const trial of trials) {
+      for (const step of trial.processSteps) {
+        if (step.name.trim()) stepNames.add(step.name.trim());
+        for (const param of step.params) {
+          const key = param.key.trim();
+          if (!key) continue;
+          paramKeys.add(key);
+          if (!valuesByKey.has(key)) valuesByKey.set(key, new Set());
+          if (!unitsByKey.has(key)) unitsByKey.set(key, new Set());
+          if (param.value.trim()) valuesByKey.get(key)!.add(param.value.trim());
+          if (param.unit?.trim()) unitsByKey.get(key)!.add(param.unit.trim());
+        }
+      }
+    }
+
+    return {
+      stepNames: [...stepNames].sort(),
+      paramKeys: [...paramKeys].sort(),
+      getParamValues: (key: string) => [...(valuesByKey.get(key) ?? [])].sort(),
+      getParamUnits: (key: string) => [...(unitsByKey.get(key) ?? [])].sort(),
+    };
+  }, [trials]);
+};
 
 export const useAllThermalProcessingTypeSuggestions = (): string[] => {
   const { data: trials } = useTrials();

@@ -4,7 +4,7 @@ import { ChevronLeft, FlaskConical, Pencil } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
-import { CostCard } from "@/components/trials/TrialView/CostCard";
+import { ProcessCard } from "@/components/trials/TrialView/TrialSetup/Process/ProcessCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
@@ -119,10 +119,10 @@ export const TrialView = () => {
             gridTemplateColumns: "minmax(320px, 380px) 1fr",
           }}
         >
-          {/* Left column: Ingredients + Cost, sticky */}
-          <div className="sticky top-0 flex flex-col gap-5">
+          {/* Left column */}
+          <div className="flex flex-col gap-5">
             <IngredientsCard trialId={trial.id} />
-            <CostCard trialId={trial.id} />
+            <ProcessCard trialId={trial.id} />
           </div>
 
           {/* Right column: unified category view */}

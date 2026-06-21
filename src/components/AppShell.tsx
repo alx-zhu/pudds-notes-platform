@@ -12,6 +12,7 @@ import {
   Pencil,
   Check,
   Trash2,
+  FlaskConical,
 } from "lucide-react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ import {
   usePullSnapshot,
   useLatestSnapshot,
 } from "@/hooks/useSnapshot";
+import { loadDemoData } from "@/lib/loadDemoData";
 
 /* ── Sidebar icon ───────────────────────────────────────────────── */
 
@@ -105,6 +107,10 @@ const RoleBanner = () => {
     localStorage.removeItem("pudds:ingredients");
     localStorage.removeItem("pudds:trial-ingredients");
     qc.invalidateQueries();
+  };
+
+  const handleLoadDemo = () => {
+    loadDemoData(qc);
   };
 
   const btn =
@@ -214,6 +220,34 @@ const RoleBanner = () => {
               )}
               Sync
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={cn(btn, "bg-indigo-500/20 border-indigo-400/40 text-indigo-200 hover:bg-indigo-500/30 hover:text-indigo-200")}
+                >
+                  <FlaskConical size={11} />
+                  Demo
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Load demo data?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This replaces all current trials and ingredients with 22
+                    pre-built Protein Gel demo trials. Your existing data will
+                    be overwritten.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLoadDemo}>
+                    Load demo data
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button

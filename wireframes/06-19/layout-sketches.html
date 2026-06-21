@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLN Layout Sketches</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:oklch(0.975 0.005 75);
+  --fg:oklch(0.15 0.01 60);
+  --card:oklch(1 0 0);
+  --muted:oklch(0.955 0.008 75);
+  --muted-fg:oklch(0.50 0.01 60);
+  --border:oklch(0.91 0.008 75);
+  --primary:oklch(0.22 0.01 60);
+  --primary-fg:oklch(0.985 0.003 75);
+  --r:8px;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 1px rgba(0,0,0,0.035);
+}
+html,body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);-webkit-font-smoothing:antialiased;font-size:13px;color:var(--fg);min-height:100vh}
+
+/* ── TOP BAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;height:40px;padding:0 16px}
+.tb-label{font-size:10px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:0.06em;margin-right:10px}
+.sw{display:flex}
+.sw-btn{padding:0 13px;height:26px;border:1px solid var(--border);background:var(--card);font-size:11px;font-weight:500;color:var(--muted-fg);cursor:pointer;font-family:inherit;transition:all 0.12s}
+.sw-btn:not(:last-child){border-right:none}
+.sw-btn:first-child{border-radius:5px 0 0 5px}
+.sw-btn:last-child{border-radius:0 5px 5px 0}
+.sw-btn.active{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+
+/* ── PAGE ── */
+.pg{display:none;flex-direction:column;min-height:calc(100vh - 40px)}
+.pg.on{display:flex}
+
+/* ── PAGE HEADER ── */
+.ph{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ph-icon{width:34px;height:34px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ph-meta{flex:1}
+.ph-name{font-size:14px;font-weight:600}
+.ph-sub{font-size:11px;color:var(--muted-fg)}
+.ph-btn{padding:0 11px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:background 0.1s;flex-shrink:0}
+.ph-btn:hover{background:var(--muted)}
+
+/* ── BODY ── */
+.body{padding:16px 20px}
+
+/* ── GRID ── */
+.two-col{display:grid;gap:14px;align-items:start}
+.std{grid-template-columns:minmax(260px,320px) 1fr}
+.col{display:flex;flex-direction:column;gap:12px}
+.sticky{position:sticky;top:0}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card-hd{padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-hd-l{display:flex;align-items:center;gap:7px}
+.card-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:12px;font-weight:600}
+.card-btn{padding:0 8px;height:22px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:10px;font-weight:500;cursor:pointer;color:var(--muted-fg);font-family:inherit;transition:background 0.1s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.card-btn:hover{background:var(--muted);color:var(--fg)}
+
+/* ── TABS (for Cost within Ingredients, and Summary/Breakdown in eval) ── */
+.inner-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 13px}
+.itab{padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;color:var(--muted-fg);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.1s,border-color 0.1s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.itab:hover{color:var(--fg)}
+.itab.on{color:var(--fg);border-bottom-color:var(--fg)}
+.itab-body{display:none;padding:10px 13px}
+.itab-body.on{display:block}
+
+/* ── STUBS ── */
+.s{height:8px;border-radius:2px;background:var(--muted);margin-bottom:5px}
+.s:last-child{margin-bottom:0}
+
+/* ── INGREDIENTS ── */
+.donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(oklch(0.68 0.14 250) 0% 18%, oklch(0.62 0.16 145) 18% 19%, oklch(0.70 0.04 200) 19% 92%, oklch(0.76 0.13 60) 92% 96%, oklch(0.63 0.14 290) 96% 100%);flex-shrink:0;position:relative}
+.donut::after{content:'';position:absolute;inset:15px;background:var(--card);border-radius:50%}
+.ing-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:4px}
+.ing-row:last-child{margin-bottom:0}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ing-name{flex:1;color:var(--muted-fg)}
+.ing-pct{font-weight:500;font-size:10px}
+.more-link{font-size:10px;color:var(--muted-fg);text-align:center;padding-top:8px;margin-top:8px;border-top:1px solid var(--border);cursor:pointer}
+
+/* ── COST ── */
+.cost-big{font-size:20px;font-weight:700;margin-bottom:1px}
+.cost-sub{font-size:10px;color:var(--muted-fg);margin-bottom:9px}
+.cost-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:10px}
+.cname{color:var(--muted-fg);width:36px;flex-shrink:0}
+.cbar{flex:1;height:4px;border-radius:2px;background:var(--muted);overflow:hidden}
+.cfill{height:100%;border-radius:2px;background:oklch(0.55 0.18 290)}
+.camt{color:var(--fg);font-weight:500;width:32px;text-align:right;flex-shrink:0}
+
+/* ── PROCESS ── */
+.proc-step{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.proc-step:last-child{border-bottom:none}
+.pnum{width:16px;height:16px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:var(--muted-fg);flex-shrink:0;margin-top:1px}
+.pcontent{flex:1;min-width:0}
+.pname{font-size:11px;font-weight:600;margin-bottom:2px}
+.pparams{font-size:10px;color:var(--muted-fg);line-height:1.5}
+.pv{color:var(--fg);font-weight:500}
+.pnote{font-size:10px;color:var(--muted-fg);font-style:italic;margin-top:2px}
+.pts{font-size:9px;color:var(--muted-fg);flex-shrink:0;padding-top:2px;font-variant-numeric:tabular-nums}
+
+/* ── SENSORY EVAL ── */
+.tl-wrap{padding:8px 13px 10px;border-bottom:1px solid var(--border)}
+.tl-group-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-fg);margin-bottom:6px}
+.tl-track{display:flex;align-items:center}
+.tl-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--card);flex-shrink:0;cursor:pointer;transition:all 0.1s}
+.tl-dot.done{border-color:oklch(0.68 0.12 80);background:var(--card)}
+.tl-dot.active{border-color:oklch(0.45 0.15 145);background:oklch(0.45 0.15 145);box-shadow:0 0 0 2px oklch(0.45 0.15 145 / 0.2)}
+.tl-line{flex:1;height:2px;background:var(--border)}
+.tl-labels{display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:var(--muted-fg)}
+.tl-labels span.cur{font-weight:600;color:var(--fg)}
+
+/* Scores + photo area */
+.eval-body{display:grid;grid-template-columns:1fr 1fr;min-height:0}
+.eval-photo-area{background:oklch(0.92 0.006 75);display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:10px;min-height:180px;position:relative;border-right:1px solid var(--border)}
+.eval-photo-caption{position:absolute;bottom:6px;left:8px;font-size:9px;background:rgba(0,0,0,0.3);color:#fff;padding:2px 6px;border-radius:3px}
+
+.eval-scores-area{padding:10px 13px;display:flex;flex-direction:column;gap:0}
+.eval-score-top{text-align:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.score-num{font-size:30px;font-weight:700;line-height:1}
+.score-denom{font-size:13px;font-weight:400;color:var(--muted-fg)}
+.score-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-fg);margin-top:2px}
+
+/* user filter */
+.eval-filters{display:flex;align-items:center;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.fchip{display:flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:12px;border:1px solid var(--border);font-size:10px;font-weight:500;cursor:pointer;background:var(--card);color:var(--muted-fg);transition:all 0.1s;white-space:nowrap}
+.fchip.on{border-color:var(--fg);color:var(--fg);background:var(--muted)}
+.fchip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fadd{font-size:10px;color:var(--muted-fg);background:none;border:none;cursor:pointer;padding:1px 4px;font-family:inherit}
+
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.srow:last-child{margin-bottom:0}
+.sname{font-size:11px;color:var(--muted-fg);width:44px;flex-shrink:0}
+.sbar{flex:1;height:6px;border-radius:3px;overflow:hidden;background:var(--muted)}
+.sfill{height:100%;border-radius:3px}
+.sval{font-size:11px;font-weight:700;flex-shrink:0;width:22px;text-align:right}
+
+/* breakdown tab content */
+.breakdown-section{border-bottom:1px solid var(--border);padding:10px 13px}
+.breakdown-section:last-child{border-bottom:none}
+.breakdown-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-fg);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.breakdown-label::after{content:'';flex:1;height:1px;background:var(--border);display:block}
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10px}
+.brow:last-child{margin-bottom:0}
+.bname{color:var(--muted-fg);width:100px;flex-shrink:0}
+.bbar{flex:1;height:4px;border-radius:2px;overflow:hidden;background:var(--muted)}
+.bfill{height:100%;border-radius:2px}
+.bval{font-weight:600;flex-shrink:0;width:20px;text-align:right}
+
+/* comments */
+.cmt{padding:8px 13px;border-bottom:1px solid var(--border);font-size:11px}
+.cmt:last-child{border-bottom:none}
+.cmt-author{display:flex;align-items:center;gap:5px;font-weight:600;font-size:10px;margin-bottom:4px}
+.cmt-section{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px}
+.cmt-section.taste{color:oklch(0.45 0.15 145)}
+.cmt-section.texture{color:oklch(0.45 0.15 250)}
+.cmt-section.appearance{color:oklch(0.55 0.14 65)}
+.cmt-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 13px}
+.cmt-col-head{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;margin-bottom:8px;border-bottom:2px solid}
+
+/* Variant C — restructured sensory */
+.score-strip{display:flex;border-bottom:1px solid var(--border)}
+.score-strip-item{flex:1;padding:10px 12px;text-align:center;border-right:1px solid var(--border)}
+.score-strip-item:last-child{border-right:none}
+.strip-num{font-size:20px;font-weight:700;line-height:1}
+.strip-sub{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-fg);margin-top:2px}
+.strip-num.overall{font-size:26px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="tb-label">Layout</span>
+  <div class="sw">
+    <button class="sw-btn active" onclick="show('a')">A — Ingredients + Process left, sensory right</button>
+    <button class="sw-btn" onclick="show('b')">B — Ingredients sticky left, sensory → process → comments right</button>
+    <button class="sw-btn" onclick="show('c')">C — Scores strip + compact eval, process left</button>
+  </div>
+</div>
+
+<!-- ══ PAGE HEADER (shared) ══ -->
+<template id="page-hd">
+  <div class="ph">
+    <div class="ph-icon">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 1v4.5L2 12.5a.8.8 0 00.7 1.2h8.6a.8.8 0 00.7-1.2L9 5.5V1M4 1h6" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="ph-meta">
+      <div class="ph-name">Protein Gel 22</div>
+      <div class="ph-sub">Trial #22 · Vanilla · Benchtop · May 10, 2026</div>
+    </div>
+    <button class="ph-btn">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1.5L9 3L3.5 8.5H2V7L7.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Edit Setup
+    </button>
+  </div>
+</template>
+
+<!-- shared ingredient + process markup -->
+<template id="ing-block">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-l">
+        <div class="card-icon" style="background:oklch(0.93 0.06 145)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 9h7M5.5 2v7M3.5 4L5.5 2l2 2" stroke="oklch(0.38 0.14 145)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="card-title">Ingredients</span>
+      </div>
+      <button class="card-btn">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M7 1L8.5 2.5L3.5 7.5H2V6L7 1Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Edit
+      </button>
+    </div>
+    <div class="inner-tabs">
+      <button class="itab on">Ingredients</button>
+      <button class="itab">Cost</button>
+    </div>
+    <div class="itab-body on">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="donut"></div>
+        <div style="flex:1">
+          <div class="ing-row"><div class="dot" style="background:oklch(0.68 0.14 250)"></div><span class="ing-name">Protein A</span><span class="ing-pct">18%</span></div>
+          <div class="ing-row"><div class="dot" style="background:oklch(0.62 0.16 145)"></div><span class="ing-name">Texture H</span><span class="ing-pct">0.8%</span></div>
+          <div class="ing-row"><div class="dot" style="background:oklch(0.70 0.04 200)"></div><span class="ing-name">Water</span><span class="ing-pct">73.9%</span></div>
+          <div class="ing-row"><div class="dot" style="background:oklch(0.76 0.13 60)"></div><span class="ing-name">Fat A</span><span class="ing-pct">4%</span></div>
+          <div class="ing-row"><div class="dot" style="background:oklch(0.63 0.14 290)"></div><span class="ing-name">Flavor A</span><span class="ing-pct">3%</span></div>
+        </div>
+      </div>
+      <div class="more-link">+ 3 more</div>
+    </div>
+    <div class="itab-body">
+      <div class="cost-big">$0.654</div>
+      <div class="cost-sub">per 170g serving</div>
+      <div class="cost-row"><span class="cname">Prot-A</span><div class="cbar"><div class="cfill" style="width:70%"></div></div><span class="camt">$0.459</span></div>
+      <div class="cost-row"><span class="cname">Fat-A</span><div class="cbar"><div class="cfill" style="width:15%"></div></div><span class="camt">$0.099</span></div>
+      <div class="cost-row"><span class="cname">Fl-A</span><div class="cbar"><div class="cfill" style="width:11%"></div></div><span class="camt">$0.074</span></div>
+      <div class="cost-row"><span class="cname">Tex-H</span><div class="cbar"><div class="cfill" style="width:2%"></div></div><span class="camt">$0.014</span></div>
+      <div class="cost-row"><span class="cname">Fib-A</span><div class="cbar"><div class="cfill" style="width:1%"></div></div><span class="camt">$0.007</span></div>
+      <div class="cost-row"><span class="cname">Water</span><div class="cbar"><div class="cfill" style="width:0%"></div></div><span class="camt">$0.000</span></div>
+    </div>
+  </div>
+</template>
+
+<template id="proc-block">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-l">
+        <div class="card-icon" style="background:oklch(0.95 0.04 55)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 3h8M1.5 6h6M1.5 9h4" stroke="oklch(0.55 0.13 55)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <span class="card-title">Process Record</span>
+      </div>
+      <button class="card-btn">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M7 1L8.5 2.5L3.5 7.5H2V6L7 1Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Edit
+      </button>
+    </div>
+    <div style="padding:0 13px">
+      <div class="proc-step">
+        <div class="pnum">1</div>
+        <div class="pcontent"><div class="pname">Liquifier</div><div class="pparams">Duration: <span class="pv">8 min</span> · Temp: <span class="pv">85 °C</span> · Speed: <span class="pv">3500 rpm</span></div></div>
+        <div class="pts">06:45</div>
+      </div>
+      <div class="proc-step">
+        <div class="pnum">2</div>
+        <div class="pcontent"><div class="pname">DSI</div><div class="pparams">Duration: <span class="pv">45 sec</span> · Temp in: <span class="pv">82 °C</span> · Temp out: <span class="pv">140 °C</span></div><div class="pnote">Slight overshoot — monitor next run.</div></div>
+        <div class="pts">06:55</div>
+      </div>
+      <div class="proc-step">
+        <div class="pnum">3</div>
+        <div class="pcontent"><div class="pname">Vacuum Cooler</div><div class="pparams">Duration: <span class="pv">2 min</span> · Pressure: <span class="pv">0.6 bar</span> · Temp out: <span class="pv">90 °C</span></div></div>
+        <div class="pts">07:00</div>
+      </div>
+      <div class="proc-step">
+        <div class="pnum">4</div>
+        <div class="pcontent"><div class="pname">Pump</div><div class="pparams">Duration: <span class="pv">1 min</span> · Flow rate: <span class="pv">200 L/hr</span></div></div>
+        <div class="pts">07:03</div>
+      </div>
+      <div class="proc-step">
+        <div class="pnum">5</div>
+        <div class="pcontent"><div class="pname">Cooler</div><div class="pparams">Duration: <span class="pv">12 min</span> · Temp out: <span class="pv">10 °C</span></div></div>
+        <div class="pts">07:05</div>
+      </div>
+      <div class="proc-step">
+        <div class="pnum">6</div>
+        <div class="pcontent"><div class="pname">Filler</div><div class="pparams">Duration: <span class="pv">20 min</span> · Volume: <span class="pv">100 mL</span> · Fill wt: <span class="pv">98.4 g</span></div><div class="pnote">Two cups underfilled near end.</div></div>
+        <div class="pts">07:18</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="eval-block">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-l">
+        <div class="card-icon" style="background:oklch(0.93 0.05 290)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5l1.05 2.1 2.32.34-1.68 1.64.4 2.32L5.5 6.8l-2.09 1.1.4-2.32L2.13 3.94l2.32-.34L5.5 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.1" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="card-title">Sensory Evaluation</span>
+      </div>
+      <button class="card-btn">+ Add Log</button>
+    </div>
+    <!-- timeline -->
+    <div class="tl-wrap">
+      <div class="tl-group-label">High-Shear Mixer</div>
+      <div class="tl-track">
+        <div class="tl-dot done"></div>
+        <div class="tl-line"></div>
+        <div class="tl-dot done"></div>
+        <div class="tl-line"></div>
+        <div class="tl-dot active"></div>
+      </div>
+      <div class="tl-labels"><span>Immediate</span><span>1 day</span><span class="cur">3 days</span></div>
+    </div>
+    <!-- summary / breakdown tabs -->
+    <div class="inner-tabs eval-tabs">
+      <button class="itab on">Summary</button>
+      <button class="itab">Breakdown</button>
+    </div>
+    <!-- summary body -->
+    <div class="itab-body on eval-summary">
+      <!-- user filter -->
+      <div class="eval-filters">
+        <button class="fchip on">All</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 145)"></div>Alex</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.62 0.16 55)"></div>Luke</button>
+        <button class="fadd">+ Add</button>
+      </div>
+      <div class="eval-body">
+        <div class="eval-photo-area">
+          Photo
+          <div class="eval-photo-caption">High-Shear Mixer · 3 days</div>
+        </div>
+        <div class="eval-scores-area">
+          <div class="eval-score-top">
+            <div class="score-num">4.9<span class="score-denom"> / 5</span></div>
+            <div class="score-lbl">Overall</div>
+          </div>
+          <div class="srow"><span class="sname">Taste</span><div class="sbar"><div class="sfill" style="width:92%;background:oklch(0.50 0.18 145)"></div></div><span class="sval" style="color:oklch(0.42 0.15 145)">4.6</span></div>
+          <div class="srow"><span class="sname">Texture</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="sval" style="color:oklch(0.42 0.15 250)">5.0</span></div>
+          <div class="srow"><span class="sname">Color</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.68 0.16 65)"></div></div><span class="sval" style="color:oklch(0.50 0.14 65)">5.0</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- breakdown body -->
+    <div class="itab-body eval-breakdown">
+      <div class="eval-filters">
+        <button class="fchip on">All</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 145)"></div>Alex</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.62 0.16 55)"></div>Luke</button>
+      </div>
+      <div style="margin:0 -13px">
+        <div class="breakdown-section">
+          <div class="breakdown-label" style="color:oklch(0.45 0.15 145)">Taste &amp; Flavor</div>
+          <div class="brow"><span class="bname">Taste rating</span><div class="bbar"><div class="bfill" style="width:90%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.5</span></div>
+          <div class="brow"><span class="bname">Sweetness intensity</span><div class="bbar"><div class="bfill" style="width:80%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.0</span></div>
+          <div class="brow"><span class="bname">Sweetness rating</span><div class="bbar"><div class="bfill" style="width:96%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.8</span></div>
+          <div class="brow"><span class="bname">Flavor intensity</span><div class="bbar"><div class="bfill" style="width:88%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.4</span></div>
+          <div class="brow"><span class="bname">Aftertaste intensity</span><div class="bbar"><div class="bfill" style="width:76%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">3.8</span></div>
+        </div>
+        <div class="breakdown-section">
+          <div class="breakdown-label" style="color:oklch(0.45 0.15 250)">Texture</div>
+          <div class="brow"><span class="bname">Thickness intensity</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">5.0</span></div>
+          <div class="brow"><span class="bname">Texture intensity</span><div class="bbar"><div class="bfill" style="width:96%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">4.8</span></div>
+          <div class="brow"><span class="bname">Texture rating</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">5.0</span></div>
+        </div>
+        <div class="breakdown-section">
+          <div class="breakdown-label" style="color:oklch(0.50 0.14 65)">Appearance</div>
+          <div class="brow"><span class="bname">Color rating</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.68 0.16 65)"></div></div><span class="bval">5.0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="comments-block">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-l">
+        <div class="card-icon" style="background:var(--muted)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 2.5a.85.85 0 01.85-.85h6.3a.85.85 0 01.85.85v4.2a.85.85 0 01-.85.85H3.6L1.5 9.5V2.5z" stroke="var(--muted-fg)" stroke-width="1.1" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="card-title">Sensory Comments</span>
+      </div>
+      <span style="font-size:10px;color:var(--muted-fg)">1 comment</span>
+    </div>
+    <div class="cmt-cols">
+      <div>
+        <div class="cmt-col-head taste" style="border-color:oklch(0.50 0.18 145)">Taste &amp; Flavor</div>
+        <div style="font-size:10px;color:var(--muted-fg);line-height:1.5"><div style="font-weight:600;color:var(--fg);margin-bottom:2px;display:flex;align-items:center;gap:3px"><div class="dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</div><span class="s" style="display:block;width:90%"></span><span class="s" style="display:block;width:65%"></span></div>
+      </div>
+      <div>
+        <div class="cmt-col-head texture" style="border-color:oklch(0.50 0.18 250)">Texture</div>
+        <div style="font-size:10px;color:var(--muted-fg);font-style:italic">No comments</div>
+      </div>
+      <div>
+        <div class="cmt-col-head appearance" style="border-color:oklch(0.68 0.16 65)">Appearance</div>
+        <div style="font-size:10px;color:var(--muted-fg);font-style:italic">No comments</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<!-- ════════════ LAYOUT A ════════════
+     Left: Ingredients + Process (stacked, not sticky)
+     Right: Sensory Eval → Comments
+     ════════════════════════════════ -->
+<div class="pg on" id="pg-a">
+  <div id="hd-a"></div>
+  <div class="body">
+    <div class="two-col std">
+      <div class="col" id="left-a"></div>
+      <div class="col" id="right-a"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ LAYOUT B ════════════
+     Left: Ingredients only (sticky)
+     Right: Sensory Eval → Process → Comments
+     ════════════════════════════════ -->
+<div class="pg" id="pg-b">
+  <div id="hd-b"></div>
+  <div class="body">
+    <div class="two-col std">
+      <div class="col sticky" id="left-b"></div>
+      <div class="col" id="right-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ LAYOUT C ════════════
+     Left: Ingredients + Process (stacked)
+     Right: Sensory Eval restructured — scores as top strip,
+            photo + breakdown below → Comments
+     ════════════════════════════════ -->
+<div class="pg" id="pg-c">
+  <div id="hd-c"></div>
+  <div class="body">
+    <div class="two-col std">
+      <div class="col" id="left-c"></div>
+      <div class="col" id="right-c"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Clone templates into layout slots ──
+function cloneInto(templateId, targetId) {
+  const t = document.getElementById(templateId);
+  const target = document.getElementById(targetId);
+  target.appendChild(t.content.cloneNode(true));
+  wireInnerTabs(target);
+}
+
+function wireInnerTabs(container) {
+  container.querySelectorAll('.inner-tabs').forEach(tabBar => {
+    const tabs = tabBar.querySelectorAll('.itab');
+    // Find sibling itab-bodies
+    let bodies = [];
+    let next = tabBar.nextElementSibling;
+    while (next && next.classList.contains('itab-body')) {
+      bodies.push(next);
+      next = next.nextElementSibling;
+    }
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t, j) => {
+          t.classList.toggle('on', j === i);
+          if (bodies[j]) bodies[j].classList.toggle('on', j === i);
+        });
+      });
+    });
+  });
+}
+
+// Page headers
+['a','b','c'].forEach(id => {
+  const hd = document.getElementById('page-hd').content.cloneNode(true);
+  document.getElementById('hd-'+id).appendChild(hd);
+});
+
+// Layout A
+cloneInto('ing-block', 'left-a');
+cloneInto('proc-block', 'left-a');
+cloneInto('eval-block', 'right-a');
+cloneInto('comments-block', 'right-a');
+
+// Layout B
+cloneInto('ing-block', 'left-b');
+cloneInto('eval-block', 'right-b');
+cloneInto('proc-block', 'right-b');
+cloneInto('comments-block', 'right-b');
+
+// Layout C — left same as A
+cloneInto('ing-block', 'left-c');
+cloneInto('proc-block', 'left-c');
+
+// Layout C right: restructured sensory
+const rightC = document.getElementById('right-c');
+
+// Eval card restructured
+rightC.innerHTML = `
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-l">
+        <div class="card-icon" style="background:oklch(0.93 0.05 290)">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5l1.05 2.1 2.32.34-1.68 1.64.4 2.32L5.5 6.8l-2.09 1.1.4-2.32L2.13 3.94l2.32-.34L5.5 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.1" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="card-title">Sensory Evaluation</span>
+      </div>
+      <button class="card-btn">+ Add Log</button>
+    </div>
+    <!-- timeline -->
+    <div class="tl-wrap">
+      <div class="tl-group-label">High-Shear Mixer</div>
+      <div class="tl-track">
+        <div class="tl-dot done"></div><div class="tl-line"></div>
+        <div class="tl-dot done"></div><div class="tl-line"></div>
+        <div class="tl-dot active"></div>
+      </div>
+      <div class="tl-labels"><span>Immediate</span><span>1 day</span><span class="cur">3 days</span></div>
+    </div>
+    <!-- SCORE STRIP — scores as headline metrics, no photo needed above the fold -->
+    <div class="score-strip">
+      <div class="score-strip-item">
+        <div class="strip-num overall">4.9</div>
+        <div class="strip-sub">Overall</div>
+      </div>
+      <div class="score-strip-item">
+        <div class="strip-num" style="color:oklch(0.42 0.15 145)">4.6</div>
+        <div class="strip-sub" style="color:oklch(0.42 0.15 145)">Taste</div>
+      </div>
+      <div class="score-strip-item">
+        <div class="strip-num" style="color:oklch(0.42 0.15 250)">5.0</div>
+        <div class="strip-sub" style="color:oklch(0.42 0.15 250)">Texture</div>
+      </div>
+      <div class="score-strip-item">
+        <div class="strip-num" style="color:oklch(0.50 0.14 65)">5.0</div>
+        <div class="strip-sub" style="color:oklch(0.50 0.14 65)">Color</div>
+      </div>
+    </div>
+    <!-- user filter + summary/breakdown tabs below the strip -->
+    <div class="inner-tabs eval-tabs-c">
+      <button class="itab on">Summary</button>
+      <button class="itab">Breakdown</button>
+    </div>
+    <div class="itab-body on">
+      <div class="eval-filters">
+        <button class="fchip on">All</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 145)"></div>Alex</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.62 0.16 55)"></div>Luke</button>
+        <button class="fadd">+ Add</button>
+      </div>
+      <!-- photo + bars below the fold -->
+      <div class="eval-body">
+        <div class="eval-photo-area">Photo<div class="eval-photo-caption">High-Shear Mixer · 3 days</div></div>
+        <div class="eval-scores-area" style="padding-top:6px">
+          <div class="srow"><span class="sname">Taste</span><div class="sbar"><div class="sfill" style="width:92%;background:oklch(0.50 0.18 145)"></div></div><span class="sval" style="color:oklch(0.42 0.15 145)">4.6</span></div>
+          <div class="srow"><span class="sname">Texture</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="sval" style="color:oklch(0.42 0.15 250)">5.0</span></div>
+          <div class="srow"><span class="sname">Color</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.68 0.16 65)"></div></div><span class="sval" style="color:oklch(0.50 0.14 65)">5.0</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="itab-body">
+      <div class="eval-filters">
+        <button class="fchip on">All</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 145)"></div>Alex</button>
+        <button class="fchip"><div class="fchip-dot" style="background:oklch(0.62 0.16 55)"></div>Luke</button>
+      </div>
+      <div style="margin:0 -13px">
+        <div class="breakdown-section"><div class="breakdown-label" style="color:oklch(0.45 0.15 145)">Taste &amp; Flavor</div>
+          <div class="brow"><span class="bname">Taste rating</span><div class="bbar"><div class="bfill" style="width:90%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.5</span></div>
+          <div class="brow"><span class="bname">Sweetness intensity</span><div class="bbar"><div class="bfill" style="width:80%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.0</span></div>
+          <div class="brow"><span class="bname">Sweetness rating</span><div class="bbar"><div class="bfill" style="width:96%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.8</span></div>
+          <div class="brow"><span class="bname">Flavor intensity</span><div class="bbar"><div class="bfill" style="width:88%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">4.4</span></div>
+          <div class="brow"><span class="bname">Aftertaste intensity</span><div class="bbar"><div class="bfill" style="width:76%;background:oklch(0.50 0.18 145)"></div></div><span class="bval">3.8</span></div>
+        </div>
+        <div class="breakdown-section"><div class="breakdown-label" style="color:oklch(0.45 0.15 250)">Texture</div>
+          <div class="brow"><span class="bname">Thickness intensity</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">5.0</span></div>
+          <div class="brow"><span class="bname">Texture intensity</span><div class="bbar"><div class="bfill" style="width:96%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">4.8</span></div>
+          <div class="brow"><span class="bname">Texture rating</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="bval">5.0</span></div>
+        </div>
+        <div class="breakdown-section"><div class="breakdown-label" style="color:oklch(0.50 0.14 65)">Appearance</div>
+          <div class="brow"><span class="bname">Color rating</span><div class="bbar"><div class="bfill" style="width:100%;background:oklch(0.68 0.16 65)"></div></div><span class="bval">5.0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+// Wire tabs in C right
+wireInnerTabs(rightC);
+
+// Comments for C
+cloneInto('comments-block', 'right-c');
+
+// ── Layout switcher ──
+function show(id) {
+  document.querySelectorAll('.pg').forEach(el => el.classList.remove('on'));
+  document.getElementById('pg-' + id).classList.add('on');
+  document.querySelectorAll('.sw-btn').forEach((btn, i) => {
+    const ids = ['a','b','c'];
+    btn.classList.toggle('active', ids[i] === id);
+  });
+}
+</script>
+</body>
+</html>

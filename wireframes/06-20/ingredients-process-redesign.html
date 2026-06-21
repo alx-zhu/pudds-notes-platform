@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingredients & Process – Redesign Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      background: #f5f5f4;
+      color: #0f0f0e;
+      padding: 32px 24px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f0f0e;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #888780;
+      margin-bottom: 28px;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 860px;
+    }
+
+    .col-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #888780;
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+    .col-label.proposed { color: #185FA5; }
+
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Card shell ── */
+    .card {
+      background: #fff;
+      border: 0.5px solid #e2e2de;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 0.5px solid #e2e2de;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .card-icon {
+      width: 18px; height: 18px;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .icon-orange { background: #ffedd5; color: #c2410c; }
+    .icon-blue   { background: #dbeafe; color: #1d4ed8; }
+    .card-title-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f0f0e;
+    }
+    .card-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-ghost {
+      width: 26px; height: 26px;
+      border: none; background: none;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: #888780;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .btn-ghost:hover { background: #f1efe8; color: #0f0f0e; }
+
+    /* ── CURRENT: line tabs ── */
+    .line-tabs-wrap {
+      padding: 0 16px;
+      border-bottom: 0.5px solid #e2e2de;
+    }
+    .line-tabs {
+      display: flex;
+      gap: 12px;
+      height: 34px;
+      align-items: flex-end;
+    }
+    .line-tab {
+      font-size: 11px;
+      font-weight: 500;
+      color: #888780;
+      padding-bottom: 8px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .line-tab.active {
+      color: #0f0f0e;
+      border-bottom-color: #0f0f0e;
+      /* NOTE: this border overlaps the .line-tabs-wrap border-bottom, causing the visual bug */
+    }
+
+    /* ── PROPOSED: pill toggle ── */
+    .pill-toggle {
+      display: inline-flex;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 1px;
+    }
+    .pill-tab {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 6px;
+      color: #888780;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pill-tab.active {
+      background: #fff;
+      color: #0f0f0e;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ── CURRENT: donut chart ── */
+    .donut-wrap {
+      padding: 12px 16px 0;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .donut-svg { width: 140px; height: 140px; }
+    .donut-center {
+      position: absolute;
+      font-size: 11px;
+      color: #888780;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    /* ── PROPOSED: stacked bar ── */
+    .stacked-bar-wrap {
+      padding: 12px 16px 0;
+    }
+    .stacked-bar {
+      display: flex;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      gap: 1px;
+    }
+    .bar-seg { flex-shrink: 0; }
+
+    /* ── Shared: ingredient legend ── */
+    .legend {
+      padding: 8px 16px 0;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-top: 0.5px solid rgba(0,0,0,0.06);
+      font-size: 11px;
+    }
+    .legend-row:first-child { border-top: none; }
+    .legend-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-name { flex: 1; color: #0f0f0e; }
+    .legend-pct { color: #888780; tabular-nums: true; font-variant-numeric: tabular-nums; }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-top: 0.5px solid #e2e2de;
+      font-size: 11px;
+      color: #888780;
+      gap: 4px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* ── CURRENT: process prose ── */
+    .process-steps { }
+    .process-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      border-top: 0.5px solid rgba(0,0,0,0.06);
+    }
+    .process-step:first-child { border-top: none; }
+    .step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-num-current {
+      background: rgba(0,0,0,0.07);
+      color: #444441;
+    }
+    .step-num-proposed {
+      background: #0f0f0e;
+      color: #fff;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f0f0e;
+      line-height: 1.3;
+    }
+    .step-prose {
+      font-size: 11px;
+      color: #888780;
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+    .step-note-current {
+      font-size: 11px;
+      color: #888780;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .step-timestamp {
+      font-size: 11px;
+      color: #888780;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── PROPOSED: process chips ── */
+    .step-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: #f1efe8;
+      font-size: 10px;
+      color: #5f5e5a;
+    }
+    .chip-key { font-weight: 500; color: #444441; }
+    .chip-val { color: #888780; }
+
+    /* ── PROPOSED: note callout ── */
+    .step-note-proposed {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 5px 8px;
+      background: #faeeda;
+      border-left: 2px solid #EF9F27;
+      border-radius: 0 5px 5px 0;
+      font-size: 10px;
+      color: #633806;
+    }
+    .note-icon { font-size: 10px; flex-shrink: 0; margin-top: 0px; }
+
+    /* ── Annotation callouts ── */
+    .annotations {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .annotation {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 10.5px;
+      color: #5f5e5a;
+      line-height: 1.4;
+    }
+    .annotation-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #888780;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .annotation-dot.good { background: #1D9E75; }
+    .annotation-dot.bad  { background: #E24B4A; }
+
+    .section-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 0.5px solid #e2e2de;
+      margin: 8px 0;
+    }
+
+    /* bug annotation badge */
+    .bug-badge {
+      display: inline-block;
+      background: #fcebeb;
+      color: #A32D2D;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
+    .good-badge {
+      display: inline-block;
+      background: #EAF3DE;
+      color: #3B6D11;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    /* highlight ring on bug areas */
+    .highlight-bug {
+      outline: 1.5px solid #E24B4A;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ingredients & Process – Readability Redesign</h1>
+  <p class="subtitle">Mockup · June 20 2026 · Protein Gel 22, Trial #22</p>
+
+  <div class="comparison">
+
+    <!-- ═══════════════════ CURRENT ═══════════════════ -->
+    <div>
+      <div class="col-label">Current</div>
+      <div class="stack">
+
+        <!-- CURRENT: Ingredients Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon icon-orange">⬛</div>
+              <span class="card-title-text">Ingredients</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ghost">✏</button>
+            </div>
+          </div>
+
+          <!-- Line tabs — with bug: underline bleeds into border -->
+          <div class="line-tabs-wrap highlight-bug">
+            <div class="line-tabs">
+              <div class="line-tab active">Ingredients</div>
+              <div class="line-tab">Cost</div>
+            </div>
+          </div>
+
+          <!-- Donut chart placeholder -->
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 100 100">
+              <!-- Water 73.91% -->
+              <path d="M50,10 A40,40 0 1,1 14.2,35.3" fill="none" stroke="#6366f1" stroke-width="18"/>
+              <!-- Protein A 18% -->
+              <path d="M14.2,35.3 A40,40 0 0,1 36.5,11.6" fill="none" stroke="#f59e0b" stroke-width="18"/>
+              <!-- Fat A 4% -->
+              <path d="M36.5,11.6 A40,40 0 0,1 45.0,10.1" fill="none" stroke="#22c55e" stroke-width="18"/>
+              <!-- Flavor A 3% -->
+              <path d="M45.0,10.1 A40,40 0 0,1 50.0,10.0" fill="none" stroke="#a855f7" stroke-width="18"/>
+            </svg>
+            <span class="donut-center" style="font-size:10px; color:#888780;">5 items</span>
+          </div>
+
+          <!-- Legend -->
+          <div class="legend" style="padding-bottom: 8px;">
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#f59e0b"></div>
+              <span class="legend-name">Protein A</span>
+              <span class="legend-pct">18%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#ec4899"></div>
+              <span class="legend-name">Texture H</span>
+              <span class="legend-pct">0.8%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#6366f1"></div>
+              <span class="legend-name">Water</span>
+              <span class="legend-pct">73.91%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#22c55e"></div>
+              <span class="legend-name">Fat A</span>
+              <span class="legend-pct">4%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#a855f7"></div>
+              <span class="legend-name">Flavor A</span>
+              <span class="legend-pct">3%</span>
+            </div>
+          </div>
+
+          <div class="card-footer">↓ 3 more</div>
+        </div>
+
+        <!-- CURRENT: Process Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon icon-blue">≡</div>
+              <span class="card-title-text">Process</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ghost">✏</button>
+            </div>
+          </div>
+
+          <div class="process-steps">
+            <div class="process-step">
+              <div class="step-num step-num-current">1</div>
+              <div class="step-body">
+                <div class="step-name">Liquifier</div>
+                <div class="step-prose highlight-bug">Duration: 3 min · Shear velocity: 3600 rpm · Temperature: 500 F</div>
+                <div class="step-note-current highlight-bug">Temperature might be too high</div>
+              </div>
+              <span class="step-timestamp">06:45</span>
+            </div>
+            <div class="process-step">
+              <div class="step-num step-num-current">2</div>
+              <div class="step-body">
+                <div class="step-name">DSI</div>
+                <div class="step-prose">Duration: 13 s</div>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-num step-num-current">3</div>
+              <div class="step-body">
+                <div class="step-name">Vacuum Cooler</div>
+                <div class="step-prose">Duration: 24.1 s · Shear velocity: 2800 rpms</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Annotations for current -->
+        <div class="annotations">
+          <div class="annotation">
+            <div class="annotation-dot bad"></div>
+            <span><span class="bug-badge">BUG</span> Active tab underline overlaps card border — <code>border-b</code> on wrap + <code>pb-2</code> on trigger collide</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot bad"></div>
+            <span>Title "Ingredients" + tab "Ingredients" is redundant — user reads it twice for no reason</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot bad"></div>
+            <span>Donut takes ~180px with no additional info value over a legend alone</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot bad"></div>
+            <span>All process text is same style (muted/xs) — params, notes, and warnings are visually identical</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════ PROPOSED ═══════════════════ -->
+    <div>
+      <div class="col-label proposed">Proposed</div>
+      <div class="stack">
+
+        <!-- PROPOSED: Ingredients Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon icon-orange">⬛</div>
+              <span class="card-title-text">Ingredients</span>
+            </div>
+            <div class="card-actions">
+              <!-- Pill toggle lives in header — no redundant label, no underline issue -->
+              <div class="pill-toggle">
+                <div class="pill-tab active">Formula</div>
+                <div class="pill-tab">Cost</div>
+              </div>
+              <button class="btn-ghost">✏</button>
+            </div>
+          </div>
+
+          <!-- Horizontal stacked bar — replaces donut, ~12px height -->
+          <div class="stacked-bar-wrap">
+            <div class="stacked-bar">
+              <div class="bar-seg" style="flex: 73.91; background: #6366f1; border-radius: 6px 0 0 6px;"></div>
+              <div class="bar-seg" style="flex: 18;    background: #f59e0b;"></div>
+              <div class="bar-seg" style="flex: 4;     background: #22c55e;"></div>
+              <div class="bar-seg" style="flex: 3;     background: #a855f7;"></div>
+              <div class="bar-seg" style="flex: 0.8;   background: #ec4899;"></div>
+              <div class="bar-seg" style="flex: 0.29;  background: #e5e7eb; border-radius: 0 6px 6px 0;"></div>
+            </div>
+          </div>
+
+          <!-- Same legend, no tab strip needed below header -->
+          <div class="legend" style="padding-bottom: 8px;">
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#6366f1"></div>
+              <span class="legend-name">Water</span>
+              <span class="legend-pct">73.91%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#f59e0b"></div>
+              <span class="legend-name">Protein A</span>
+              <span class="legend-pct">18%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#22c55e"></div>
+              <span class="legend-name">Fat A</span>
+              <span class="legend-pct">4%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#a855f7"></div>
+              <span class="legend-name">Flavor A</span>
+              <span class="legend-pct">3%</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot" style="background:#ec4899"></div>
+              <span class="legend-name">Texture H</span>
+              <span class="legend-pct">0.8%</span>
+            </div>
+          </div>
+
+          <div class="card-footer">↓ 3 more</div>
+        </div>
+
+        <!-- PROPOSED: Process Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon icon-blue">≡</div>
+              <span class="card-title-text">Process</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ghost">✏</button>
+            </div>
+          </div>
+
+          <div class="process-steps">
+            <div class="process-step">
+              <div class="step-num step-num-proposed">1</div>
+              <div class="step-body">
+                <div class="step-name">Liquifier</div>
+                <div class="step-chips">
+                  <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">3 min</span></div>
+                  <div class="chip"><span class="chip-key">Shear velocity</span><span class="chip-val">3600 rpm</span></div>
+                  <div class="chip"><span class="chip-key">Temperature</span><span class="chip-val">500 F</span></div>
+                </div>
+                <!-- Note as callout, not italic muted text -->
+                <div class="step-note-proposed">
+                  <span class="note-icon">⚠</span>
+                  <span>Temperature might be too high</span>
+                </div>
+              </div>
+              <span class="step-timestamp">06:45</span>
+            </div>
+            <div class="process-step">
+              <div class="step-num step-num-proposed">2</div>
+              <div class="step-body">
+                <div class="step-name">DSI</div>
+                <div class="step-chips">
+                  <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">13 s</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="process-step">
+              <div class="step-num step-num-proposed">3</div>
+              <div class="step-body">
+                <div class="step-name">Vacuum Cooler</div>
+                <div class="step-chips">
+                  <div class="chip"><span class="chip-key">Duration</span><span class="chip-val">24.1 s</span></div>
+                  <div class="chip"><span class="chip-key">Shear velocity</span><span class="chip-val">2800 rpm</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Annotations for proposed -->
+        <div class="annotations">
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span><span class="good-badge">FIX</span> Pill toggle (<code>CardTabToggle</code>, already in codebase) lives in header — no underline, no border collision</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span>Tab renamed "Formula" (not "Ingredients") — eliminates title redundancy without changing meaning</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span>Stacked bar replaces donut — same information, ~12px vs ~180px, no height penalty</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span>Params as chips — each key/value pair is visually bounded, scannable at a glance</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span>Notes as amber callout — warnings are visually distinct from params, impossible to miss</span>
+          </div>
+          <div class="annotation">
+            <div class="annotation-dot good"></div>
+            <span>Step number badge darkened to full foreground — stronger step hierarchy</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Implementation notes ── -->
+  <div style="margin-top: 36px; max-width: 860px; padding-top: 20px; border-top: 0.5px solid #e2e2de;">
+    <div style="font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Implementation notes</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 11.5px; color: #5f5e5a; line-height: 1.6;">
+      <div>
+        <div style="font-weight: 600; color: #0f0f0e; margin-bottom: 4px;">IngredientsCard</div>
+        <p>1. Replace <code>Tabs</code>/<code>TabsList variant="line"</code> with <code>CardTabToggle</code> (already exists at <code>src/components/trials/shared/CardTabToggle.tsx</code>). Move it into the <code>card-header</code> actions row.</p>
+        <p style="margin-top: 6px;">2. Replace <code>&lt;IngredientsPieChart&gt;</code> + <code>h-48</code> container with a horizontal stacked bar: one <code>div</code> with <code>display:flex</code>, each segment a child <code>div</code> with <code>flex: percentage</code> and background color from <code>INGREDIENT_CHART_COLORS</code>. ~10 lines of JSX, no Recharts dependency for display mode.</p>
+        <p style="margin-top: 6px;">3. Rename tab option label from <code>"ingredients"</code> to <code>"Formula"</code> to avoid reading the title twice.</p>
+      </div>
+      <div>
+        <div style="font-weight: 600; color: #0f0f0e; margin-bottom: 4px;">ProcessCard</div>
+        <p>1. Replace the <code>paramProse</code> string join with a <code>&lt;div className="flex flex-wrap gap-1 mt-1"&gt;</code> of chips: each param gets <code>&lt;span className="inline-flex … bg-muted/60 rounded px-1.5 py-0.5 text-[10px]"&gt;&lt;span className="font-medium"&gt;{p.key}&lt;/span&gt;&lt;span className="text-muted-foreground ml-1"&gt;{p.value}{p.unit}&lt;/span&gt;&lt;/span&gt;</code>.</p>
+        <p style="margin-top: 6px;">2. Replace <code>&lt;p className="text-xs text-muted-foreground italic"&gt;</code> for notes with a callout: <code>&lt;div className="flex items-start gap-1.5 mt-1.5 rounded-r bg-amber-50 border-l-2 border-amber-400 px-2 py-1 text-[10px] text-amber-900"&gt;</code>. No conditional logic needed — all notes get this treatment.</p>
+        <p style="margin-top: 6px;">3. Change <code>step-num</code> from <code>bg-primary/10 text-primary</code> to <code>bg-primary text-primary-foreground</code> (already used in ProcessSheet) for stronger visual anchoring.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Edit Form — PLN</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:oklch(0.975 0.005 75);
+  --fg:oklch(0.15 0.01 60);
+  --card:oklch(1 0 0);
+  --muted:oklch(0.955 0.008 75);
+  --muted-fg:oklch(0.50 0.01 60);
+  --border:oklch(0.91 0.008 75);
+  --primary:oklch(0.22 0.01 60);
+  --primary-fg:oklch(0.985 0.003 75);
+  --ring:oklch(0.65 0.01 60);
+  --r:0.625rem;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 1px rgba(0,0,0,0.035);
+  --destructive:oklch(0.58 0.22 27);
+}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);-webkit-font-smoothing:antialiased;font-size:13px;color:var(--fg)}
+
+/* PAGE */
+.page{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* HEADER */
+.ph{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ph-icon{width:34px;height:34px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ph-meta{flex:1}
+.ph-name{font-size:14px;font-weight:600}
+.ph-sub{font-size:11px;color:var(--muted-fg)}
+.ph-btn{padding:0 11px;height:30px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:background 0.1s;flex-shrink:0}
+.ph-btn:hover{background:var(--muted)}
+
+/* BODY */
+.body{flex:1;overflow-y:auto;padding:16px 20px}
+.two-col{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:14px;align-items:start;max-width:1100px}
+.col{display:flex;flex-direction:column;gap:12px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card-hd{padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-hd-l{display:flex;align-items:center;gap:7px}
+.cicon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ctitle{font-size:12px;font-weight:600}
+.cbtn{padding:0 8px;height:22px;border:1px solid var(--border);border-radius:5px;background:var(--card);font-size:10px;font-weight:500;cursor:pointer;color:var(--muted-fg);font-family:inherit;transition:background 0.1s,color 0.1s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.cbtn:hover{background:var(--muted);color:var(--fg)}
+
+/* INNER TABS */
+.itabs{display:flex;border-bottom:1px solid var(--border);padding:0 13px}
+.itab{padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;color:var(--muted-fg);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.1s,border-color 0.1s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.itab:hover{color:var(--fg)}
+.itab.on{color:var(--fg);border-bottom-color:var(--fg)}
+.ibody{padding:10px 13px;display:none}
+.ibody.on{display:block}
+
+/* STUBS */
+.s{height:8px;border-radius:2px;background:var(--muted);margin-bottom:5px}
+.s:last-child{margin-bottom:0}
+
+/* INGREDIENTS */
+.donut{width:64px;height:64px;border-radius:50%;background:conic-gradient(oklch(0.68 0.14 250) 0% 18%, oklch(0.62 0.16 145) 18% 19%, oklch(0.70 0.04 200) 19% 92%, oklch(0.76 0.13 60) 92% 96%, oklch(0.63 0.14 290) 96% 100%);flex-shrink:0;position:relative}
+.donut::after{content:'';position:absolute;inset:15px;background:var(--card);border-radius:50%}
+.ing-row{display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:4px}
+.ing-row:last-child{margin-bottom:0}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ing-name{flex:1;color:var(--muted-fg)}
+.ing-pct{font-weight:500;font-size:10px}
+
+/* PROCESS DISPLAY */
+.proc-step{display:flex;align-items:flex-start;gap:8px;padding:9px 13px;border-bottom:1px solid var(--border)}
+.proc-step:last-child{border-bottom:none}
+.pnum{width:17px;height:17px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:var(--muted-fg);flex-shrink:0;margin-top:1px}
+.pcontent{flex:1;min-width:0}
+.pname-d{font-size:11px;font-weight:600;margin-bottom:2px}
+.pparams-d{font-size:10px;color:var(--muted-fg);line-height:1.5}
+.pv{color:var(--fg);font-weight:500}
+.pnote-d{font-size:10px;color:var(--muted-fg);font-style:italic;margin-top:3px}
+.pts{font-size:9px;color:var(--muted-fg);flex-shrink:0;padding-top:2px;font-variant-numeric:tabular-nums}
+
+/* SENSORY / COMMENTS STUBS */
+.eval-stub{padding:12px 13px;display:flex;flex-direction:column;gap:6px}
+.tl-stub{padding:8px 13px 10px;border-bottom:1px solid var(--border)}
+.tl-group-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-fg);margin-bottom:6px}
+.tl-track{display:flex;align-items:center;margin-bottom:4px}
+.tl-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--card);flex-shrink:0}
+.tl-dot.done{border-color:oklch(0.68 0.12 80)}
+.tl-dot.active{border-color:oklch(0.45 0.15 145);background:oklch(0.45 0.15 145)}
+.tl-line{flex:1;height:2px;background:var(--border)}
+.tl-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted-fg)}
+.eval-photo-row{display:grid;grid-template-columns:1fr 1fr;min-height:160px;border-top:1px solid var(--border)}
+.photo-box{background:oklch(0.92 0.006 75);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted-fg);border-right:1px solid var(--border)}
+.score-box{padding:10px 13px}
+.score-big{font-size:26px;font-weight:700;margin-bottom:2px}
+.score-denom{font-size:12px;color:var(--muted-fg);font-weight:400}
+.score-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-fg);margin-bottom:10px}
+.srow{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.srow:last-child{margin-bottom:0}
+.sname{font-size:10px;color:var(--muted-fg);width:40px;flex-shrink:0}
+.sbar{flex:1;height:5px;border-radius:3px;overflow:hidden;background:var(--muted)}
+.sfill{height:100%;border-radius:3px}
+.sval{font-size:10px;font-weight:700;width:20px;text-align:right;flex-shrink:0}
+.eval-tabs-row{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 13px;border-top:1px solid var(--border)}
+.eval-tab{padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;color:var(--muted-fg);border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.eval-tab.on{color:var(--fg);border-bottom-color:var(--fg)}
+.eval-filters{display:flex;gap:4px;padding:8px 13px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.fchip{display:flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:12px;border:1px solid var(--border);font-size:10px;font-weight:500;cursor:pointer;background:var(--card);color:var(--muted-fg);white-space:nowrap}
+.fchip.on{border-color:var(--fg);color:var(--fg);background:var(--muted)}
+.fchip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ═══════════════════════════════════
+   SHEET
+   ═══════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.22);z-index:50;
+  display:flex;align-items:stretch;justify-content:flex-end;
+  backdrop-filter:blur(1px);
+  opacity:0;pointer-events:none;
+  transition:opacity 0.15s ease;
+}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{
+  background:var(--card);width:480px;max-width:96vw;
+  display:flex;flex-direction:column;
+  box-shadow:-8px 0 32px rgba(0,0,0,0.10),0 0 0 1px rgba(0,0,0,0.04);
+  transform:translateX(100%);
+  transition:transform 0.2s cubic-bezier(0.32,0.72,0,1);
+}
+.overlay.open .sheet{transform:translateX(0)}
+
+/* Sheet header */
+.sh-header{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.sh-close{
+  width:28px;height:28px;border:1px solid var(--border);border-radius:6px;
+  background:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted-fg);font-family:inherit;
+  transition:background 0.12s,color 0.12s;flex-shrink:0;
+}
+.sh-close:hover{background:var(--muted);color:var(--fg)}
+.sh-title{font-size:13px;font-weight:600}
+.sh-sub{font-size:11px;color:var(--muted-fg);margin-top:1px}
+
+/* Sheet body */
+.sh-body{flex:1;overflow-y:auto;background:var(--bg);padding:12px 14px}
+
+/* Each step block — card style matching trial view */
+.step-block{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;
+  margin-bottom:8px;
+}
+.step-block-header{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 13px;border-bottom:1px solid var(--border);
+}
+.step-block-num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--muted);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0;
+}
+.step-block-inner{padding:11px 13px 13px}
+
+/* Fields */
+.field{margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field-label{
+  font-size:10px;font-weight:500;color:var(--muted-fg);
+  text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;
+}
+.finput{
+  height:30px;padding:0 9px;font-size:12px;
+  border:1px solid var(--border);border-radius:6px;
+  background:var(--card);color:var(--fg);outline:none;
+  font-family:inherit;width:100%;
+  transition:border-color 0.12s,box-shadow 0.12s;
+}
+.finput:focus{
+  border-color:var(--ring);
+  box-shadow:0 0 0 3px oklch(0.65 0.01 60 / 0.12);
+}
+.finput::placeholder{color:oklch(0.72 0.005 60)}
+.finput.bold{font-weight:600}
+.finput.time{width:106px}
+.finput.key{flex:2;min-width:0}
+.finput.val{flex:1;min-width:0}
+.finput.unit{width:62px;flex-shrink:0}
+.ftextarea{
+  width:100%;padding:7px 9px;font-size:12px;
+  border:1px solid var(--border);border-radius:6px;
+  background:var(--card);color:var(--fg);outline:none;
+  font-family:inherit;resize:none;min-height:52px;line-height:1.5;
+  transition:border-color 0.12s,box-shadow 0.12s;
+}
+.ftextarea:focus{
+  border-color:var(--ring);
+  box-shadow:0 0 0 3px oklch(0.65 0.01 60 / 0.12);
+}
+.ftextarea::placeholder{color:oklch(0.72 0.005 60)}
+
+/* Param rows */
+.param-col-hdrs{display:flex;gap:6px;margin-bottom:4px;padding-right:28px}
+.pcol{font-size:9.5px;font-weight:500;color:oklch(0.68 0.007 60);text-transform:uppercase;letter-spacing:0.04em}
+.pcol.key{flex:2}.pcol.val{flex:1}.pcol.unit{width:62px}
+.param-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.param-row:last-child{margin-bottom:0}
+.param-del{
+  width:22px;height:22px;flex-shrink:0;
+  background:none;border:none;cursor:pointer;
+  color:var(--muted-fg);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  transition:color 0.1s,background 0.1s;
+}
+.param-del:hover{color:var(--destructive);background:oklch(0.97 0.01 27)}
+
+/* Small action buttons */
+.link-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;color:var(--muted-fg);
+  background:none;border:none;cursor:pointer;
+  padding:3px 0;font-family:inherit;
+  transition:color 0.1s;
+}
+.link-btn:hover{color:var(--fg)}
+.reorder-btns{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.reorder-btn{
+  width:22px;height:14px;background:none;border:none;
+  cursor:pointer;color:var(--muted-fg);padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:3px;transition:color 0.1s,background 0.1s;
+}
+.reorder-btn:hover:not(:disabled){color:var(--fg);background:var(--muted)}
+.reorder-btn:disabled{opacity:0.25;cursor:default}
+.step-del-btn{
+  width:26px;height:26px;background:none;
+  border:1px solid var(--border);border-radius:6px;
+  cursor:pointer;color:var(--muted-fg);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:background 0.1s,color 0.1s,border-color 0.1s;
+}
+.step-del-btn:hover{
+  color:var(--destructive);
+  background:oklch(0.97 0.01 27);
+  border-color:oklch(0.85 0.05 27);
+}
+
+/* Add step button */
+.add-step-wrap{padding:0}
+.add-step-btn{
+  width:100%;height:32px;
+  background:none;border:1.5px dashed var(--border);
+  border-radius:7px;font-size:11px;font-weight:500;
+  color:var(--muted-fg);cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:background 0.12s,border-color 0.12s,color 0.12s;
+}
+.add-step-btn:hover{background:var(--muted);border-style:solid;color:var(--fg)}
+
+/* Sheet footer */
+.sh-footer{
+  padding:11px 16px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;background:var(--card);
+}
+.sh-footer-left{font-size:11px;color:var(--muted-fg)}
+.sh-footer-right{display:flex;gap:8px}
+.btn-cancel{
+  padding:0 12px;height:30px;border:1px solid var(--border);
+  border-radius:6px;background:var(--card);font-size:12px;
+  font-weight:500;cursor:pointer;color:var(--muted-fg);
+  font-family:inherit;transition:background 0.12s,color 0.12s;
+}
+.btn-cancel:hover{background:var(--muted);color:var(--fg)}
+.btn-save{
+  padding:0 16px;height:30px;background:var(--primary);
+  color:var(--primary-fg);border:none;border-radius:6px;
+  font-size:12px;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:opacity 0.12s;
+}
+.btn-save:hover{opacity:0.85}
+
+svg{display:block}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="ph">
+    <div class="ph-icon">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 1v4.5L2 12.5a.8.8 0 00.7 1.2h8.6a.8.8 0 00.7-1.2L9 5.5V1M4 1h6" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="ph-meta">
+      <div class="ph-name">Protein Gel 22</div>
+      <div class="ph-sub">Trial #22 · Vanilla · Benchtop · May 10, 2026</div>
+    </div>
+    <button class="ph-btn">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M7.5 1.5L9 3L3.5 8.5H2V7L7.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Edit Setup
+    </button>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+    <div class="two-col">
+
+      <!-- LEFT: Ingredients + Process -->
+      <div class="col">
+
+        <!-- Ingredients -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="cicon" style="background:oklch(0.93 0.06 145)">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 9h7M5.5 2v7M3.5 4L5.5 2l2 2" stroke="oklch(0.38 0.14 145)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="ctitle">Ingredients</span>
+            </div>
+            <button class="cbtn">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M7 1L8.5 2.5L3.5 7.5H2V6L7 1Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
+            </button>
+          </div>
+          <div class="itabs">
+            <button class="itab on" onclick="switchItab(this)">Ingredients</button>
+            <button class="itab" onclick="switchItab(this)">Cost</button>
+          </div>
+          <div class="ibody on">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div class="donut"></div>
+              <div style="flex:1">
+                <div class="ing-row"><div class="dot" style="background:oklch(0.68 0.14 250)"></div><span class="ing-name">Protein A</span><span class="ing-pct">18%</span></div>
+                <div class="ing-row"><div class="dot" style="background:oklch(0.62 0.16 145)"></div><span class="ing-name">Texture H</span><span class="ing-pct">0.8%</span></div>
+                <div class="ing-row"><div class="dot" style="background:oklch(0.70 0.04 200)"></div><span class="ing-name">Water</span><span class="ing-pct">73.9%</span></div>
+                <div class="ing-row"><div class="dot" style="background:oklch(0.76 0.13 60)"></div><span class="ing-name">Fat A</span><span class="ing-pct">4%</span></div>
+                <div class="ing-row"><div class="dot" style="background:oklch(0.63 0.14 290)"></div><span class="ing-name">Flavor A</span><span class="ing-pct">3%</span></div>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--muted-fg);text-align:center;padding-top:8px;margin-top:8px;border-top:1px solid var(--border);cursor:pointer">+ 3 more</div>
+          </div>
+          <div class="ibody">
+            <div style="font-size:20px;font-weight:700;margin-bottom:1px">$0.654</div>
+            <div style="font-size:10px;color:var(--muted-fg);margin-bottom:9px">per 170g serving</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:10px"><span style="color:var(--muted-fg);width:36px;flex-shrink:0">Prot-A</span><div style="flex:1;height:4px;border-radius:2px;background:var(--muted);overflow:hidden"><div style="width:70%;height:100%;border-radius:2px;background:oklch(0.55 0.18 290)"></div></div><span style="color:var(--fg);font-weight:500;width:32px;text-align:right">$0.459</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:10px"><span style="color:var(--muted-fg);width:36px;flex-shrink:0">Fat-A</span><div style="flex:1;height:4px;border-radius:2px;background:var(--muted);overflow:hidden"><div style="width:15%;height:100%;border-radius:2px;background:oklch(0.55 0.18 290)"></div></div><span style="color:var(--fg);font-weight:500;width:32px;text-align:right">$0.099</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:10px"><span style="color:var(--muted-fg);width:36px;flex-shrink:0">Fl-A</span><div style="flex:1;height:4px;border-radius:2px;background:var(--muted);overflow:hidden"><div style="width:11%;height:100%;border-radius:2px;background:oklch(0.55 0.18 290)"></div></div><span style="color:var(--fg);font-weight:500;width:32px;text-align:right">$0.074</span></div>
+          </div>
+        </div>
+
+        <!-- Process Record display -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="cicon" style="background:oklch(0.95 0.04 55)">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 3h8M1.5 6h6M1.5 9h4" stroke="oklch(0.55 0.13 55)" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="ctitle">Process Record</span>
+            </div>
+            <button class="cbtn" onclick="openSheet()">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M7 1L8.5 2.5L3.5 7.5H2V6L7 1Z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
+            </button>
+          </div>
+          <div class="proc-step"><div class="pnum">1</div><div class="pcontent"><div class="pname-d">Liquifier</div><div class="pparams-d">Duration: <span class="pv">8 min</span> · Temp: <span class="pv">85 °C</span> · Speed: <span class="pv">3500 rpm</span></div></div><div class="pts">06:45</div></div>
+          <div class="proc-step"><div class="pnum">2</div><div class="pcontent"><div class="pname-d">DSI</div><div class="pparams-d">Duration: <span class="pv">45 sec</span> · Temp in: <span class="pv">82 °C</span> · Temp out: <span class="pv">140 °C</span></div><div class="pnote-d">Slight overshoot — monitor next run.</div></div><div class="pts">06:55</div></div>
+          <div class="proc-step"><div class="pnum">3</div><div class="pcontent"><div class="pname-d">Vacuum Cooler</div><div class="pparams-d">Duration: <span class="pv">2 min</span> · Pressure: <span class="pv">0.6 bar</span> · Temp out: <span class="pv">90 °C</span></div></div><div class="pts">07:00</div></div>
+          <div class="proc-step"><div class="pnum">4</div><div class="pcontent"><div class="pname-d">Pump</div><div class="pparams-d">Duration: <span class="pv">1 min</span> · Flow rate: <span class="pv">200 L/hr</span></div></div><div class="pts">07:03</div></div>
+          <div class="proc-step"><div class="pnum">5</div><div class="pcontent"><div class="pname-d">Cooler</div><div class="pparams-d">Duration: <span class="pv">12 min</span> · Temp out: <span class="pv">10 °C</span></div></div><div class="pts">07:05</div></div>
+          <div class="proc-step"><div class="pnum">6</div><div class="pcontent"><div class="pname-d">Filler</div><div class="pparams-d">Duration: <span class="pv">20 min</span> · Volume: <span class="pv">100 mL</span> · Fill wt: <span class="pv">98.4 g</span></div><div class="pnote-d">Two cups underfilled near end.</div></div><div class="pts">07:18</div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sensory Eval -->
+      <div class="col">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="cicon" style="background:oklch(0.93 0.05 290)">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5l1.05 2.1 2.32.34-1.68 1.64.4 2.32L5.5 6.8l-2.09 1.1.4-2.32L2.13 3.94l2.32-.34L5.5 1.5z" stroke="oklch(0.48 0.16 290)" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="ctitle">Sensory Evaluation</span>
+            </div>
+            <button class="cbtn">+ Add Log</button>
+          </div>
+          <div class="tl-stub">
+            <div class="tl-group-label">High-Shear Mixer</div>
+            <div class="tl-track"><div class="tl-dot done"></div><div class="tl-line"></div><div class="tl-dot done"></div><div class="tl-line"></div><div class="tl-dot active"></div></div>
+            <div class="tl-labels"><span>Immediate</span><span>1 day</span><span style="font-weight:600;color:var(--fg)">3 days</span></div>
+          </div>
+          <div class="eval-tabs-row">
+            <button class="eval-tab on">Summary</button>
+            <button class="eval-tab">Breakdown</button>
+          </div>
+          <div class="eval-filters">
+            <button class="fchip on">All</button>
+            <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 250)"></div>Nolan</button>
+            <button class="fchip"><div class="fchip-dot" style="background:oklch(0.55 0.18 145)"></div>Alex</button>
+            <button class="fchip"><div class="fchip-dot" style="background:oklch(0.62 0.16 55)"></div>Luke</button>
+            <button class="fadd" style="font-size:10px;color:var(--muted-fg);background:none;border:none;cursor:pointer;padding:1px 4px;font-family:inherit">+ Add</button>
+          </div>
+          <div class="eval-photo-row">
+            <div class="photo-box">Photo</div>
+            <div class="score-box">
+              <div class="score-big">4.9<span class="score-denom"> / 5</span></div>
+              <div class="score-lbl">Overall</div>
+              <div class="srow"><span class="sname">Taste</span><div class="sbar"><div class="sfill" style="width:92%;background:oklch(0.50 0.18 145)"></div></div><span class="sval" style="color:oklch(0.42 0.15 145)">4.6</span></div>
+              <div class="srow"><span class="sname">Texture</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.50 0.18 250)"></div></div><span class="sval" style="color:oklch(0.42 0.15 250)">5.0</span></div>
+              <div class="srow"><span class="sname">Color</span><div class="sbar"><div class="sfill" style="width:100%;background:oklch(0.68 0.16 65)"></div></div><span class="sval" style="color:oklch(0.50 0.14 65)">5.0</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-l">
+              <div class="cicon" style="background:var(--muted)">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 2.5a.85.85 0 01.85-.85h6.3a.85.85 0 01.85.85v4.2a.85.85 0 01-.85.85H3.6L1.5 9.5V2.5z" stroke="var(--muted-fg)" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="ctitle">Sensory Comments</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 13px">
+            <div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.45 0.15 145);border-bottom:2px solid oklch(0.50 0.18 145);padding-bottom:5px;margin-bottom:7px">Taste &amp; Flavor</div><div class="s" style="width:90%"></div><div class="s" style="width:65%"></div></div>
+            <div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.42 0.15 250);border-bottom:2px solid oklch(0.50 0.18 250);padding-bottom:5px;margin-bottom:7px">Texture</div><div style="font-size:10px;color:var(--muted-fg);font-style:italic">No comments</div></div>
+            <div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:oklch(0.50 0.14 65);border-bottom:2px solid oklch(0.68 0.16 65);padding-bottom:5px;margin-bottom:7px">Appearance</div><div style="font-size:10px;color:var(--muted-fg);font-style:italic">No comments</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EDIT SHEET ═══════════════ -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+
+    <div class="sh-header">
+      <button class="sh-close" onclick="closeSheet()">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <div>
+        <div class="sh-title">Edit Process Record</div>
+        <div class="sh-sub">Protein Gel 22 · May 10, 2026</div>
+      </div>
+    </div>
+
+    <div class="sh-body" id="sh-body"></div>
+
+    <div class="sh-footer">
+      <span class="sh-footer-left" id="sh-step-count"></span>
+      <div class="sh-footer-right">
+        <button class="btn-cancel" onclick="closeSheet()">Cancel</button>
+        <button class="btn-save" onclick="save()">Save Changes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PLUS = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5v8M1.5 5.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+const X = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+const TRASH = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 3h8M3.5 3V2h4v1M4.5 5v3.5M6.5 5v3.5M2.5 3l.5 6.5h5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEVUP = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2.5 7L5.5 4L8.5 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEVDN = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2.5 4L5.5 7L8.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+let draft = [];
+
+const INITIAL = [
+  {name:"Liquifier",        ts:"06:45", params:[{k:"Duration",v:"8",u:"min"},{k:"Temp",v:"85",u:"°C"},{k:"Speed",v:"3500",u:"rpm"}], notes:""},
+  {name:"DSI",              ts:"06:55", params:[{k:"Duration",v:"45",u:"sec"},{k:"Temp in",v:"82",u:"°C"},{k:"Temp out",v:"140",u:"°C"}], notes:"Slight overshoot — monitor next run."},
+  {name:"Vacuum Cooler",    ts:"07:00", params:[{k:"Duration",v:"2",u:"min"},{k:"Pressure",v:"0.6",u:"bar"},{k:"Temp out",v:"90",u:"°C"}], notes:""},
+  {name:"Pump",             ts:"07:03", params:[{k:"Duration",v:"1",u:"min"},{k:"Flow rate",v:"200",u:"L/hr"}], notes:""},
+  {name:"Cooler",           ts:"07:05", params:[{k:"Duration",v:"12",u:"min"},{k:"Temp out",v:"10",u:"°C"}], notes:""},
+  {name:"Filler",           ts:"07:18", params:[{k:"Duration",v:"20",u:"min"},{k:"Volume",v:"100",u:"mL"},{k:"Fill wt",v:"98.4",u:"g"}], notes:"Two cups underfilled near end."},
+];
+
+function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function renderSheet() {
+  const body = document.getElementById('sh-body');
+  body.innerHTML = draft.map((s,i) => `
+    <div class="step-block" id="sb-${i}">
+      <div class="step-block-header">
+        <div class="step-block-num">${i+1}</div>
+        <input class="finput bold" style="flex:1" value="${e(s.name)}" placeholder="Step name…"
+          oninput="draft[${i}].name=this.value">
+        <div class="reorder-btns">
+          <button class="reorder-btn" onclick="moveStep(${i},-1)" ${i===0?'disabled':''} title="Move up">${CHEVUP}</button>
+          <button class="reorder-btn" onclick="moveStep(${i},1)" ${i===draft.length-1?'disabled':''} title="Move down">${CHEVDN}</button>
+        </div>
+        <button class="step-del-btn" onclick="removeStep(${i})" title="Remove step">${TRASH}</button>
+      </div>
+      <div class="step-block-inner">
+
+        <div class="field">
+          <div class="field-label">Time</div>
+          <input class="finput time" type="time" value="${e(s.ts)}"
+            oninput="draft[${i}].ts=this.value">
+        </div>
+
+        <div class="field">
+          <div class="field-label">Parameters</div>
+          <div class="param-col-hdrs">
+            <span class="pcol key">Name</span>
+            <span class="pcol val">Value</span>
+            <span class="pcol unit">Unit</span>
+          </div>
+          <div id="pb-${i}">
+            ${s.params.map((p,pi) => `
+              <div class="param-row">
+                <input class="finput key" placeholder="e.g. Temperature" value="${e(p.k)}"
+                  oninput="draft[${i}].params[${pi}].k=this.value">
+                <input class="finput val" placeholder="72" value="${e(p.v)}"
+                  oninput="draft[${i}].params[${pi}].v=this.value">
+                <input class="finput unit" placeholder="°C" value="${e(p.u)}"
+                  oninput="draft[${i}].params[${pi}].u=this.value">
+                <button class="param-del" onclick="removeParam(${i},${pi})">${X}</button>
+              </div>`).join('')}
+          </div>
+          <button class="link-btn" style="margin-top:5px" onclick="addParam(${i})">${PLUS} Add parameter</button>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Notes</div>
+          <textarea class="ftextarea" placeholder="Observations about this step…"
+            oninput="draft[${i}].notes=this.value">${e(s.notes)}</textarea>
+        </div>
+
+      </div>
+    </div>`).join('')
+    + `<button class="add-step-btn" onclick="addStep()">${PLUS} Add step</button>`;
+
+  document.getElementById('sh-step-count').textContent =
+    `${draft.length} step${draft.length !== 1 ? 's' : ''}`;
+}
+
+function openSheet() {
+  draft = JSON.parse(JSON.stringify(INITIAL));
+  renderSheet();
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function save() { closeSheet(); }
+
+function addStep() {
+  draft.push({name:'', ts:'', params:[{k:'Duration',v:'',u:'min'}], notes:''});
+  renderSheet();
+  setTimeout(() => {
+    const blocks = document.querySelectorAll('.step-block');
+    const last = blocks[blocks.length-1];
+    last?.scrollIntoView({behavior:'smooth', block:'start'});
+    last?.querySelector('.finput')?.focus();
+  }, 40);
+}
+
+function moveStep(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= draft.length) return;
+  [draft[i], draft[j]] = [draft[j], draft[i]];
+  renderSheet();
+}
+
+function removeStep(i) {
+  draft.splice(i, 1);
+  if (!draft.length) draft.push({name:'', ts:'', params:[{k:'Duration',v:'',u:'min'}], notes:''});
+  renderSheet();
+}
+
+function addParam(i) {
+  draft[i].params.push({k:'', v:'', u:''});
+  renderSheet();
+  setTimeout(() => {
+    const pb = document.getElementById('pb-'+i);
+    const rows = pb?.querySelectorAll('.param-row');
+    rows?.[rows.length-1]?.querySelector('.finput')?.focus();
+  }, 20);
+}
+
+function removeParam(i, pi) {
+  draft[i].params.splice(pi, 1);
+  renderSheet();
+}
+
+// Inner tabs (Ingredients / Cost)
+function switchItab(clicked) {
+  const bar = clicked.closest('.itabs');
+  const tabs = bar.querySelectorAll('.itab');
+  let bodies = [];
+  let next = bar.nextElementSibling;
+  while (next && next.classList.contains('ibody')) { bodies.push(next); next = next.nextElementSibling; }
+  tabs.forEach((t,i) => {
+    t.classList.toggle('on', t === clicked);
+    if (bodies[i]) bodies[i].classList.toggle('on', t === clicked);
+  });
+}
+</script>
+</body>
+</html>

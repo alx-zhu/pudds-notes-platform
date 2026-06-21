@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Process Record — Layout Options (Jun 19)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f4f0;--card:#fff;--fg:#1a1917;--muted:#f2f0ec;--muted-fg:#6b6a67;
+  --border:#e5e2dc;--radius:12px;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 1px rgba(0,0,0,0.03);
+  --orange-100:#ffedd5;--orange-700:#c2410c;
+  --violet-100:#ede9fe;--violet-600:#7c3aed;
+  --blue-100:#dbeafe;--blue-600:#2563eb;
+  --emerald-100:#d1fae5;--emerald-600:#059669;--emerald-500:#22c55e;
+  --amber-400:#fbbf24;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:#e8e5df;padding:24px;-webkit-font-smoothing:antialiased;color:var(--fg)}
+.toggle-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.toggle-btn{padding:6px 16px;font-size:12px;font-weight:500;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted-fg);cursor:pointer;font-family:inherit}
+.toggle-btn.active{background:var(--fg);color:#fff;border-color:var(--fg)}
+.layout{display:none}.layout.active{display:block}
+.app-frame{background:var(--bg);border-radius:10px;overflow:hidden;border:1px solid var(--border);max-width:900px}
+.page-header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px}
+.back-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:11px;flex-shrink:0}
+.trial-icon{width:32px;height:32px;border-radius:8px;background:var(--fg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.trial-icon i{color:#fff;font-size:14px}
+.trial-title{font-size:13px;font-weight:600;color:var(--fg)}
+.trial-sub{font-size:11px;color:var(--muted-fg)}
+.edit-btn{margin-left:auto;padding:5px 10px;font-size:11px;font-weight:500;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--muted-fg);display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer}
+.content-area{padding:16px;display:flex;flex-direction:column;gap:12px}
+.two-col{display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:start}
+.left-col,.right-col{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+.card-header-left{display:flex;align-items:center;gap:7px}
+.icon-sm{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.icon-sm i{font-size:11px}
+.icon-sm.orange{background:var(--orange-100)}.icon-sm.orange i{color:var(--orange-700)}
+.icon-sm.violet{background:var(--violet-100)}.icon-sm.violet i{color:var(--violet-600)}
+.icon-sm.blue{background:var(--blue-100)}.icon-sm.blue i{color:var(--blue-600)}
+.icon-sm.emerald{background:var(--emerald-100)}.icon-sm.emerald i{color:var(--emerald-600)}
+.card-title{font-size:12px;font-weight:600;color:var(--fg)}
+.add-btn{padding:3px 8px;font-size:10px;font-weight:500;background:var(--fg);color:#fff;border:none;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:3px;font-family:inherit}
+.badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.badge.orange{background:var(--orange-100);color:var(--orange-700)}
+.step-list{display:flex;flex-direction:column}
+.step-row{border-bottom:1px solid var(--border)}.step-row:last-child{border-bottom:none}
+.step-row-inner{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer}
+.step-row-inner:hover{background:var(--muted)}
+.step-num{width:18px;height:18px;border-radius:50%;background:var(--muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted-fg);flex-shrink:0}
+.step-title-input{flex:1;font-size:12px;font-weight:500;color:var(--fg);border:none;background:transparent;padding:0;outline:none;font-family:inherit;min-width:0}
+.chip{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--muted);border:1px solid var(--border);color:var(--muted-fg);white-space:nowrap}
+.step-ts{font-size:10px;color:var(--muted-fg);white-space:nowrap}
+.chevron{font-size:11px;color:var(--muted-fg);flex-shrink:0;transition:transform 0.15s;display:inline-block}
+.chevron.open{transform:rotate(180deg)}
+.step-body{display:none;padding:8px 14px 10px 40px;flex-direction:column;gap:7px;background:var(--muted)}
+.step-body.open{display:flex}
+.param-rows{display:flex;flex-direction:column;gap:3px}
+.param-row{display:flex;gap:5px;align-items:center}
+.pinput{height:24px;padding:0 6px;font-size:11px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);outline:none;font-family:inherit}
+.pinput.k{width:110px}.pinput.v{width:64px}.pinput.u{width:50px}
+.pdel{background:none;border:none;color:var(--muted-fg);cursor:pointer;padding:2px;border-radius:3px;font-size:12px;line-height:1}
+.pdel:hover{color:#dc2626}
+.add-param{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted-fg);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;margin-top:1px}
+.add-param:hover{color:var(--fg)}
+.notes-input{width:100%;min-height:38px;padding:5px 7px;font-size:11px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);resize:none;font-family:inherit;outline:none;line-height:1.45}
+.ts-row{display:flex;align-items:center;gap:6px}
+.ts-label{font-size:10px;color:var(--muted-fg)}
+.ts-input{height:22px;width:72px;padding:0 5px;font-size:11px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--fg);outline:none;font-family:inherit}
+.add-step-btn{width:100%;height:26px;background:none;border:1px dashed var(--border);border-radius:5px;font-size:11px;font-weight:500;color:var(--muted-fg);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-family:inherit}
+.add-step-btn:hover{background:var(--muted);border-style:solid;color:var(--fg)}
+.card-footer-add{padding:8px 14px;border-top:1px solid var(--border)}
+.pie-stub{height:80px;display:flex;align-items:center;justify-content:center;padding:12px 14px;gap:16px}
+.pie-circle{width:56px;height:56px;border-radius:50%;background:conic-gradient(#60a5fa 0% 35%,#f59e0b 35% 55%,#34d399 55% 72%,#a78bfa 72% 100%);flex-shrink:0}
+.legend{display:flex;flex-direction:column;gap:3px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted-fg)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ingredient-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;font-size:11px;border-bottom:1px solid var(--border)}.ingredient-row:last-child{border-bottom:none}
+.ingredient-row .name{color:var(--fg);font-weight:500}.ingredient-row .pct{color:var(--muted-fg)}
+.cost-row{display:flex;justify-content:space-between;padding:7px 14px;font-size:11px;border-bottom:1px solid var(--border)}.cost-row:last-child{border-bottom:none}
+.cost-row .lbl{color:var(--muted-fg)}.cost-row .val{font-weight:500}
+.timeline-section{padding:10px 14px 12px;border-bottom:1px solid var(--border)}
+.tl-label{font-size:10px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.tl-track{display:flex;align-items:flex-start}
+.tl-dot{width:13px;height:13px;border-radius:50%;border:2px solid;background:var(--card);flex-shrink:0}
+.tl-dot.done{border-color:var(--emerald-500);background:var(--emerald-500)}
+.tl-dot.partial{border-color:var(--amber-400)}
+.tl-dot.empty{border-color:#d1d5db}
+.tl-line{flex:1;height:2px;background:var(--border);align-self:flex-start;margin-top:5px}
+.tl-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.tl-item span{font-size:10px;color:var(--muted-fg)}
+.photo-scores{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px;height:140px}
+.photo-stub{background:var(--muted);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.photo-stub i{font-size:20px;color:var(--border)}
+.score-stub{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+.score-row{display:flex;flex-direction:column;gap:2px}
+.score-label{font-size:10px;color:var(--muted-fg);display:flex;justify-content:space-between}
+.score-bar-bg{height:5px;background:var(--muted);border-radius:3px;overflow:hidden}
+.score-bar{height:100%;border-radius:3px}
+.score-bar.taste{background:var(--emerald-500)}.score-bar.texture{background:#3b82f6}.score-bar.color{background:var(--amber-400)}
+.comment-row{display:flex;gap:8px;padding:8px 14px;font-size:11px;border-bottom:1px solid var(--border);align-items:flex-start}.comment-row:last-child{border-bottom:none}
+.comment-avatar{width:22px;height:22px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--blue-600);flex-shrink:0;margin-top:1px}
+.comment-text{color:var(--fg);line-height:1.4}.comment-meta{font-size:10px;color:var(--muted-fg)}
+.note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:10px 14px;font-size:11px;color:#1e40af;line-height:1.5;margin-top:12px;max-width:900px}
+.note strong{font-weight:600}
+</style>
+</head>
+<body>
+<div class="toggle-bar">
+  <button class="toggle-btn active" onclick="show('a')">Option A — Full-width top</button>
+  <button class="toggle-btn" onclick="show('b')">Option B — Right column</button>
+</div>
+
+<div class="layout active" id="layout-a">
+  <div class="app-frame">
+    <div class="page-header">
+      <div class="back-btn"><i class="ti ti-chevron-left"></i></div>
+      <div class="trial-icon"><i class="ti ti-flask"></i></div>
+      <div><div class="trial-title">Chocolate Industrial — Jun 25, 2026</div><div class="trial-sub">Trial #14 · Chocolate · Industrial</div></div>
+      <div class="edit-btn"><i class="ti ti-pencil"></i> Edit Setup</div>
+    </div>
+    <div class="content-area">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="icon-sm orange"><i class="ti ti-list-check"></i></div>
+            <span class="card-title">Process Record</span>
+            <span class="badge orange">Industrial</span>
+          </div>
+          <button class="add-btn" onclick="addStep('a')"><i class="ti ti-plus"></i> Add Step</button>
+        </div>
+        <div class="step-list" id="steps-a"></div>
+        <div class="card-footer-add"><button class="add-step-btn" onclick="addStep('a')"><i class="ti ti-plus"></i> Add step</button></div>
+      </div>
+      <div class="two-col">
+        <div class="left-col">
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm blue"><i class="ti ti-puzzle"></i></div><span class="card-title">Ingredients</span></div></div>
+            <div class="pie-stub"><div class="pie-circle"></div><div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Protein 35%</div><div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Heavy cream 20%</div><div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Inulin 17%</div></div></div>
+            <div class="ingredient-row"><span class="name">Protein isolate</span><span class="pct">35%</span></div>
+            <div class="ingredient-row"><span class="name">Heavy cream</span><span class="pct">20%</span></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm emerald"><i class="ti ti-coin"></i></div><span class="card-title">Cost</span></div></div>
+            <div class="cost-row"><span class="lbl">Per serving</span><span class="val">$0.84</span></div>
+            <div class="cost-row"><span class="lbl">Total (5 kg)</span><span class="val">$12.40</span></div>
+          </div>
+        </div>
+        <div class="right-col">
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm violet"><i class="ti ti-activity"></i></div><span class="card-title">Sensory Evaluation</span></div><button class="add-btn"><i class="ti ti-plus"></i> Add Log</button></div>
+            <div class="timeline-section"><div class="tl-label">Thermomix</div><div class="tl-track"><div class="tl-item"><div class="tl-dot done"></div><span>Immediate</span></div><div class="tl-line"></div><div class="tl-item"><div class="tl-dot partial"></div><span>24 hrs</span></div><div class="tl-line"></div><div class="tl-item"><div class="tl-dot empty"></div><span>3 days</span></div></div></div>
+            <div class="photo-scores"><div class="photo-stub"><i class="ti ti-photo"></i></div><div class="score-stub"><div class="score-row"><div class="score-label"><span>Taste</span><span>4.2</span></div><div class="score-bar-bg"><div class="score-bar taste" style="width:84%"></div></div></div><div class="score-row"><div class="score-label"><span>Texture</span><span>3.8</span></div><div class="score-bar-bg"><div class="score-bar texture" style="width:76%"></div></div></div><div class="score-row"><div class="score-label"><span>Color</span><span>4.5</span></div><div class="score-bar-bg"><div class="score-bar color" style="width:90%"></div></div></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm blue"><i class="ti ti-message-circle"></i></div><span class="card-title">Comments</span></div></div>
+            <div class="comment-row"><div class="comment-avatar">N</div><div><div class="comment-text">Texture on 3-day was grittier than expected.</div><div class="comment-meta">Nolan · 24 hrs log</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>Option A:</strong> Process is the first section — emphasizes it as the primary input during a production run. Best if steps are numerous or long. Pushes ingredients/sensory lower on the page.</div>
+</div>
+
+<div class="layout" id="layout-b">
+  <div class="app-frame">
+    <div class="page-header">
+      <div class="back-btn"><i class="ti ti-chevron-left"></i></div>
+      <div class="trial-icon"><i class="ti ti-flask"></i></div>
+      <div><div class="trial-title">Chocolate Industrial — Jun 25, 2026</div><div class="trial-sub">Trial #14 · Chocolate · Industrial</div></div>
+      <div class="edit-btn"><i class="ti ti-pencil"></i> Edit Setup</div>
+    </div>
+    <div class="content-area">
+      <div class="two-col">
+        <div class="left-col">
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm blue"><i class="ti ti-puzzle"></i></div><span class="card-title">Ingredients</span></div></div>
+            <div class="pie-stub"><div class="pie-circle"></div><div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Protein 35%</div><div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Heavy cream 20%</div><div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Inulin 17%</div></div></div>
+            <div class="ingredient-row"><span class="name">Protein isolate</span><span class="pct">35%</span></div>
+            <div class="ingredient-row"><span class="name">Heavy cream</span><span class="pct">20%</span></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm emerald"><i class="ti ti-coin"></i></div><span class="card-title">Cost</span></div></div>
+            <div class="cost-row"><span class="lbl">Per serving</span><span class="val">$0.84</span></div>
+            <div class="cost-row"><span class="lbl">Total (5 kg)</span><span class="val">$12.40</span></div>
+          </div>
+        </div>
+        <div class="right-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-left"><div class="icon-sm orange"><i class="ti ti-list-check"></i></div><span class="card-title">Process Record</span><span class="badge orange">Industrial</span></div>
+              <button class="add-btn" onclick="addStep('b')"><i class="ti ti-plus"></i> Add Step</button>
+            </div>
+            <div class="step-list" id="steps-b"></div>
+            <div class="card-footer-add"><button class="add-step-btn" onclick="addStep('b')"><i class="ti ti-plus"></i> Add step</button></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm violet"><i class="ti ti-activity"></i></div><span class="card-title">Sensory Evaluation</span></div><button class="add-btn"><i class="ti ti-plus"></i> Add Log</button></div>
+            <div class="timeline-section"><div class="tl-label">Thermomix</div><div class="tl-track"><div class="tl-item"><div class="tl-dot done"></div><span>Immediate</span></div><div class="tl-line"></div><div class="tl-item"><div class="tl-dot partial"></div><span>24 hrs</span></div><div class="tl-line"></div><div class="tl-item"><div class="tl-dot empty"></div><span>3 days</span></div></div></div>
+            <div class="photo-scores"><div class="photo-stub"><i class="ti ti-photo"></i></div><div class="score-stub"><div class="score-row"><div class="score-label"><span>Taste</span><span>4.2</span></div><div class="score-bar-bg"><div class="score-bar taste" style="width:84%"></div></div></div><div class="score-row"><div class="score-label"><span>Texture</span><span>3.8</span></div><div class="score-bar-bg"><div class="score-bar texture" style="width:76%"></div></div></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-header-left"><div class="icon-sm blue"><i class="ti ti-message-circle"></i></div><span class="card-title">Comments</span></div></div>
+            <div class="comment-row"><div class="comment-avatar">N</div><div><div class="comment-text">Texture on 3-day was grittier than expected.</div><div class="comment-meta">Nolan · 24 hrs log</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>Option B:</strong> Right column tells the full story — "what we did" (process) → "what we measured" (sensory). Left stays as static reference. Cleaner separation of concerns.</div>
+</div>
+
+<script>
+const data = {
+  a:[
+    {name:"Weigh & prep ingredients",ts:"06:45",params:[{k:"Duration",v:"15",u:"min"},{k:"Batch size",v:"5",u:"kg"}],notes:"",open:false},
+    {name:"Thermomix — heat phase",ts:"07:10",params:[{k:"Duration",v:"3",u:"min"},{k:"Speed",v:"4",u:""},{k:"Temp target",v:"60",u:"°C"},{k:"Temp actual",v:"62",u:"°C"}],notes:"Slight overshoot — watch next run.",open:true},
+    {name:"Add gums & inulin",ts:"07:16",params:[{k:"Duration",v:"2",u:"min"},{k:"pH",v:"6.8",u:""}],notes:"",open:false},
+  ],
+  b:[
+    {name:"Weigh & prep",ts:"06:45",params:[{k:"Duration",v:"15",u:"min"},{k:"Batch size",v:"5",u:"kg"}],notes:"",open:false},
+    {name:"Thermomix — heat phase",ts:"07:10",params:[{k:"Duration",v:"3",u:"min"},{k:"Speed",v:"4",u:""}],notes:"",open:false},
+  ]
+};
+
+function render(p){
+  const el=document.getElementById('steps-'+p);
+  if(!el)return;
+  el.innerHTML=data[p].map((s,i)=>`
+    <div class="step-row">
+      <div class="step-row-inner" onclick="tog('${p}',${i})">
+        <div class="step-num">${i+1}</div>
+        <input class="step-title-input" value="${s.name}" placeholder="Step name…" onclick="event.stopPropagation()" oninput="data['${p}'][${i}].name=this.value">
+        <div style="display:flex;gap:4px;flex-wrap:nowrap">${s.params.slice(0,2).map(p=>`<span class="chip">${p.k}${p.v?' '+p.v:''}${p.u?' '+p.u:''}</span>`).join('')}${s.params.length>2?`<span class="chip">+${s.params.length-2}</span>`:''}</div>
+        ${s.ts?`<span class="step-ts">${s.ts}</span>`:''}
+        <i class="ti ti-chevron-down chevron ${s.open?'open':''}"></i>
+      </div>
+      <div class="step-body ${s.open?'open':''}">
+        <div class="ts-row"><span class="ts-label">Time</span><input class="ts-input" type="time" value="${s.ts}" oninput="data['${p}'][${i}].ts=this.value"></div>
+        <div id="${p}-pr-${i}">
+          ${s.params.map((pp,pi)=>`<div class="param-row"><input class="pinput k" placeholder="Parameter" value="${pp.k}"><input class="pinput v" placeholder="Value" value="${pp.v}"><input class="pinput u" placeholder="Unit" value="${pp.u}"><button class="pdel" onclick="rmParam('${p}',${i},${pi})"><i class="ti ti-x"></i></button></div>`).join('')}
+        </div>
+        <button class="add-param" onclick="addParam('${p}',${i})"><i class="ti ti-plus"></i> Add parameter</button>
+        <textarea class="notes-input" placeholder="Notes…">${s.notes}</textarea>
+      </div>
+    </div>`).join('');
+}
+function tog(p,i){data[p][i].open=!data[p][i].open;render(p);}
+function addStep(p){data[p].push({name:'',ts:'',params:[{k:'Duration',v:'',u:'min'}],notes:'',open:true});render(p);}
+function addParam(p,i){data[p][i].params.push({k:'',v:'',u:''});render(p);setTimeout(()=>{const rows=document.querySelectorAll(`#${p}-pr-${i} .param-row`);const last=rows[rows.length-1];if(last)last.querySelector('.pinput.k').focus();},20);}
+function rmParam(p,i,pi){data[p][i].params.splice(pi,1);render(p);}
+function show(w){document.querySelectorAll('.layout').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.toggle-btn').forEach(e=>e.classList.remove('active'));document.getElementById('layout-'+w).classList.add('active');document.querySelectorAll('.toggle-btn')[w==='a'?0:1].classList.add('active');}
+render('a');render('b');
+</script>
+</body>
+</html>

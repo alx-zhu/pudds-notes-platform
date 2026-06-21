@@ -35,6 +35,21 @@ export interface AnalysisLog {
   updatedAt: string;
 }
 
+export interface ProcessParam {
+  key: string;
+  value: string;
+  unit?: string;
+}
+
+export interface ProcessStep {
+  id: string;
+  order: number;
+  name: string;
+  timestamp?: string; // HH:MM wall-clock time, e.g. "06:45"
+  params: ProcessParam[];
+  notes?: string;
+}
+
 /* ── Data model (what's in localStorage / DB row) ───────────────── */
 
 export interface TrialRecord {
@@ -43,6 +58,7 @@ export interface TrialRecord {
   name?: string;
   setup?: TrialSetup;
   analysisLogs: AnalysisLog[];
+  processSteps: ProcessStep[];
   createdAt: string;
   updatedAt: string;
 }
