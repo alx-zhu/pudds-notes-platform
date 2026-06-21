@@ -8,13 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  PROCESSING_TYPES,
-  FLAVORS,
-  SENSORY_SCORE_CATEGORIES,
-  SENSORY_CATEGORY_STYLES,
-} from "@/config/trial.config";
+import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import type { ProcessingType, Flavor } from "@/config/trial.config";
+import { SCORE_CATEGORIES, SENSORY_CATEGORY_STYLES } from "@/config/sensoryForms";
 import { EMPTY_FILTERS } from "@/types/filters";
 import type { TrialFilters, SortByScore } from "@/types/filters";
 
@@ -28,7 +24,7 @@ interface Props {
 const SORT_OPTIONS: { value: SortByScore; label: string; dot?: string }[] = [
   { value: null, label: "Trial #" },
   { value: "overall", label: "Overall", dot: "bg-foreground" },
-  ...SENSORY_SCORE_CATEGORIES.map((c) => ({
+  ...SCORE_CATEGORIES.map((c) => ({
     value: c.key as SortByScore,
     label: c.label,
     dot: SENSORY_CATEGORY_STYLES[c.key].bar,

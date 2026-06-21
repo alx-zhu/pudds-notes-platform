@@ -1,9 +1,9 @@
+import mean from "lodash.mean";
 import {
-  SENSORY_METRICS,
-  SENSORY_IDEAL_SCORES,
-  SENSORY_SCORE_CATEGORIES,
-} from "@/config/trial.config";
-import type { SensoryMetricKey, ScoreCategoryKey } from "@/config/trial.config";
+  SCORE_CATEGORIES,
+  SENSORY_METRIC_REGISTRY,
+} from "@/config/sensoryForms";
+import type { MetricKey, ScoreCategoryKey } from "@/config/sensoryForms";
 import type { PartialSensoryMetrics, SensoryEvaluation } from "@/types/trial";
 
 export interface CategoryScore {
@@ -17,101 +17,38 @@ export interface SensoryScores {
   overall: number | null;
 }
 
-/**
- * Score a single metric value against its ideal.
- * Score = 5 × (1 - distance / maxDistance)
- * where distance = |actual - ideal| and maxDistance = max(ideal, max - ideal).
- */
-export function scoreMetric(key: SensoryMetricKey, value: number): number {
-  const ideal = SENSORY_IDEAL_SCORES[key];
-  const metric = SENSORY_METRICS.find((m) => m.key === key);
-  const max = metric?.max ?? 5;
-
+function scoreMetric(value: number, ideal: number, max: number): number {
   const distance = Math.abs(value - ideal);
   const maxDistance = Math.max(ideal, max - ideal);
-
   return 5 * (1 - distance / maxDistance);
 }
 
-/**
- * Calculate the score for a category given averaged metrics.
- * Returns null if no metrics in the category have values.
- */
-export function calcCategoryScore(
-  metricKeys: SensoryMetricKey[],
-  metrics: PartialSensoryMetrics,
-): number | null {
-  const scores: number[] = [];
-
-  for (const key of metricKeys) {
-    const value = metrics[key];
-    if (value != null) {
-      scores.push(scoreMetric(key, value));
-    }
-  }
-
-  if (scores.length === 0) return null;
-  return scores.reduce((sum, s) => sum + s, 0) / scores.length;
-}
-
-/**
- * Calculate all category scores and overall from a set of metrics.
- */
-export function calcSensoryScores(metrics: PartialSensoryMetrics): SensoryScores {
-  const categories: CategoryScore[] = SENSORY_SCORE_CATEGORIES.map((cat) => ({
-    key: cat.key,
-    label: cat.label,
-    score: calcCategoryScore(cat.metricKeys, metrics),
-  }));
-
-  const validScores = categories
-    .map((c) => c.score)
-    .filter((s): s is number => s != null);
-
-  const overall =
-    validScores.length > 0
-      ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length
-      : null;
-
-  return { categories, overall };
-}
-
-/**
- * Calculate scores per evaluation, then average category scores across evals.
- * This ensures the "all" score matches the intuitive average of per-eval scores
- * even when evaluations have different subsets of metrics filled in.
- */
-export function calcScoresFromEvaluations(
-  evaluations: SensoryEvaluation[],
-): SensoryScores {
-  if (evaluations.length === 0) {
-    return calcSensoryScores({});
-  }
-
-  const perEvalScores = evaluations.map((ev) => calcSensoryScores(ev.metrics));
-
-  const categories: CategoryScore[] = SENSORY_SCORE_CATEGORIES.map((cat) => {
-    const scores = perEvalScores
-      .map((s) => s.categories.find((c) => c.key === cat.key)?.score ?? null)
-      .filter((s): s is number => s !== null);
-    return {
-      key: cat.key,
-      label: cat.label,
-      score:
-        scores.length > 0
-          ? scores.reduce((sum, s) => sum + s, 0) / scores.length
-          : null,
-    };
+function summarize(scoresFor: (key: ScoreCategoryKey) => number[]): SensoryScores {
+  const categories = SCORE_CATEGORIES.map(({ key, label }) => {
+    const xs = scoresFor(key);
+    return { key, label, score: xs.length ? mean(xs) : null };
   });
+  const valid = categories.flatMap((c) => (c.score != null ? [c.score] : []));
+  return { categories, overall: valid.length ? mean(valid) : null };
+}
 
-  const validScores = categories
-    .map((c) => c.score)
-    .filter((s): s is number => s !== null);
+function calcSensoryScores(metrics: PartialSensoryMetrics): SensoryScores {
+  const buckets: Partial<Record<ScoreCategoryKey, number[]>> = {};
+  for (const key of Object.keys(metrics) as MetricKey[]) {
+    const value = metrics[key];
+    if (value == null) continue;
+    const def = SENSORY_METRIC_REGISTRY[key];
+    (buckets[def.category] ??= []).push(scoreMetric(value, def.ideal, def.max));
+  }
+  return summarize((key) => buckets[key] ?? []);
+}
 
-  const overall =
-    validScores.length > 0
-      ? validScores.reduce((sum, s) => sum + s, 0) / validScores.length
-      : null;
-
-  return { categories, overall };
+export function calcScoresFromEvaluations(evaluations: SensoryEvaluation[]): SensoryScores {
+  const per = evaluations.map((e) => calcSensoryScores(e.metrics));
+  return summarize((key) =>
+    per.flatMap((s) => {
+      const score = s.categories.find((c) => c.key === key)?.score;
+      return score != null ? [score] : [];
+    }),
+  );
 }

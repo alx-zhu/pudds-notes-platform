@@ -12,6 +12,7 @@ import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialS
 import { useTrial } from "@/hooks/useTrials";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
+import { getForm } from "@/config/sensoryForms";
 import type { SensoryEvaluation, SensoryFormState } from "@/types/trial";
 
 export const TrialView = () => {
@@ -152,6 +153,7 @@ export const TrialView = () => {
 
       {sensoryFormState && (
         <SensoryForm
+          form={getForm(trial.setup?.processingType)}
           key={`${sensoryFormState.logId}-${sensoryFormState.evaluation?.id ?? "new"}`}
           open={true}
           onOpenChange={(open) => {

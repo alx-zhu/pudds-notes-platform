@@ -12,7 +12,9 @@ import {
 } from "recharts";
 import { useSensoryComparison } from "@/hooks/useTrials";
 import type { SensoryComparisonParams } from "@/hooks/useTrials";
-import { SENSORY_METRICS, EVAL_COLORS, SENSORY_CHART_COLORS } from "@/config/trial.config";
+import { SENSORY_METRIC_REGISTRY } from "@/config/sensoryForms";
+import type { MetricKey } from "@/config/sensoryForms";
+import { EVAL_COLORS, SENSORY_CHART_COLORS } from "@/config/trial.config";
 import type { PartialSensoryMetrics } from "@/types/trial";
 
 interface TooltipPayload {
@@ -58,6 +60,7 @@ const ChartTooltip = ({
 };
 
 interface Props {
+  form: readonly MetricKey[];
   comparison: SensoryComparisonParams;
   logMetrics: PartialSensoryMetrics;
   metricLabel?: string;
@@ -67,6 +70,7 @@ interface Props {
 }
 
 export const SensoryChart = ({
+  form,
   comparison,
   logMetrics,
   metricLabel = "This Log",
@@ -78,12 +82,15 @@ export const SensoryChart = ({
 
   const chartData = useMemo(() => {
     if (!hasData) return [];
-    return SENSORY_METRICS.map((metric) => ({
-      name: metric.shortLabel,
-      current: logMetrics[metric.key] ?? 0,
-      average: averages[metric.key],
-    }));
-  }, [hasData, logMetrics, averages]);
+    return form.map((key) => {
+      const metric = SENSORY_METRIC_REGISTRY[key];
+      return {
+        name: metric.shortLabel,
+        current: logMetrics[key] ?? 0,
+        average: averages[key] ?? 0,
+      };
+    });
+  }, [hasData, logMetrics, averages, form]);
 
   if (!hasData) {
     return (

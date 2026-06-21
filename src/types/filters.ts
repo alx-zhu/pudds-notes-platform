@@ -1,8 +1,5 @@
-import type {
-  ProcessingType,
-  Flavor,
-  ScoreCategoryKey,
-} from "@/config/trial.config";
+import type { ProcessingType, Flavor } from "@/config/trial.config";
+import type { ScoreCategoryKey } from "@/config/sensoryForms";
 
 export interface TrialFilters {
   processingType: ProcessingType | null;

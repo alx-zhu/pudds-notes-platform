@@ -7,31 +7,23 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import type { SensoryMetric } from "@/config/trial.config";
-
-interface ScoreOption {
-  readonly score: number;
-  readonly label: string;
-}
+import type { SensoryMetricConfig } from "@/config/sensoryForms";
 
 interface Props {
   index: number;
-  metric: SensoryMetric;
-  options: readonly ScoreOption[];
+  metric: SensoryMetricConfig;
   value: number | undefined;
   comment: string | undefined;
   onRate: (value: number) => void;
   onCommentChange: (comment: string) => void;
 }
 
-// Extract the parenthetical reference text from a label like "Not sweet at all (Unsweetened plain Greek yogurt)"
 const extractReference = (label: string): string | null =>
   label.match(/\((.+)\)/)?.[1] ?? null;
 
 export const SensoryQuestionCard = ({
   index,
   metric,
-  options,
   value,
   comment,
   onRate,
@@ -41,7 +33,7 @@ export const SensoryQuestionCard = ({
   const [commentOpen, setCommentOpen] = useState(() => Boolean(comment?.trim()));
   const isAnswered = value != null && value >= 1;
 
-  const references = options
+  const references = metric.scoreLabels
     .map((opt) => ({ score: opt.score, ref: extractReference(opt.label) }))
     .filter((r): r is { score: number; ref: string } => r.ref !== null);
 
@@ -79,7 +71,7 @@ export const SensoryQuestionCard = ({
 
         {/* Rating buttons */}
         <div className="flex gap-2">
-          {options.map((opt) => {
+          {metric.scoreLabels.map((opt) => {
             const mainLabel = opt.label.split("(")[0].trim();
             const isSelected = value === opt.score;
             return (
@@ -115,7 +107,7 @@ export const SensoryQuestionCard = ({
           })}
         </div>
 
-        {/* References — only shown for metrics with physical reference standards */}
+        {/* References */}
         {hasReferences && (
           <Collapsible open={refOpen} onOpenChange={setRefOpen}>
             <CollapsibleTrigger asChild>

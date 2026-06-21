@@ -147,6 +147,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                 groups={thermalGroups}
                 activeLogId={activeLog?.id ?? null}
                 onSelect={setSelectedLogId}
+                processingType={trial?.setup?.processingType}
               />
             </div>
 

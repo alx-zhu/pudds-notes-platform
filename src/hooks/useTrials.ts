@@ -2,12 +2,9 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TrialSetup, ProcessStep } from "@/types/trial";
 import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
-import type {
-  ProcessingType,
-  Flavor,
-  SensoryMetricKey,
-} from "@/config/trial.config";
-import { SENSORY_METRICS } from "@/config/trial.config";
+import type { ProcessingType, Flavor } from "@/config/trial.config";
+import { SENSORY_METRIC_REGISTRY } from "@/config/sensoryForms";
+import type { MetricKey } from "@/config/sensoryForms";
 import { averageEvaluationMetrics } from "@/lib/analysisLog";
 import * as api from "@/api/trials";
 
@@ -256,7 +253,7 @@ export interface SensoryComparisonParams {
 
 export interface SensoryComparisonResult {
   /** Averaged metric values from matching logs (0 when no data) */
-  averages: Record<SensoryMetricKey, number>;
+  averages: Record<MetricKey, number>;
   /** How many matching logs contributed to the averages */
   logCount: number;
 }
@@ -281,15 +278,14 @@ export const useSensoryComparison = (
           log.storageTimeMinutes === params.storageTimeMinutes,
       );
 
-    const averages = {} as Record<SensoryMetricKey, number>;
-    for (const metric of SENSORY_METRICS) {
+    const averages = {} as Record<MetricKey, number>;
+    for (const key of Object.keys(SENSORY_METRIC_REGISTRY) as MetricKey[]) {
       const vals = matchingLogs
-        .map((log) => averageEvaluationMetrics(log.evaluations)[metric.key])
+        .map((log) => averageEvaluationMetrics(log.evaluations)[key])
         .filter((v): v is number => v != null && v >= 1);
-      averages[metric.key] =
+      averages[key] =
         vals.length > 0
-          ? Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) /
-            10
+          ? Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10
           : 0;
     }
 

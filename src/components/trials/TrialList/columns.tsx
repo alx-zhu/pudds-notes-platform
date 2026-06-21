@@ -3,11 +3,8 @@ import { format, parseISO } from "date-fns";
 import { Trash2 } from "lucide-react";
 import type { Trial } from "@/types/trial";
 import type { SortByScore } from "@/types/filters";
-import {
-  FLAVORS,
-  PROCESSING_TYPES,
-  SENSORY_CATEGORY_STYLES,
-} from "@/config/trial.config";
+import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
+import { SENSORY_CATEGORY_STYLES } from "@/config/sensoryForms";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

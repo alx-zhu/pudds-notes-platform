@@ -13,6 +13,7 @@ import { SummaryChart } from "./SummaryChart";
 import { SensoryNavBar } from "./SensoryNavBar";
 import { SensoryChart } from "./SensoryChart";
 import { EVAL_COLORS } from "@/config/trial.config";
+import { getForm } from "@/config/sensoryForms";
 import {
   getLogLabel,
   averageEvaluationMetrics,
@@ -52,6 +53,8 @@ export const SensoryScores = ({
   const [selectedEvalView, setSelectedEvalView] = useState<EvalView>("all");
   const [scoreView, setScoreView] = useState<ScoreView>("summary");
   const isReadOnly = useReadOnly();
+
+  const form = getForm(trial.setup?.processingType);
 
   const evaluations = useMemo(() => activeLog.evaluations ?? [], [activeLog]);
   const hasData = hasEvaluationData(evaluations);
@@ -166,6 +169,7 @@ export const SensoryScores = ({
           <div className="relative flex-1 min-h-0">
             {evalActions}
             <SensoryChart
+              form={form}
               comparison={{
                 excludeTrialId: trialId,
                 processingType: trial?.setup?.processingType,

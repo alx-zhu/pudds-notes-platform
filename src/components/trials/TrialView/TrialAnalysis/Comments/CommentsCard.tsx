@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useTrial, useUpdateEvaluation } from "@/hooks/useTrials";
 import {
-  SENSORY_METRICS,
-  SENSORY_METRIC_GROUPS,
-  EVAL_COLORS,
-} from "@/config/trial.config";
-import type { SensoryMetricKey } from "@/config/trial.config";
+  SCORE_CATEGORIES,
+  SENSORY_METRIC_REGISTRY,
+} from "@/config/sensoryForms";
+import type { MetricKey, ScoreCategoryKey } from "@/config/sensoryForms";
+import { EVAL_COLORS } from "@/config/trial.config";
 import type {
   SensoryEvaluation,
   PartialSensoryComments,
@@ -18,10 +18,10 @@ import type {
 import { getLogLabel } from "@/lib/analysisLog";
 import { formatStorageTime } from "@/lib/storageTime";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  "Taste & Flavor": "#10b981",
-  Texture: "#3b82f6",
-  Appearance: "#f59e0b",
+const CATEGORY_HEX: Record<ScoreCategoryKey, string> = {
+  taste: "#10b981",
+  texture: "#3b82f6",
+  color: "#f59e0b",
 };
 
 function getInitials(label: string): string {
@@ -32,13 +32,13 @@ function getInitials(label: string): string {
 
 interface CommentEntry {
   logId: string;
-  logLabel: string; // for SensoryForm title only
+  logLabel: string;
   thermalProcessingType: string;
   storageTimeMinutes: number;
   evalId: string;
   evalLabel: string;
   evalColor: string;
-  metricKey: SensoryMetricKey;
+  metricKey: MetricKey;
   metricLabel: string;
   comment: string;
   existingComments: PartialSensoryComments;
@@ -77,34 +77,38 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
         const color = EVAL_COLORS[evIndex % EVAL_COLORS.length] ?? EVAL_COLORS[0];
         return Object.entries(ev.comments)
           .filter(([, value]) => value?.trim())
-          .map(([key, value]) => ({
-            logId: log.id,
-            logLabel: getLogLabel(log),
-            thermalProcessingType: log.thermalProcessingType,
-            storageTimeMinutes: log.storageTimeMinutes,
-            evalId: ev.id,
-            evalLabel: ev.label,
-            evalColor: color,
-            metricKey: key as SensoryMetricKey,
-            metricLabel: SENSORY_METRICS.find((m) => m.key === key)?.label ?? key,
-            comment: value!,
-            existingComments: ev.comments ?? {},
-            evaluation: ev,
-          }));
+          .map(([key, value]) => {
+            const metricKey = key as MetricKey;
+            const metricDef = SENSORY_METRIC_REGISTRY[metricKey];
+            return {
+              logId: log.id,
+              logLabel: getLogLabel(log),
+              thermalProcessingType: log.thermalProcessingType,
+              storageTimeMinutes: log.storageTimeMinutes,
+              evalId: ev.id,
+              evalLabel: ev.label,
+              evalColor: color,
+              metricKey,
+              metricLabel: metricDef?.label ?? key,
+              comment: value!,
+              existingComments: ev.comments ?? {},
+              evaluation: ev,
+            };
+          });
       }),
     );
 
-    const groups: CategoryGroup[] = SENSORY_METRIC_GROUPS.map((group) => {
-      const groupComments = allComments.filter((c) =>
-        group.keys.includes(c.metricKey),
+    const groups: CategoryGroup[] = SCORE_CATEGORIES.map((cat) => {
+      const groupComments = allComments.filter(
+        (c) => SENSORY_METRIC_REGISTRY[c.metricKey]?.category === cat.key,
       );
       const threadMap = new Map<string, CommentEntry[]>();
       for (const c of groupComments) {
         threadMap.set(c.metricKey, [...(threadMap.get(c.metricKey) ?? []), c]);
       }
       return {
-        label: group.label,
-        color: CATEGORY_COLORS[group.label] ?? "#8c8c96",
+        label: cat.formGroupLabel,
+        color: CATEGORY_HEX[cat.key],
         threads: [...threadMap.entries()].map(([, comments]) => ({
           metricLabel: comments[0].metricLabel,
           comments,

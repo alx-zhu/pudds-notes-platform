@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { SENSORY_METRICS } from "@/config/trial.config";
-import type { SensoryMetricKey } from "@/config/trial.config";
+import { SENSORY_METRIC_REGISTRY } from "@/config/sensoryForms";
+import type { MetricKey } from "@/config/sensoryForms";
 import type { AnalysisLog } from "@/types/trial";
 import { averageEvaluationMetrics } from "@/lib/analysisLog";
 
 interface CardSensoryInfoProps {
   matchingLogs: AnalysisLog[];
-  activeMetricKeys: SensoryMetricKey[];
+  activeMetricKeys: MetricKey[];
 }
 
 export const CardSensoryInfo = ({
@@ -14,7 +14,7 @@ export const CardSensoryInfo = ({
   activeMetricKeys,
 }: CardSensoryInfoProps) => {
   const averages = useMemo(() => {
-    const result: Partial<Record<SensoryMetricKey, number>> = {};
+    const result: Partial<Record<MetricKey, number>> = {};
     for (const key of activeMetricKeys) {
       const values = matchingLogs
         .map((log) => averageEvaluationMetrics(log.evaluations)[key])
@@ -37,7 +37,7 @@ export const CardSensoryInfo = ({
   return (
     <div className="h-full flex flex-col justify-start gap-1 overflow-y-auto py-0.5">
       {activeMetricKeys.map((key) => {
-        const metric = SENSORY_METRICS.find((m) => m.key === key);
+        const metric = SENSORY_METRIC_REGISTRY[key];
         if (!metric) return null;
         const value = averages[key];
 

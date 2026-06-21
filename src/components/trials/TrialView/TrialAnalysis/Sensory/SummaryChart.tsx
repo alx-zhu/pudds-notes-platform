@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { calcScoresFromEvaluations } from "@/lib/sensoryScores";
-import { SENSORY_MAX_SCORE, SENSORY_CATEGORY_STYLES } from "@/config/trial.config";
+import { SENSORY_MAX_SCORE } from "@/config/trial.config";
+import { SENSORY_CATEGORY_STYLES } from "@/config/sensoryForms";
 import type { SensoryEvaluation } from "@/types/trial";
 import { cn } from "@/lib/utils";
 

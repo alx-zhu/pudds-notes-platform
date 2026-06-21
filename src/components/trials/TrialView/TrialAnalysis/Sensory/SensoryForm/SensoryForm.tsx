@@ -11,13 +11,8 @@ import {
 } from "@/components/ui/sheet";
 import { SensoryQuestionCard } from "./SensoryQuestionCard";
 import { useAddEvaluation, useUpdateEvaluation } from "@/hooks/useTrials";
-import {
-  SENSORY_METRICS,
-  SENSORY_METRIC_GROUPS,
-  SENSORY_METRIC_INDEX,
-  SENSORY_SCORE_OPTIONS,
-} from "@/config/trial.config";
-import type { SensoryMetricKey } from "@/config/trial.config";
+import { SENSORY_METRIC_REGISTRY, formSections } from "@/config/sensoryForms";
+import type { MetricKey } from "@/config/sensoryForms";
 import type {
   SensoryEvaluation,
   PartialSensoryMetrics,
@@ -26,6 +21,7 @@ import type {
 import { cn } from "@/lib/utils";
 
 interface Props {
+  form: readonly MetricKey[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trialId: string;
@@ -36,6 +32,7 @@ interface Props {
 }
 
 export const SensoryForm = ({
+  form,
   open,
   onOpenChange,
   trialId,
@@ -62,14 +59,11 @@ export const SensoryForm = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
 
-  const ratedCount = SENSORY_METRICS.filter(
-    (m) => (metrics[m.key] ?? 0) >= 1,
-  ).length;
-
+  const sections = formSections(form);
+  const ratedCount = form.filter((key) => (metrics[key] ?? 0) >= 1).length;
   const canSave = label.trim().length > 0;
-  const progressPercent = (ratedCount / SENSORY_METRICS.length) * 100;
+  const progressPercent = (ratedCount / form.length) * 100;
 
-  // Scroll-spy: lock during programmatic scroll, unlock after scroll settles (150ms)
   const scrollLocked = useRef(false);
   const settleTimer = useRef<number>(0);
 
@@ -90,11 +84,10 @@ export const SensoryForm = ({
         container.scrollTop + container.clientHeight >=
         container.scrollHeight - 2;
       if (isAtBottom) {
-        setActiveIndex(SENSORY_METRICS.length - 1);
+        setActiveIndex(form.length - 1);
         return;
       }
 
-      // Highlight the last card whose top edge has passed 80px from container top
       const containerTop = container.getBoundingClientRect().top;
       let active = 0;
       cardRefs.current.forEach((el, idx) => {
@@ -108,7 +101,7 @@ export const SensoryForm = ({
       container.removeEventListener("scroll", handleScroll);
       clearTimeout(settleTimer.current);
     };
-  }, []);
+  }, [form.length]);
 
   const registerCard = (index: number) => (el: HTMLElement | null) => {
     if (el) cardRefs.current.set(index, el);
@@ -124,7 +117,7 @@ export const SensoryForm = ({
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const setRating = (key: SensoryMetricKey, value: number) => {
+  const setRating = (key: MetricKey, value: number) => {
     setMetrics((prev) => ({ ...prev, [key]: value > 0 ? value : undefined }));
   };
 
@@ -202,7 +195,7 @@ export const SensoryForm = ({
                   Progress
                 </span>
                 <span className="text-[11px] font-semibold text-foreground tabular-nums">
-                  {ratedCount} / {SENSORY_METRICS.length}
+                  {ratedCount} / {form.length}
                 </span>
               </div>
               <div className="h-1 bg-muted rounded-full overflow-hidden">
@@ -215,22 +208,22 @@ export const SensoryForm = ({
 
             {/* Nav groups */}
             <nav className="flex-1 py-2">
-              {SENSORY_METRIC_GROUPS.map((group) => (
-                <div key={group.label} className="mb-1">
+              {sections.map((section) => (
+                <div key={section.label} className="mb-1">
                   <div className="px-5 pt-3 pb-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground/70">
-                    {group.label}
+                    {section.label}
                   </div>
-                  {group.keys.map((key) => {
-                    const globalIndex = SENSORY_METRIC_INDEX.get(key)!;
-                    const metric = SENSORY_METRICS[globalIndex];
+                  {section.keys.map((key) => {
+                    const formIndex = form.indexOf(key);
+                    const metric = SENSORY_METRIC_REGISTRY[key];
                     const isRated = (metrics[key] ?? 0) >= 1;
-                    const isActive = activeIndex === globalIndex;
+                    const isActive = activeIndex === formIndex;
 
                     return (
                       <button
                         key={key}
                         type="button"
-                        onClick={() => scrollToCard(globalIndex)}
+                        onClick={() => scrollToCard(formIndex)}
                         className={cn(
                           "w-full flex items-center gap-2.5 px-5 py-2 text-left transition-colors",
                           isActive
@@ -248,7 +241,7 @@ export const SensoryForm = ({
                                 : "border border-border text-muted-foreground",
                           )}
                         >
-                          {isRated ? <Check size={9} /> : globalIndex + 1}
+                          {isRated ? <Check size={9} /> : formIndex + 1}
                         </span>
                         <span className="text-xs font-medium truncate">
                           {metric.label}
@@ -263,56 +256,50 @@ export const SensoryForm = ({
 
           {/* Main content */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto bg-muted/30">
-            {SENSORY_METRIC_GROUPS.map((group) => {
-              const groupItems = group.keys.map((key) => {
-                const globalIndex = SENSORY_METRIC_INDEX.get(key)!;
-                return {
-                  metric: SENSORY_METRICS[globalIndex],
-                  globalIndex,
-                  options: SENSORY_SCORE_OPTIONS[key],
-                };
-              });
-
-              const answeredInGroup = groupItems.filter(
-                ({ metric }) => (metrics[metric.key] ?? 0) >= 1,
+            {sections.map((section) => {
+              const answeredInSection = section.keys.filter(
+                (key) => (metrics[key] ?? 0) >= 1,
               ).length;
 
               return (
-                <section key={group.label} className="px-10 pt-9 last:pb-10">
+                <section key={section.label} className="px-10 pt-9 last:pb-10">
                   <div className="flex items-center gap-3 mb-5">
                     <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-foreground whitespace-nowrap">
-                      {group.label}
+                      {section.label}
                     </span>
                     <div className="flex-1 h-px bg-border" />
                     <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap tabular-nums">
-                      {answeredInGroup} / {groupItems.length}
+                      {answeredInSection} / {section.keys.length}
                     </span>
                   </div>
 
                   <div className="flex flex-col gap-3 mb-10">
-                    {groupItems.map(({ metric, globalIndex, options }) => (
-                      <div
-                        key={metric.key}
-                        id={`q-${globalIndex}`}
-                        ref={registerCard(globalIndex)}
-                        className="scroll-mt-6"
-                      >
-                        <SensoryQuestionCard
-                          index={globalIndex}
-                          metric={metric}
-                          options={options}
-                          value={metrics[metric.key]}
-                          comment={comments[metric.key]}
-                          onRate={(v) => setRating(metric.key, v)}
-                          onCommentChange={(c) =>
-                            setComments((prev) => ({
-                              ...prev,
-                              [metric.key]: c || undefined,
-                            }))
-                          }
-                        />
-                      </div>
-                    ))}
+                    {section.keys.map((key) => {
+                      const formIndex = form.indexOf(key);
+                      const metric = SENSORY_METRIC_REGISTRY[key];
+                      return (
+                        <div
+                          key={key}
+                          id={`q-${formIndex}`}
+                          ref={registerCard(formIndex)}
+                          className="scroll-mt-6"
+                        >
+                          <SensoryQuestionCard
+                            index={formIndex}
+                            metric={metric}
+                            value={metrics[key]}
+                            comment={comments[key]}
+                            onRate={(v) => setRating(key, v)}
+                            onCommentChange={(c) =>
+                              setComments((prev) => ({
+                                ...prev,
+                                [key]: c || undefined,
+                              }))
+                            }
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </section>
               );

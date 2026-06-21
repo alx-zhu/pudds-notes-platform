@@ -19,11 +19,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  FLAVORS,
-  SENSORY_CATEGORY_STYLES,
-  SENSORY_MAX_SCORE,
-} from "@/config/trial.config";
+import { FLAVORS, SENSORY_MAX_SCORE } from "@/config/trial.config";
+import { SENSORY_CATEGORY_STYLES } from "@/config/sensoryForms";
 import {
   getPinnedFormulation,
   getMostRecentEval,

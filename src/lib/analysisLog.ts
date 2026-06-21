@@ -1,5 +1,6 @@
+import mean from "lodash.mean";
 import { formatStorageTime } from "./storageTime";
-import { SENSORY_METRICS } from "@/config/trial.config";
+import type { MetricKey } from "@/config/sensoryForms";
 import type { AnalysisLog, SensoryEvaluation, PartialSensoryMetrics } from "@/types/trial";
 
 export const getLogLabel = (log: AnalysisLog): string => {
@@ -7,10 +8,6 @@ export const getLogLabel = (log: AnalysisLog): string => {
   return `${log.thermalProcessingType} · ${storage}`;
 };
 
-/**
- * Sort logs by thermal processing type (alphabetical) then by storage time
- * (descending — longest time first).
- */
 export const sortLogs = (logs: AnalysisLog[]): AnalysisLog[] =>
   [...logs].sort((a, b) => {
     const typeCmp = a.thermalProcessingType.localeCompare(b.thermalProcessingType);
@@ -18,28 +15,23 @@ export const sortLogs = (logs: AnalysisLog[]): AnalysisLog[] =>
     return b.storageTimeMinutes - a.storageTimeMinutes;
   });
 
-/**
- * Average each sensory metric across all evaluations in a log.
- * Skips null/undefined values per metric — only averages what exists.
- */
 export const averageEvaluationMetrics = (
   evaluations: SensoryEvaluation[],
 ): PartialSensoryMetrics => {
   if (evaluations.length === 0) return {};
+  const keys = new Set(evaluations.flatMap((e) => Object.keys(e.metrics) as MetricKey[]));
   const result: PartialSensoryMetrics = {};
-  for (const metric of SENSORY_METRICS) {
+  for (const key of keys) {
     const vals = evaluations
-      .map((e) => e.metrics[metric.key])
+      .map((e) => e.metrics[key])
       .filter((v): v is number => v != null);
     if (vals.length > 0) {
-      result[metric.key] =
-        Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
+      result[key] = Math.round(mean(vals) * 10) / 10;
     }
   }
   return result;
 };
 
-/** True if any evaluation has at least one rated metric. */
 export const hasEvaluationData = (evaluations: SensoryEvaluation[]): boolean =>
   evaluations.some((e) =>
     Object.values(e.metrics).some((v) => v != null && v >= 1),

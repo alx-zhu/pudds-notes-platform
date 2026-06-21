@@ -1,8 +1,5 @@
-import type {
-  SensoryMetricKey,
-  ProcessingType,
-  Flavor,
-} from "@/config/trial.config";
+import type { MetricKey } from "@/config/sensoryForms";
+import type { ProcessingType, Flavor } from "@/config/trial.config";
 import type { TrialIngredient } from "@/types/ingredient";
 
 export interface TrialSetup {
@@ -13,8 +10,8 @@ export interface TrialSetup {
 
 export type EvalView = "all" | string;
 
-export type PartialSensoryMetrics = Partial<Record<SensoryMetricKey, number>>;
-export type PartialSensoryComments = Partial<Record<SensoryMetricKey, string>>;
+export type PartialSensoryMetrics = Partial<Record<MetricKey, number>>;
+export type PartialSensoryComments = Partial<Record<MetricKey, string>>;
 
 export interface SensoryEvaluation {
   id: string;
