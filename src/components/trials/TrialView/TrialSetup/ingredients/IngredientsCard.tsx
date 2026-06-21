@@ -8,18 +8,16 @@ import {
   ChevronUp,
   DollarSign,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { IngredientsModal } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsModal";
 import { useTrial } from "@/hooks/useTrials";
 import { INGREDIENT_CHART_COLORS } from "@/config/trial.config";
@@ -41,29 +39,6 @@ const BAR_COLORS = [
   "#f97316",
   "#06b6d4",
 ];
-
-interface TooltipPayloadItem {
-  name: string;
-  value: number;
-}
-
-interface BarTooltipProps {
-  active?: boolean;
-  payload?: TooltipPayloadItem[];
-  activeBarName?: string | null;
-}
-
-const CustomTooltip = ({ active, payload, activeBarName }: BarTooltipProps) => {
-  if (!active || !payload?.length || !activeBarName) return null;
-  const item = payload.find((p) => p.name === activeBarName);
-  if (!item) return null;
-  return (
-    <div className="bg-popover border border-border rounded-md px-2.5 py-1.5 text-xs shadow-md">
-      <span className="font-medium">{item.name}</span>
-      <span className="text-muted-foreground ml-1.5">{item.value}%</span>
-    </div>
-  );
-};
 
 interface Props {
   trialId: string;
@@ -140,7 +115,6 @@ export const IngredientsCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const isReadOnly = useReadOnly();
 
   const setup = trial?.setup;
@@ -187,18 +161,6 @@ export const IngredientsCard = ({ trialId }: Props) => {
     ? sortedForLegend
     : sortedForLegend.slice(0, MAX_VISIBLE);
   const hasMore = sortedForLegend.length > MAX_VISIBLE;
-
-  // Single-row dataset for stacked horizontal bar
-  const barData = useMemo(() => {
-    const obj: Record<string, number> = {};
-    chartSorted.forEach((ti) => {
-      obj[ti.ingredient.name] = ti.percentage;
-    });
-    if (hasRemainder) obj["Undefined"] = remainder;
-    return [obj];
-  }, [chartSorted, hasRemainder, remainder]);
-
-  const totalBars = chartSorted.length + (hasRemainder ? 1 : 0);
 
   return (
     <>
@@ -253,55 +215,47 @@ export const IngredientsCard = ({ trialId }: Props) => {
             <CardContent className="p-0">
               {ingredients.length > 0 ? (
                 <>
-                  {/* Stacked horizontal bar */}
+                  {/* Stacked percentage bar — pure CSS flex, one TooltipTrigger per segment */}
                   <div className="px-5 pt-3">
-                    <ResponsiveContainer width="100%" height={20}>
-                      <BarChart
-                        layout="vertical"
-                        data={barData}
-                        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-                      >
-                        <XAxis type="number" hide />
-                        <YAxis type="category" hide />
-                        <Tooltip
-                          content={(props) => (
-                            <CustomTooltip {...props} activeBarName={hoveredBar} />
-                          )}
-                          cursor={false}
-                        />
-                        {chartSorted.map((ti, i) => (
-                          <Bar
-                            key={ti.ingredient.id}
-                            dataKey={ti.ingredient.name}
-                            name={ti.ingredient.name}
-                            stackId="a"
-                            fill={INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length]}
-                            radius={
-                              totalBars === 1
-                                ? [4, 4, 4, 4]
-                                : i === 0
-                                  ? [4, 0, 0, 4]
-                                  : !hasRemainder && i === chartSorted.length - 1
-                                    ? [0, 4, 4, 0]
-                                    : [0, 0, 0, 0]
-                            }
-                            onMouseEnter={() => setHoveredBar(ti.ingredient.name)}
-                            onMouseLeave={() => setHoveredBar(null)}
-                          />
-                        ))}
+                    <TooltipProvider>
+                      <div className="flex h-5 w-full overflow-hidden rounded gap-px">
+                        {chartSorted.map((ti, i) => {
+                          const color = INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length];
+                          return (
+                            <Tooltip key={ti.ingredient.id}>
+                              <TooltipTrigger asChild>
+                                <div
+                                  className="h-full cursor-default"
+                                  style={{ flex: ti.percentage, backgroundColor: color }}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" sideOffset={4}>
+                                <span className="font-medium">{ti.ingredient.name}</span>
+                                <span className="opacity-70 ml-1.5">
+                                  {parseFloat(ti.percentage.toFixed(3))}%
+                                </span>
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })}
                         {hasRemainder && (
-                          <Bar
-                            dataKey="Undefined"
-                            name="Undefined"
-                            stackId="a"
-                            fill={UNDEFINED_COLOR}
-                            radius={[0, 4, 4, 0]}
-                            onMouseEnter={() => setHoveredBar("Undefined")}
-                            onMouseLeave={() => setHoveredBar(null)}
-                          />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="h-full cursor-default"
+                                style={{ flex: remainder, backgroundColor: UNDEFINED_COLOR }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" sideOffset={4}>
+                              <span className="font-medium">Undefined</span>
+                              <span className="opacity-70 ml-1.5">
+                                {parseFloat(remainder.toFixed(3))}%
+                              </span>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
-                      </BarChart>
-                    </ResponsiveContainer>
+                      </div>
+                    </TooltipProvider>
                   </div>
 
                   {/* Custom legend: pinned first, capped at MAX_VISIBLE */}
