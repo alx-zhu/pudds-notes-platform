@@ -3,29 +3,28 @@ import {
   Pencil,
   Plus,
   Layers,
-  Pin,
   ChevronDown,
   ChevronUp,
   DollarSign,
 } from "lucide-react";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { IngredientsModal } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsModal";
+import { IngredientsModal } from "../IngredientsModal";
+import { IngredientBar } from "./IngredientBar";
+import { IngredientLegend } from "./IngredientLegend";
 import { useTrial } from "@/hooks/useTrials";
 import { INGREDIENT_CHART_COLORS } from "@/config/trial.config";
 import { calcTrialCost } from "@/lib/trialDisplay";
 import type { TrialIngredient } from "@/types/ingredient";
 
 const MAX_VISIBLE = 5;
-const UNDEFINED_COLOR = "#e5e7eb";
 
 const BAR_COLORS = [
   "#6366f1",
@@ -80,7 +79,8 @@ function CostTabContent({ ingredients }: { ingredients: TrialIngredient[] }) {
                   <div
                     className="h-full rounded-full"
                     style={{
-                      width: maxCost > 0 ? `${(item.cost / maxCost) * 100}%` : "0%",
+                      width:
+                        maxCost > 0 ? `${(item.cost / maxCost) * 100}%` : "0%",
                       backgroundColor: BAR_COLORS[i % BAR_COLORS.length],
                     }}
                   />
@@ -118,7 +118,10 @@ export const IngredientsCard = ({ trialId }: Props) => {
   const isReadOnly = useReadOnly();
 
   const setup = trial?.setup;
-  const ingredients = trial?.ingredients ?? [];
+  const ingredients = useMemo(
+    () => trial?.ingredients ?? [],
+    [trial?.ingredients],
+  );
 
   // Pinned items first, then by percentage descending — matches chart sort
   const sortedForLegend = useMemo(() => {
@@ -215,80 +218,18 @@ export const IngredientsCard = ({ trialId }: Props) => {
             <CardContent className="p-0">
               {ingredients.length > 0 ? (
                 <>
-                  {/* Stacked percentage bar — pure CSS flex, one TooltipTrigger per segment */}
-                  <div className="px-5 pt-3">
-                    <TooltipProvider>
-                      <div className="flex h-5 w-full overflow-hidden rounded gap-px">
-                        {chartSorted.map((ti, i) => {
-                          const color = INGREDIENT_CHART_COLORS[i % INGREDIENT_CHART_COLORS.length];
-                          return (
-                            <Tooltip key={ti.ingredient.id}>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className="h-full cursor-default"
-                                  style={{ flex: ti.percentage, backgroundColor: color }}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" sideOffset={4}>
-                                <span className="font-medium">{ti.ingredient.name}</span>
-                                <span className="opacity-70 ml-1.5">
-                                  {parseFloat(ti.percentage.toFixed(3))}%
-                                </span>
-                              </TooltipContent>
-                            </Tooltip>
-                          );
-                        })}
-                        {hasRemainder && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div
-                                className="h-full cursor-default"
-                                style={{ flex: remainder, backgroundColor: UNDEFINED_COLOR }}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" sideOffset={4}>
-                              <span className="font-medium">Undefined</span>
-                              <span className="opacity-70 ml-1.5">
-                                {parseFloat(remainder.toFixed(3))}%
-                              </span>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                    </TooltipProvider>
-                  </div>
-
-                  {/* Custom legend: pinned first, capped at MAX_VISIBLE */}
-                  <div className="px-5 py-3">
-                    <table className="w-full text-xs border-collapse">
-                      <tbody>
-                        {visibleLegend.map((ti) => {
-                          const isPinned = ti.pinned || ti.ingredient.pinned;
-                          const color =
-                            colorByIngredientId.get(ti.ingredient.id) ??
-                            INGREDIENT_CHART_COLORS[0];
-                          return (
-                            <LegendRow
-                              key={ti.ingredient.id}
-                              color={color}
-                              name={ti.ingredient.name}
-                              percentage={ti.percentage}
-                              isPinned={!!isPinned}
-                            />
-                          );
-                        })}
-                        {hasRemainder && expanded && (
-                          <LegendRow
-                            color={UNDEFINED_COLOR}
-                            name="Undefined"
-                            percentage={remainder}
-                            isPinned={false}
-                            isUndefined
-                          />
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                  <IngredientBar
+                    chartSorted={chartSorted}
+                    hasRemainder={hasRemainder}
+                    remainder={remainder}
+                  />
+                  <IngredientLegend
+                    visibleLegend={visibleLegend}
+                    colorByIngredientId={colorByIngredientId}
+                    hasRemainder={hasRemainder}
+                    expanded={expanded}
+                    remainder={remainder}
+                  />
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 px-6 py-8">
@@ -347,43 +288,3 @@ export const IngredientsCard = ({ trialId }: Props) => {
     </>
   );
 };
-
-interface LegendRowProps {
-  color: string;
-  name: string;
-  percentage: number;
-  isPinned: boolean;
-  isUndefined?: boolean;
-}
-
-function LegendRow({
-  color,
-  name,
-  percentage,
-  isPinned,
-  isUndefined,
-}: LegendRowProps) {
-  return (
-    <tr className="border-t border-border/50 first:border-t-0">
-      <td className="py-1 pr-2 w-4">
-        <span
-          className="block h-2 w-2 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-      </td>
-      <td
-        className={`py-1 pr-1 ${isUndefined ? "text-muted-foreground/60 italic" : "text-foreground"}`}
-      >
-        <span className="flex items-center gap-1">
-          {isPinned && (
-            <Pin size={9} className="fill-amber-400 text-amber-500 shrink-0" />
-          )}
-          {name}
-        </span>
-      </td>
-      <td className="py-1 tabular-nums text-muted-foreground text-right">
-        {parseFloat(percentage.toFixed(3))}%
-      </td>
-    </tr>
-  );
-}
