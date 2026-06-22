@@ -1,9 +1,9 @@
 import type { ProcessingType } from "@/config/trial.config";
 
 export const SCORE_CATEGORIES = [
-  { key: "taste",   label: "Taste",   formGroupLabel: "Taste & Flavor" },
+  { key: "taste", label: "Taste", formGroupLabel: "Taste & Flavor" },
   { key: "texture", label: "Texture", formGroupLabel: "Texture" },
-  { key: "color",   label: "Color",   formGroupLabel: "Appearance" },
+  { key: "color", label: "Color", formGroupLabel: "Appearance" },
 ] as const;
 
 export type ScoreCategoryKey = (typeof SCORE_CATEGORIES)[number]["key"];
@@ -15,28 +15,37 @@ export interface ScoreCategoryStyle {
   chip: string;
 }
 
-export const SENSORY_CATEGORY_STYLES: Record<ScoreCategoryKey, ScoreCategoryStyle> = {
+export const SENSORY_CATEGORY_STYLES: Record<
+  ScoreCategoryKey,
+  ScoreCategoryStyle
+> = {
   taste: {
     bar: "bg-emerald-500",
     number: "text-emerald-700 dark:text-emerald-400",
-    activeClass: "data-[state=on]:bg-emerald-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    activeClass:
+      "data-[state=on]:bg-emerald-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
     chip: "bg-emerald-100 text-emerald-800",
   },
   texture: {
     bar: "bg-blue-500",
     number: "text-blue-700 dark:text-blue-400",
-    activeClass: "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    activeClass:
+      "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
     chip: "bg-blue-100 text-blue-800",
   },
   color: {
     bar: "bg-amber-500",
     number: "text-amber-700 dark:text-amber-400",
-    activeClass: "data-[state=on]:bg-amber-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
+    activeClass:
+      "data-[state=on]:bg-amber-600 data-[state=on]:text-white data-[state=on]:shadow-sm",
     chip: "bg-amber-100 text-amber-800",
   },
 };
 
-interface ScoreLabel { readonly score: number; readonly label: string; }
+interface ScoreLabel {
+  readonly score: number;
+  readonly label: string;
+}
 
 export interface SensoryMetricConfig {
   label: string;
@@ -97,13 +106,18 @@ export const SENSORY_METRIC_REGISTRY = {
     max: 5,
     ideal: 4,
     category: "taste" as const,
-    description: "Rate how intense the flavor of the product was (references provided).",
+    description:
+      "Rate how intense the flavor of the product was (references provided).",
     scoreLabels: [
       { score: 1, label: "None (Plain milk)" },
       { score: 2, label: "Slight flavor (Light vanilla hint)" },
       { score: 3, label: "Moderate flavor (Standard vanilla yogurt)" },
       { score: 4, label: "Strong flavor (Pudding)" },
-      { score: 5, label: "Extremely strong flavor (Cake batter ice cream, intense chocolate dessert)" },
+      {
+        score: 5,
+        label:
+          "Extremely strong flavor (Cake batter ice cream, intense chocolate dessert)",
+      },
     ] as const,
   },
   aftertasteIntensity: {
@@ -112,7 +126,8 @@ export const SENSORY_METRIC_REGISTRY = {
     max: 5,
     ideal: 1,
     category: "taste" as const,
-    description: "Rate how much of an aftertaste the product had (references provided).",
+    description:
+      "Rate how much of an aftertaste the product had (references provided).",
     scoreLabels: [
       { score: 1, label: "None" },
       { score: 2, label: "Slight" },
@@ -133,16 +148,21 @@ export const SENSORY_METRIC_REGISTRY = {
       { score: 2, label: "Slightly thick (Kefir/drinkable yogurt)" },
       { score: 3, label: "Moderately thick (Classic spoonable yogurt)" },
       { score: 4, label: "Thick (Snack pack pudding)" },
-      { score: 5, label: "Extremely thick (Very thick Greek yogurt/mousse/custard-like pudding)" },
+      {
+        score: 5,
+        label:
+          "Extremely thick (Very thick Greek yogurt/mousse/custard-like pudding)",
+      },
     ] as const,
   },
   textureIntensity: {
-    label: "Texture Intensity",
-    shortLabel: "Texture Int.",
+    label: "Graininess",
+    shortLabel: "Graininess",
     max: 5,
     ideal: 1,
     category: "texture" as const,
-    description: "Rate how smooth the product was (references provided).",
+    description:
+      "Rate how grainy the product was, from completely smooth to granular (references provided). Target: completely smooth.",
     scoreLabels: [
       { score: 1, label: "Completely smooth (Heavy cream)" },
       { score: 2, label: "Slightly textured (Like lightly stirred yogurt)" },
@@ -159,6 +179,22 @@ export const SENSORY_METRIC_REGISTRY = {
     category: "texture" as const,
     description: "Rate how much you liked the texture of the product.",
     scoreLabels: LIKENESS_LABELS,
+  },
+  mouthcoating: {
+    label: "Mouthcoating",
+    shortLabel: "Coating",
+    max: 5,
+    ideal: 1,
+    category: "texture" as const,
+    description:
+      "How much the product coats and lingers in your mouth after swallowing (references provided). Target: clean finish.",
+    scoreLabels: [
+      { score: 1, label: "Clean finish (Water/skim milk)" },
+      { score: 2, label: "Slight coating (Whole milk)" },
+      { score: 3, label: "Moderate coating (Cream)" },
+      { score: 4, label: "Heavy coating (Sweetened condensed milk)" },
+      { score: 5, label: "Thick lingering film (Caramel/syrup)" },
+    ] as const,
   },
   colorRating: {
     label: "Color Rating",
@@ -194,7 +230,7 @@ export const SENSORY_FORMS = {
     "aftertasteIntensity",
     "thicknessIntensity",
     "textureIntensity",
-    "textureRating",
+    "mouthcoating",
     "colorRating",
   ],
 } as const satisfies Record<ProcessingType, readonly MetricKey[]>;
@@ -203,9 +239,7 @@ export const getForm = (pt: ProcessingType | undefined): readonly MetricKey[] =>
   SENSORY_FORMS[pt ?? "shelftop"];
 
 export const formSections = (form: readonly MetricKey[]) =>
-  SCORE_CATEGORIES
-    .map((c) => ({
-      label: c.formGroupLabel,
-      keys: form.filter((k) => SENSORY_METRIC_REGISTRY[k].category === c.key),
-    }))
-    .filter((s) => s.keys.length > 0);
+  SCORE_CATEGORIES.map((c) => ({
+    label: c.formGroupLabel,
+    keys: form.filter((k) => SENSORY_METRIC_REGISTRY[k].category === c.key),
+  })).filter((s) => s.keys.length > 0);
