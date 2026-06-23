@@ -1,11 +1,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TrialSetup, ProcessStep } from "@/types/trial";
+import type { TrialSetup, ProcessStep, PhysicalMeasurements, FoulingResult } from "@/types/trial";
 import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
-import type { ProcessingType, Flavor } from "@/config/trial.config";
-import { SENSORY_METRIC_REGISTRY } from "@/config/sensoryForms";
-import type { MetricKey } from "@/config/sensoryForms";
-import { averageEvaluationMetrics } from "@/lib/analysisLog";
 import * as api from "@/api/trials";
 
 export const trialKeys = {
@@ -55,6 +51,29 @@ export const useUpsertProcessSteps = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (steps: ProcessStep[]) => api.upsertProcessSteps(trialId, steps),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useUpsertFouling = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (fouling: FoulingResult | undefined) => api.upsertFouling(trialId, fouling),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useUpsertMeasurements = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ logId, measurements }: { logId: string; measurements: PhysicalMeasurements }) =>
+      api.upsertMeasurements(trialId, logId, measurements),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });
@@ -210,11 +229,8 @@ export const useAllThermalProcessingTypeSuggestions = (): string[] => {
     if (!trials) return [];
     const seen = new Set<string>();
     for (const trial of trials) {
-      for (const log of trial.analysisLogs) {
-        if (log.thermalProcessingType.trim()) {
-          seen.add(log.thermalProcessingType.trim());
-        }
-      }
+      const thermal = trial.setup?.thermalProcessingType;
+      if (thermal?.trim()) seen.add(thermal.trim());
     }
     return [...seen].sort((a, b) => a.localeCompare(b));
   }, [trials]);
@@ -232,70 +248,4 @@ export const useAllStorageTimeSuggestions = (): number[] => {
     }
     return [...seen].sort((a, b) => a - b);
   }, [trials]);
-};
-
-/**
- * Returns averaged sensory metrics from logs across other trials that share the
- * exact same setup type (processingType + flavor) AND log type
- * (thermalProcessingType + storageTimeMinutes).
- *
- * This hook establishes the query contract for cross-trial comparison.
- * When migrating to Postgres, replace the internals with a dedicated
- * API endpoint — the signature and return type stay the same.
- */
-export interface SensoryComparisonParams {
-  excludeTrialId: string;
-  processingType?: ProcessingType;
-  flavor?: Flavor;
-  thermalProcessingType: string;
-  storageTimeMinutes: number;
-}
-
-export interface SensoryComparisonResult {
-  /** Averaged metric values from matching logs (0 when no data) */
-  averages: Record<MetricKey, number>;
-  /** How many matching logs contributed to the averages */
-  logCount: number;
-}
-
-export const useSensoryComparison = (
-  params: SensoryComparisonParams,
-): SensoryComparisonResult => {
-  const { data: allTrials = [] } = useTrials();
-
-  return useMemo(() => {
-    const matchingLogs = allTrials
-      .filter(
-        (t) =>
-          t.id !== params.excludeTrialId &&
-          t.setup?.processingType === params.processingType &&
-          t.setup?.flavor === params.flavor,
-      )
-      .flatMap((t) => t.analysisLogs)
-      .filter(
-        (log) =>
-          log.thermalProcessingType === params.thermalProcessingType &&
-          log.storageTimeMinutes === params.storageTimeMinutes,
-      );
-
-    const averages = {} as Record<MetricKey, number>;
-    for (const key of Object.keys(SENSORY_METRIC_REGISTRY) as MetricKey[]) {
-      const vals = matchingLogs
-        .map((log) => averageEvaluationMetrics(log.evaluations)[key])
-        .filter((v): v is number => v != null && v >= 1);
-      averages[key] =
-        vals.length > 0
-          ? Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10
-          : 0;
-    }
-
-    return { averages, logCount: matchingLogs.length };
-  }, [
-    allTrials,
-    params.excludeTrialId,
-    params.processingType,
-    params.flavor,
-    params.thermalProcessingType,
-    params.storageTimeMinutes,
-  ]);
 };

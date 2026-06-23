@@ -6,9 +6,15 @@ export interface TrialSetup {
   date: string; // ISO string
   processingType: ProcessingType;
   flavor: Flavor;
+  thermalProcessingType: string;
 }
 
-export type EvalView = "all" | string;
+export interface PhysicalMeasurements {
+  bostwickTime?: number;
+  bostwickDistance?: number;
+  pH?: number;
+  syneresis?: number;
+}
 
 export type PartialSensoryMetrics = Partial<Record<MetricKey, number>>;
 export type PartialSensoryComments = Partial<Record<MetricKey, string>>;
@@ -24,9 +30,9 @@ export interface SensoryEvaluation {
 
 export interface AnalysisLog {
   id: string;
-  thermalProcessingType: string;
   storageTimeMinutes: number;
   photos?: string[];
+  measurements?: PhysicalMeasurements;
   evaluations: SensoryEvaluation[];
   createdAt: string;
   updatedAt: string;
@@ -49,6 +55,11 @@ export interface ProcessStep {
 
 /* ── Data model (what's in localStorage / DB row) ───────────────── */
 
+export interface FoulingResult {
+  didFoul: boolean;
+  timeToFoulingMinutes?: number; // present only when didFoul === true
+}
+
 export interface TrialRecord {
   id: string;
   trialNumber: number;
@@ -56,6 +67,7 @@ export interface TrialRecord {
   setup?: TrialSetup;
   analysisLogs: AnalysisLog[];
   processSteps: ProcessStep[];
+  fouling?: FoulingResult;
   createdAt: string;
   updatedAt: string;
 }

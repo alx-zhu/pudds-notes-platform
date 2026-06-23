@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
 import { ProcessCard } from "@/components/trials/TrialView/TrialSetup/Process/ProcessCard";
+import { FoulingCard } from "@/components/trials/TrialView/Fouling/FoulingCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
@@ -115,7 +116,7 @@ export const TrialView = () => {
       {/* Content area — scrollable */}
       <div className="flex-1 overflow-y-auto p-6 min-h-0">
         <div
-          className="grid gap-5 items-start"
+          className="grid gap-5 items-start max-w-7xl mx-auto w-full"
           style={{
             gridTemplateColumns: "minmax(320px, 380px) 1fr",
           }}
@@ -124,6 +125,9 @@ export const TrialView = () => {
           <div className="flex flex-col gap-5">
             <IngredientsCard trialId={trial.id} />
             <ProcessCard trialId={trial.id} />
+            {trial.setup?.processingType === "industrial" && (
+              <FoulingCard trialId={trial.id} />
+            )}
           </div>
 
           {/* Right column: unified category view */}

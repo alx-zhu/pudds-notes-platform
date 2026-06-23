@@ -51,13 +51,6 @@ export const INGREDIENT_CHART_COLORS = [
   "#4ade80", // green-400
 ];
 
-export const SENSORY_CHART_COLORS = {
-  otherAvg: "hsl(220, 14%, 70%)",
-  grid: "#e8e8ec",
-  tick: "#8c8c96",
-  cursor: "rgba(0, 0, 0, 0.1)",
-} as const;
-
 export const STORAGE_TIME_PRESETS = [
   { label: "Immediate", minutes: 0 },
   { label: "24 hrs", minutes: 1440 },

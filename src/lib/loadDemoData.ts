@@ -1,5 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { TrialRecord, AnalysisLog, SensoryEvaluation } from "@/types/trial";
+import type {
+  TrialRecord,
+  AnalysisLog,
+  SensoryEvaluation,
+  PhysicalMeasurements,
+  FoulingResult,
+} from "@/types/trial";
 import type { IngredientRecord, TrialIngredientRecord } from "@/types/ingredient";
 import type { ProcessingType, Flavor } from "@/config/trial.config";
 import rawDemoData from "@/data/demo-data.json";
@@ -32,6 +38,7 @@ interface DemoLog {
   thermalProcessingType: string;
   storageTimeMinutes: number;
   photos?: string[];
+  measurements?: PhysicalMeasurements;
   evaluations: DemoEvaluation[];
   createdAt: string;
   updatedAt: string;
@@ -44,6 +51,7 @@ interface DemoTrial {
   setup?: { date: string; processingType: string; flavor: string };
   ingredients: Array<{ ingredient: DemoIngredient; percentage: number }>;
   analysisLogs: DemoLog[];
+  fouling?: FoulingResult;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,13 +94,16 @@ export function loadDemoData(queryClient: QueryClient): void {
           date: t.setup.date,
           processingType: t.setup.processingType as ProcessingType,
           flavor: t.setup.flavor as Flavor,
+          thermalProcessingType:
+            t.analysisLogs[0]?.thermalProcessingType ?? "Unspecified",
         }
       : undefined,
+    ...(t.fouling ? { fouling: t.fouling } : {}),
     analysisLogs: t.analysisLogs.map(
       (log): AnalysisLog => ({
         id: log.id,
-        thermalProcessingType: log.thermalProcessingType,
         storageTimeMinutes: log.storageTimeMinutes,
+        ...(log.measurements ? { measurements: log.measurements } : {}),
         evaluations: log.evaluations.map(
           (ev): SensoryEvaluation => ({
             id: ev.id,

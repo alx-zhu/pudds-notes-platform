@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { MessageSquare, Pencil, FlaskConical, Clock } from "lucide-react";
+import { MessageSquare, Pencil, Clock } from "lucide-react";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,6 @@ function getInitials(label: string): string {
 interface CommentEntry {
   logId: string;
   logLabel: string;
-  thermalProcessingType: string;
   storageTimeMinutes: number;
   evalId: string;
   evalLabel: string;
@@ -83,7 +82,6 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
             return {
               logId: log.id,
               logLabel: getLogLabel(log),
-              thermalProcessingType: log.thermalProcessingType,
               storageTimeMinutes: log.storageTimeMinutes,
               evalId: ev.id,
               evalLabel: ev.label,
@@ -239,12 +237,8 @@ export const CommentsCard = ({ trialId, onOpenEval }: Props) => {
                                   </span>
                                 </div>
 
-                                {/* Context chips */}
+                                {/* Context chip */}
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-background rounded-md px-2 py-0.5 ring-1 ring-border/50">
-                                    <FlaskConical size={10} className="text-muted-foreground/50 shrink-0" />
-                                    {entry.thermalProcessingType}
-                                  </span>
                                   <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-background rounded-md px-2 py-0.5 ring-1 ring-border/50">
                                     <Clock size={10} className="text-muted-foreground/50 shrink-0" />
                                     {formatStorageTime(entry.storageTimeMinutes)}

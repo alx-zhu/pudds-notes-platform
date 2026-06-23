@@ -8,28 +8,22 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { StringCombobox } from "@/components/shared/StringCombobox";
 import { StorageTimeInput } from "./StorageTimeInput";
-import {
-  useAddAnalysisLog,
-  useAllThermalProcessingTypeSuggestions,
-} from "@/hooks/useTrials";
+import { useAddAnalysisLog, useTrial } from "@/hooks/useTrials";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trialId: string;
-  initialThermalType?: string;
 }
 
-export const CreateLogModal = ({ open, onOpenChange, trialId, initialThermalType }: Props) => {
+export const CreateLogModal = ({ open, onOpenChange, trialId }: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md flex flex-col p-0 gap-0 overflow-hidden">
         {open && (
           <CreateLogForm
             trialId={trialId}
-            initialThermalType={initialThermalType}
             onClose={() => onOpenChange(false)}
           />
         )}
@@ -40,29 +34,26 @@ export const CreateLogModal = ({ open, onOpenChange, trialId, initialThermalType
 
 const CreateLogForm = ({
   trialId,
-  initialThermalType,
   onClose,
 }: {
   trialId: string;
-  initialThermalType?: string;
   onClose: () => void;
 }) => {
-  const [thermalType, setThermalType] = useState(initialThermalType ?? "");
   const [storageTimeMinutes, setStorageTimeMinutes] = useState(0);
 
-  const suggestions = useAllThermalProcessingTypeSuggestions();
+  const { data: trial } = useTrial(trialId);
   const addMutation = useAddAnalysisLog(trialId);
 
-  const canCreate = thermalType.trim().length > 0;
+  // Storage time is now the sole identity of a timepoint (thermal type moved to
+  // setup), so block creating a second log at a time that already exists.
+  const isDuplicate = (trial?.analysisLogs ?? []).some(
+    (l) => l.storageTimeMinutes === storageTimeMinutes,
+  );
 
   const handleCreate = () => {
-    if (!canCreate) return;
+    if (isDuplicate) return;
     addMutation.mutate(
-      {
-        thermalProcessingType: thermalType.trim(),
-        storageTimeMinutes,
-        photos: [],
-      },
+      { storageTimeMinutes, photos: [] },
       { onSuccess: onClose },
     );
   };
@@ -70,27 +61,13 @@ const CreateLogForm = ({
   return (
     <>
       <DialogHeader className="px-6 pt-6 pb-5 border-b border-border shrink-0">
-        <DialogTitle>New Analysis Log</DialogTitle>
+        <DialogTitle>Add Timepoint</DialogTitle>
         <DialogDescription>
-          Select a thermal processing type and storage time to create a new log.
+          Select a storage time to create a new analysis timepoint.
         </DialogDescription>
       </DialogHeader>
 
       <div className="px-6 py-6 flex flex-col gap-5">
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-xs font-medium text-muted-foreground">
-            Thermal Processing
-          </Label>
-          <StringCombobox
-            value={thermalType}
-            onChange={setThermalType}
-            suggestions={suggestions}
-            placeholder="Select or type..."
-            searchPlaceholder="Search or create new..."
-            emptyMessage="No matching types."
-          />
-        </div>
-
         <div className="flex flex-col gap-1.5">
           <Label className="text-xs font-medium text-muted-foreground">
             Storage Time
@@ -99,6 +76,11 @@ const CreateLogForm = ({
             value={storageTimeMinutes}
             onChange={setStorageTimeMinutes}
           />
+          {isDuplicate && (
+            <p className="text-xs text-destructive">
+              A timepoint at this storage time already exists.
+            </p>
+          )}
         </div>
       </div>
 
@@ -109,10 +91,10 @@ const CreateLogForm = ({
         </Button>
         <Button
           size="sm"
-          disabled={!canCreate || addMutation.isPending}
+          disabled={addMutation.isPending || isDuplicate}
           onClick={handleCreate}
         >
-          {addMutation.isPending ? "Creating..." : "Create Log"}
+          {addMutation.isPending ? "Adding..." : "Add Timepoint"}
         </Button>
       </div>
     </>

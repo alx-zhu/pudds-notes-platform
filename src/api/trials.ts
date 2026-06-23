@@ -6,7 +6,9 @@ import type {
   SensoryEvaluation,
   PartialSensoryMetrics,
   PartialSensoryComments,
+  PhysicalMeasurements,
   ProcessStep,
+  FoulingResult,
 } from "@/types/trial";
 import { simulateApiCall } from "./client";
 import { resolveForTrial, removeAllForTrial } from "./trialIngredients";
@@ -15,7 +17,6 @@ import { runMigrations } from "./migration";
 const STORAGE_KEY = "pudds:trials";
 
 export interface AnalysisLogInput {
-  thermalProcessingType: string;
   storageTimeMinutes: number;
   photos?: string[];
 }
@@ -42,7 +43,7 @@ const LEGACY_THERMAL_MAP: Record<string, string> = {
 interface LegacyAnalysisLog {
   storageTime?: string;
   storageTimeMinutes?: number;
-  thermalProcessingType: string;
+  thermalProcessingType?: string;
   metrics?: PartialSensoryMetrics;
   comments?: PartialSensoryComments;
   evaluations?: SensoryEvaluation[];
@@ -61,57 +62,84 @@ const migrateTrials = (
       current = { ...current, processSteps: [] };
     }
 
+    // Migrate thermalProcessingType from logs to setup
+    const setupAny = trial.setup as (TrialSetup & { thermalProcessingType?: string }) | undefined;
+    if (trial.setup && !setupAny?.thermalProcessingType) {
+      migrated = true;
+      const rawThermal = trial.analysisLogs
+        .map((l) => (l as unknown as Record<string, unknown>).thermalProcessingType as string | undefined)
+        .filter((t): t is string => !!t?.trim())[0];
+      const thermalFromLogs = rawThermal
+        ? (LEGACY_THERMAL_MAP[rawThermal] ?? rawThermal)
+        : "Unspecified";
+      current = {
+        ...current,
+        setup: { ...trial.setup, thermalProcessingType: thermalFromLogs },
+      };
+    }
+
     return {
       ...(current as unknown as TrialRecord),
-    analysisLogs: trial.analysisLogs.map((log) => {
-      let current = log as unknown as Record<string, unknown>;
-      const legacy = log as unknown as LegacyAnalysisLog;
+      analysisLogs: trial.analysisLogs.map((log) => {
+        let logCurrent = log as unknown as Record<string, unknown>;
+        const legacy = log as unknown as LegacyAnalysisLog;
 
-      // Legacy storageTime string → storageTimeMinutes number
-      if (
-        typeof legacy.storageTime === "string" &&
-        legacy.storageTimeMinutes === undefined
-      ) {
-        migrated = true;
-        const { storageTime: _legacyField, ...rest } = current;
-        current = {
-          ...rest,
-          thermalProcessingType:
-            LEGACY_THERMAL_MAP[legacy.thermalProcessingType] ??
-            legacy.thermalProcessingType,
-          storageTimeMinutes:
-            LEGACY_STORAGE_MAP[legacy.storageTime as string] ?? 0,
-        };
-      }
+        // Legacy storageTime string → storageTimeMinutes number
+        if (
+          typeof legacy.storageTime === "string" &&
+          legacy.storageTimeMinutes === undefined
+        ) {
+          migrated = true;
+          const { storageTime: _legacyField, ...rest } = logCurrent;
+          logCurrent = {
+            ...rest,
+            storageTimeMinutes:
+              LEGACY_STORAGE_MAP[legacy.storageTime as string] ?? 0,
+          };
+          // Capture thermal for setup migration before stripping
+          if (legacy.thermalProcessingType) {
+            const mapped =
+              LEGACY_THERMAL_MAP[legacy.thermalProcessingType] ??
+              legacy.thermalProcessingType;
+            logCurrent = { ...logCurrent, thermalProcessingType: mapped };
+          }
+        }
 
-      // Legacy top-level metrics/comments → evaluations array
-      if (legacy.metrics !== undefined && legacy.evaluations === undefined) {
-        migrated = true;
-        const hasData = Object.values(legacy.metrics ?? {}).some(
-          (v) => v != null,
-        );
-        const { metrics: _m, comments: _c, ...rest } = current;
-        current = {
-          ...rest,
-          evaluations: hasData
-            ? [
-                {
-                  id: crypto.randomUUID(),
-                  label: "Evaluation 1",
-                  metrics: legacy.metrics ?? {},
-                  comments: legacy.comments ?? {},
-                  createdAt:
-                    (current.createdAt as string) ?? new Date().toISOString(),
-                  updatedAt:
-                    (current.updatedAt as string) ?? new Date().toISOString(),
-                },
-              ]
-            : [],
-        };
-      }
+        // Legacy top-level metrics/comments → evaluations array
+        if (legacy.metrics !== undefined && legacy.evaluations === undefined) {
+          migrated = true;
+          const hasData = Object.values(legacy.metrics ?? {}).some(
+            (v) => v != null,
+          );
+          const { metrics: _m, comments: _c, ...rest } = logCurrent;
+          logCurrent = {
+            ...rest,
+            evaluations: hasData
+              ? [
+                  {
+                    id: crypto.randomUUID(),
+                    label: "Evaluation 1",
+                    metrics: legacy.metrics ?? {},
+                    comments: legacy.comments ?? {},
+                    createdAt:
+                      (logCurrent.createdAt as string) ?? new Date().toISOString(),
+                    updatedAt:
+                      (logCurrent.updatedAt as string) ?? new Date().toISOString(),
+                  },
+                ]
+              : [],
+          };
+        }
 
-      return current as unknown as AnalysisLog;
-    }),
+        // Strip thermalProcessingType from logs (moved to setup)
+        if ("thermalProcessingType" in logCurrent) {
+          migrated = true;
+          const { thermalProcessingType: _t, ...rest } = logCurrent;
+          logCurrent = rest;
+        }
+
+        return logCurrent as unknown as AnalysisLog;
+      }),
     };
   });
   return { trials: result, migrated };
@@ -237,6 +265,48 @@ export const upsertProcessSteps = async (
   return simulateApiCall(resolveTrial(updated));
 };
 
+export const upsertFouling = async (
+  trialId: string,
+  fouling: FoulingResult | undefined,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const updated: TrialRecord = {
+    ...data[idx],
+    fouling,
+    updatedAt: new Date().toISOString(),
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(resolveTrial(updated));
+};
+
+export const upsertMeasurements = async (
+  trialId: string,
+  logId: string,
+  measurements: PhysicalMeasurements,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  // Persist undefined (not an empty object) when no values were entered, so the
+  // log reads as "no measurements" rather than "has an empty record".
+  const hasAny = Object.values(measurements).some((v) => v != null);
+  const normalized = hasAny ? measurements : undefined;
+  const updated: TrialRecord = {
+    ...data[idx],
+    analysisLogs: data[idx].analysisLogs.map((log) =>
+      log.id === logId ? { ...log, measurements: normalized, updatedAt: now } : log,
+    ),
+    updatedAt: now,
+  };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(resolveTrial(updated));
+};
+
 export const addAnalysisLog = async (
   trialId: string,
   input: AnalysisLogInput,
@@ -247,7 +317,6 @@ export const addAnalysisLog = async (
   const now = new Date().toISOString();
   const newLog: AnalysisLog = {
     id: crypto.randomUUID(),
-    thermalProcessingType: input.thermalProcessingType,
     storageTimeMinutes: input.storageTimeMinutes,
     photos: input.photos,
     evaluations: [],

@@ -107,6 +107,17 @@ export const TrialSetupCard = ({ trialId }: Props) => {
                   ) : null;
                 })()}
               </div>
+
+              {setup.thermalProcessingType && (
+                <div className="flex items-center justify-between px-5 py-3 bg-muted/30">
+                  <span className="text-sm text-muted-foreground">
+                    Thermal Processing
+                  </span>
+                  <span className="text-sm font-medium text-foreground text-right truncate max-w-[60%]">
+                    {setup.thermalProcessingType}
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-4 px-6 py-8">

@@ -5,11 +5,12 @@
     "setup": {
       "date": "2026-04-01",
       "flavor": "vanilla",
-      "processingType": "shelftop"
+      "processingType": "industrial"
     },
     "createdAt": "2026-04-01T09:00:00Z",
     "updatedAt": "2026-04-02T10:00:00Z",
     "trialNumber": 1,
+    "fouling": { "didFoul": true, "timeToFoulingMinutes": 45 },
     "ingredients": [
       {
         "ingredient": {
@@ -110,6 +111,12 @@
         "updatedAt": "2026-04-01T02:00:00Z",
         "storageTimeMinutes": 0,
         "thermalProcessingType": "High-Shear Mixer",
+        "measurements": {
+          "bostwickTime": 7.3,
+          "bostwickDistance": 14.5,
+          "pH": 6.8,
+          "syneresis": 3.4
+        },
         "evaluations": [
           {
             "id": "000003e8-03e8-43e8-b0e8-0000000003e8",
@@ -192,6 +199,12 @@
         "updatedAt": "2026-04-02T02:00:00Z",
         "storageTimeMinutes": 1440,
         "thermalProcessingType": "High-Shear Mixer",
+        "measurements": {
+          "bostwickTime": 7.6,
+          "bostwickDistance": 15.1,
+          "pH": 6.7,
+          "syneresis": 3.9
+        },
         "evaluations": [
           {
             "id": "000003f2-03f2-43f2-b0f2-0000000003f2",

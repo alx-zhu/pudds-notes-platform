@@ -3,17 +3,11 @@ import { formatStorageTime } from "./storageTime";
 import type { MetricKey } from "@/config/sensoryForms";
 import type { AnalysisLog, SensoryEvaluation, PartialSensoryMetrics } from "@/types/trial";
 
-export const getLogLabel = (log: AnalysisLog): string => {
-  const storage = formatStorageTime(log.storageTimeMinutes);
-  return `${log.thermalProcessingType} · ${storage}`;
-};
+export const getLogLabel = (log: AnalysisLog): string =>
+  formatStorageTime(log.storageTimeMinutes);
 
 export const sortLogs = (logs: AnalysisLog[]): AnalysisLog[] =>
-  [...logs].sort((a, b) => {
-    const typeCmp = a.thermalProcessingType.localeCompare(b.thermalProcessingType);
-    if (typeCmp !== 0) return typeCmp;
-    return b.storageTimeMinutes - a.storageTimeMinutes;
-  });
+  [...logs].sort((a, b) => a.storageTimeMinutes - b.storageTimeMinutes);
 
 export const averageEvaluationMetrics = (
   evaluations: SensoryEvaluation[],

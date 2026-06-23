@@ -5,10 +5,13 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogTimeline } from "./Timeline/LogTimeline";
 import { SensoryScores } from "./Sensory/SensoryScores";
+import { PhysicalMeasurementsSection } from "./Measurements/PhysicalMeasurementsSection";
+import { PhysicalMeasurementsSheet } from "./Measurements/PhysicalMeasurementsSheet";
 import { CreateLogModal } from "./CreateLogModal/CreateLogModal";
 import { PhotosModal } from "./Photos/PhotosModal";
 import { TrialImage } from "./Photos/TrialImage";
 import { getLogLabel, sortLogs } from "@/lib/analysisLog";
+import { formatStorageTime } from "@/lib/storageTime";
 import {
   useTrial,
   useDeleteAnalysisLog,
@@ -27,10 +30,8 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
 
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [createThermalType, setCreateThermalType] = useState<
-    string | undefined
-  >(undefined);
   const [photosLog, setPhotosLog] = useState<AnalysisLog | null>(null);
+  const [measurementsSheetOpen, setMeasurementsSheetOpen] = useState(false);
 
   const deleteMutation = useDeleteAnalysisLog(trialId);
   const deleteEvalMutation = useDeleteEvaluation(trialId);
@@ -40,30 +41,15 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
     [trial?.analysisLogs],
   );
 
-  const thermalGroups = useMemo(() => {
-    const map = new Map<string, AnalysisLog[]>();
-    for (const log of logs) {
-      const existing = map.get(log.thermalProcessingType) ?? [];
-      map.set(log.thermalProcessingType, [...existing, log]);
-    }
-    return [...map.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([thermalType, groupLogs]) => ({
-        thermalType,
-        logs: [...groupLogs].sort(
-          (a, b) => a.storageTimeMinutes - b.storageTimeMinutes,
-        ),
-      }));
-  }, [logs]);
-
   const activeLog =
     logs.find((l) => l.id === selectedLogId) ??
     (logs.length > 0 ? logs[0] : null);
 
-  const openCreateModal = (thermalType?: string) => {
-    setCreateThermalType(thermalType);
-    setCreateOpen(true);
-  };
+  const isIndustrial = trial?.setup?.processingType === "industrial";
+
+  const activeLabel = activeLog
+    ? formatStorageTime(activeLog.storageTimeMinutes)
+    : "—";
 
   const openSensoryCreate = () => {
     if (!activeLog) return;
@@ -97,45 +83,41 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
               <div className="h-6 w-6 rounded-md bg-violet-100 flex items-center justify-center shrink-0">
                 <Activity size={13} className="text-violet-600" />
               </div>
-              <p className="text-sm font-semibold text-foreground">
-                Sensory Evaluation
-              </p>
+              <p className="text-sm font-semibold text-foreground">Analysis</p>
             </div>
-            {logs.length > 0 && !isReadOnly && (
+            {!isReadOnly && (
               <Button
                 size="xs"
-                onClick={() => openCreateModal()}
+                onClick={() => setCreateOpen(true)}
                 className="gap-1"
               >
                 <Plus size={12} />
-                Add Log
+                Add timepoint
               </Button>
             )}
           </div>
         </CardHeader>
 
-        {/* ── Content depends on whether logs exist ── */}
+        {/* ── Content ── */}
         {logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-14">
             <div className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center">
               <Activity size={20} className="text-muted-foreground/50" />
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                No analysis logs yet
-              </p>
+              <p className="text-sm text-muted-foreground">No timepoints yet</p>
               <p className="text-xs text-muted-foreground/60 mt-0.5">
-                Create your first log to start tracking sensory evaluations.
+                Add your first timepoint to start tracking evaluations.
               </p>
             </div>
             {!isReadOnly && (
               <Button
                 size="sm"
-                onClick={() => openCreateModal()}
+                onClick={() => setCreateOpen(true)}
                 className="gap-1.5 mt-1"
               >
                 <Plus size={14} />
-                Create First Log
+                Create First Timepoint
               </Button>
             )}
           </div>
@@ -144,30 +126,44 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
             {/* ── Timeline ── */}
             <div className="px-5 pt-3 pb-4 border-b">
               <LogTimeline
-                groups={thermalGroups}
+                logs={logs}
                 activeLogId={activeLog?.id ?? null}
                 onSelect={setSelectedLogId}
                 processingType={trial?.setup?.processingType}
               />
             </div>
 
-            {/* ── Photo (left) + Scores (right) ── */}
+            {/* ── Sensory section ── */}
             {activeLog && trial && (
               <div className="p-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[480px]">
-                  <div className="relative h-full rounded-xl overflow-hidden">
+                {/* Section header */}
+                <div className="flex items-center justify-between mb-3.5">
+                  <div className="flex items-center gap-[9px] text-[11px] font-semibold uppercase tracking-[.06em] text-muted-foreground">
+                    Sensory Evaluation{" "}
+                    <span className="text-[12.5px] font-bold text-foreground normal-case tracking-normal">
+                      · {activeLabel}
+                    </span>
+                  </div>
+                  {!isReadOnly && (
+                    <Button size="xs" variant="outline" onClick={openSensoryCreate} className="gap-1">
+                      <Plus size={12} />
+                      Add evaluation
+                    </Button>
+                  )}
+                </div>
+
+                {/* Photo (left) + Scores (right) */}
+                <div className="grid grid-cols-2 gap-4 min-h-[300px]">
+                  <div className="relative rounded-xl overflow-hidden">
                     <TrialImage
                       photos={activeLog.photos}
-                      label={getLogLabel(activeLog)}
+                      label={activeLabel}
                       onAddPhoto={isReadOnly ? undefined : () => setPhotosLog(activeLog)}
                     />
                   </div>
 
                   <SensoryScores
                     activeLog={activeLog}
-                    trialId={trialId}
-                    trial={trial}
-                    onOpenSensoryCreate={openSensoryCreate}
                     onOpenSensoryEdit={openSensoryEdit}
                     onDeleteSensoryEval={(evaluation) =>
                       deleteEvalMutation.mutate({
@@ -180,11 +176,21 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
               </div>
             )}
 
+            {/* ── Physical Measurements (industrial only) ── */}
+            {activeLog && isIndustrial && (
+              <PhysicalMeasurementsSection
+                logs={logs}
+                activeLogId={activeLog.id}
+                isReadOnly={isReadOnly}
+                onOpenSheet={() => setMeasurementsSheetOpen(true)}
+              />
+            )}
+
             {/* ── Footer ── */}
             {activeLog && (
               <div className="flex items-center justify-between px-5 py-3 border-t">
                 <span className="text-[11px] text-muted-foreground font-medium">
-                  {getLogLabel(activeLog)}
+                  {activeLabel}
                 </span>
                 {!isReadOnly && (
                   <Button
@@ -195,7 +201,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 size={12} />
-                    Delete Log
+                    Delete timepoint
                   </Button>
                 )}
               </div>
@@ -208,7 +214,6 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
         open={createOpen}
         onOpenChange={setCreateOpen}
         trialId={trialId}
-        initialThermalType={createThermalType}
       />
 
       {photosLog && (
@@ -219,6 +224,17 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
           }}
           trialId={trialId}
           log={photosLog}
+        />
+      )}
+
+      {activeLog && measurementsSheetOpen && (
+        <PhysicalMeasurementsSheet
+          open={measurementsSheetOpen}
+          onOpenChange={setMeasurementsSheetOpen}
+          trialId={trialId}
+          logId={activeLog.id}
+          logLabel={activeLabel}
+          initialMeasurements={activeLog.measurements}
         />
       )}
     </>

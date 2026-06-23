@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { StringCombobox } from "@/components/shared/StringCombobox";
 import {
   useCreateTrialWithSetup,
   useUpdateTrialSetup,
   useUpdateTrialName,
+  useAllThermalProcessingTypeSuggestions,
 } from "@/hooks/useTrials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
 import { cn } from "@/lib/utils";
@@ -41,6 +43,7 @@ const DEFAULT_SETUP: TrialSetup = {
   date: new Date().toISOString(),
   processingType: "shelftop",
   flavor: "chocolate",
+  thermalProcessingType: "",
 };
 
 export const TrialSetupModal = ({
@@ -57,12 +60,16 @@ export const TrialSetupModal = ({
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
   const updateNameMutation = useUpdateTrialName(trialId ?? "");
+  const thermalSuggestions = useAllThermalProcessingTypeSuggestions();
   const isPending =
     createMutation.isPending ||
     updateMutation.isPending ||
     updateNameMutation.isPending;
 
+  const canSave = draft.thermalProcessingType.trim().length > 0;
+
   const handleSave = () => {
+    if (!canSave) return;
     if (trialId) {
       updateMutation.mutate(draft, {
         onSuccess: () => {
@@ -209,6 +216,21 @@ export const TrialSetupModal = ({
               ))}
             </ToggleGroup>
           </div>
+
+          {/* Thermal Processing */}
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Thermal Processing <span className="text-destructive">*</span>
+            </Label>
+            <StringCombobox
+              value={draft.thermalProcessingType}
+              onChange={(v) => setDraft((d) => ({ ...d, thermalProcessingType: v }))}
+              suggestions={thermalSuggestions}
+              placeholder="Select or type..."
+              searchPlaceholder="Search or create new..."
+              emptyMessage="No matching types."
+            />
+          </div>
         </div>
 
         {/* Footer */}
@@ -225,7 +247,7 @@ export const TrialSetupModal = ({
             size="sm"
             className="flex-1"
             onClick={handleSave}
-            disabled={isPending}
+            disabled={isPending || !canSave}
           >
             {isPending
               ? "Saving..."
