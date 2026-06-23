@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { useTrial } from "@/hooks/useTrials";
+import { useExpandable } from "@/components/shared/useExpandable";
+import { ExpandMoreFooter } from "@/components/shared/ExpandMoreFooter";
 import { ProcessSheet } from "./ProcessSheet";
+
+const MAX_VISIBLE = 3;
 
 interface Props {
   trialId: string;
@@ -16,6 +20,13 @@ export const ProcessCard = ({ trialId }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const steps = trial?.processSteps ?? [];
+  const {
+    hasMore,
+    visibleItems: visibleSteps,
+    remaining,
+    expanded,
+    toggle: toggleExpanded,
+  } = useExpandable(steps, MAX_VISIBLE);
 
   return (
     <>
@@ -58,7 +69,11 @@ export const ProcessCard = ({ trialId }: Props) => {
                 </p>
               </div>
               {!isReadOnly && (
-                <Button size="sm" variant="outline" onClick={() => setSheetOpen(true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSheetOpen(true)}
+                >
                   <Plus size={13} className="mr-1" />
                   Add Steps
                 </Button>
@@ -66,8 +81,8 @@ export const ProcessCard = ({ trialId }: Props) => {
             </div>
           ) : (
             <div className="px-5 py-3">
-              {steps.map((step, stepIdx) => {
-                const isLast = stepIdx === steps.length - 1;
+              {visibleSteps.map((step, stepIdx) => {
+                const isLast = stepIdx === visibleSteps.length - 1;
                 const filteredParams = step.params.filter((p) => p.key.trim());
                 return (
                   <div key={step.id} className="flex">
@@ -76,14 +91,22 @@ export const ProcessCard = ({ trialId }: Props) => {
                       <span className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold shrink-0">
                         {step.order + 1}
                       </span>
-                      {!isLast && <div className="w-[2px] flex-1 bg-border/50 mt-1" />}
+                      {!isLast && (
+                        <div className="w-[2px] flex-1 bg-border/50 mt-1" />
+                      )}
                     </div>
 
                     {/* Right: name, params, note */}
-                    <div className={`flex-1 min-w-0 pl-3 ${!isLast ? "pb-4" : ""}`}>
+                    <div
+                      className={`flex-1 min-w-0 pl-3 ${!isLast ? "pb-4" : ""}`}
+                    >
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold text-foreground leading-snug">
-                          {step.name || <span className="text-muted-foreground italic">Unnamed step</span>}
+                          {step.name || (
+                            <span className="text-muted-foreground italic">
+                              Unnamed step
+                            </span>
+                          )}
                         </p>
                         {step.timestamp && (
                           <span className="text-xs text-muted-foreground tabular-nums shrink-0 ml-2">
@@ -127,6 +150,14 @@ export const ProcessCard = ({ trialId }: Props) => {
             </div>
           )}
         </CardContent>
+
+        {hasMore && (
+          <ExpandMoreFooter
+            expanded={expanded}
+            remaining={remaining}
+            onToggle={toggleExpanded}
+          />
+        )}
       </Card>
 
       <ProcessSheet

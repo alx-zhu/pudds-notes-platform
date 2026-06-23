@@ -1,17 +1,11 @@
 import { useMemo, useState } from "react";
-import {
-  Pencil,
-  Plus,
-  Layers,
-  ChevronDown,
-  ChevronUp,
-  DollarSign,
-} from "lucide-react";
+import { Pencil, Plus, Layers, DollarSign } from "lucide-react";
+import { useExpandable } from "@/components/shared/useExpandable";
+import { ExpandMoreFooter } from "@/components/shared/ExpandMoreFooter";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,7 +108,6 @@ function CostTabContent({ ingredients }: { ingredients: TrialIngredient[] }) {
 export const IngredientsCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const [modalOpen, setModalOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const isReadOnly = useReadOnly();
 
   const setup = trial?.setup;
@@ -160,10 +153,13 @@ export const IngredientsCard = ({ trialId }: Props) => {
   const hasRemainder = roundedTotal < 100;
   const remainder = Math.round((100 - roundedTotal) * 1000) / 1000;
 
-  const visibleLegend = expanded
-    ? sortedForLegend
-    : sortedForLegend.slice(0, MAX_VISIBLE);
-  const hasMore = sortedForLegend.length > MAX_VISIBLE;
+  const {
+    expanded,
+    hasMore,
+    visibleItems: visibleLegend,
+    remaining,
+    toggle: toggleExpanded,
+  } = useExpandable(sortedForLegend, MAX_VISIBLE);
 
   return (
     <>
@@ -249,24 +245,11 @@ export const IngredientsCard = ({ trialId }: Props) => {
             </CardContent>
 
             {hasMore && (
-              <CardFooter className="justify-center border-t p-0">
-                <button
-                  className="w-full flex items-center justify-center gap-1 py-3 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => setExpanded((e) => !e)}
-                >
-                  {expanded ? (
-                    <>
-                      <ChevronUp size={12} />
-                      Show less
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown size={12} />
-                      {sortedForLegend.length - MAX_VISIBLE} more
-                    </>
-                  )}
-                </button>
-              </CardFooter>
+              <ExpandMoreFooter
+                expanded={expanded}
+                remaining={remaining}
+                onToggle={toggleExpanded}
+              />
             )}
           </TabsContent>
 
