@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trash2, EllipsisVertical } from "lucide-react";
+import { Trash2, EllipsisVertical, Lock } from "lucide-react";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { ImageCarousel } from "@/components/trials/shared/ImageCarousel";
 import {
@@ -112,6 +112,13 @@ export const TrialCard = ({
           <span className="inline-flex items-center justify-center min-w-[26px] h-[22px] px-1.5 rounded-md bg-muted text-[13px] font-bold tabular-nums leading-none">
             {trial.trialNumber}
           </span>
+          {trial.visibility === "private" && (
+            <Lock
+              size={12}
+              className="shrink-0 text-amber-600"
+              aria-label="Private trial"
+            />
+          )}
           {formulation.length > 0 ? (
             <span className="text-[13px] font-medium leading-none">
               {formulation.map((item, i) => (

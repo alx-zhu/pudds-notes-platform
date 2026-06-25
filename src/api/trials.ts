@@ -9,6 +9,7 @@ import type {
   PhysicalMeasurements,
   ProcessStep,
   FoulingResult,
+  TrialVisibility,
 } from "@/types/trial";
 import { simulateApiCall } from "./client";
 import { resolveForTrial, removeAllForTrial } from "./trialIngredients";
@@ -60,6 +61,13 @@ const migrateTrials = (
     if ((trial as unknown as Record<string, unknown>).processSteps === undefined) {
       migrated = true;
       current = { ...current, processSteps: [] };
+    }
+
+    // Backfill visibility for records created before the privacy feature.
+    // Default to private — these are existing trials we must protect.
+    if ((trial as unknown as Record<string, unknown>).visibility === undefined) {
+      migrated = true;
+      current = { ...current, visibility: "private" };
     }
 
     // Migrate thermalProcessingType from logs to setup
@@ -184,7 +192,12 @@ const resolveTrial = (record: TrialRecord): Trial => ({
 export const fetchTrials = async (): Promise<Trial[]> => {
   const data = readStorage();
   return simulateApiCall(
-    [...data].sort((a, b) => b.trialNumber - a.trialNumber).map(resolveTrial),
+    [...data]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+      .map(resolveTrial),
   );
 };
 
@@ -195,7 +208,9 @@ export const fetchTrial = async (id: string): Promise<Trial> => {
   return simulateApiCall(resolveTrial(trial));
 };
 
-export const createTrial = async (): Promise<Trial> => {
+export const createTrial = async (
+  visibility: TrialVisibility = "public",
+): Promise<Trial> => {
   const data = readStorage();
   const now = new Date().toISOString();
   const record: TrialRecord = {
@@ -204,6 +219,7 @@ export const createTrial = async (): Promise<Trial> => {
     setup: undefined,
     analysisLogs: [],
     processSteps: [],
+    visibility,
     createdAt: now,
     updatedAt: now,
   };
@@ -214,6 +230,7 @@ export const createTrial = async (): Promise<Trial> => {
 export const createTrialWithSetup = async (
   setup: TrialSetup,
   name?: string,
+  visibility: TrialVisibility = "public",
 ): Promise<Trial> => {
   const data = readStorage();
   const now = new Date().toISOString();
@@ -224,6 +241,7 @@ export const createTrialWithSetup = async (
     setup,
     analysisLogs: [],
     processSteps: [],
+    visibility,
     createdAt: now,
     updatedAt: now,
   };
@@ -234,6 +252,7 @@ export const createTrialWithSetup = async (
 export const updateTrialSetup = async (
   id: string,
   setup: TrialSetup,
+  visibility?: TrialVisibility,
 ): Promise<Trial> => {
   const data = readStorage();
   const idx = data.findIndex((t) => t.id === id);
@@ -241,6 +260,7 @@ export const updateTrialSetup = async (
   const updated: TrialRecord = {
     ...data[idx],
     setup,
+    ...(visibility != null && { visibility }),
     updatedAt: new Date().toISOString(),
   };
   data[idx] = updated;

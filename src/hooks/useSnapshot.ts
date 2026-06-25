@@ -3,6 +3,7 @@ import {
   publishSnapshot,
   fetchLatestSnapshot,
   pullSnapshot,
+  type SnapshotTier,
 } from "@/api/snapshot";
 
 export const usePublishSnapshot = () => {
@@ -13,17 +14,17 @@ export const usePublishSnapshot = () => {
   });
 };
 
-export const useLatestSnapshot = () =>
+export const useLatestSnapshot = (tier: SnapshotTier) =>
   useQuery({
-    queryKey: ["snapshot", "latest"],
-    queryFn: fetchLatestSnapshot,
+    queryKey: ["snapshot", "latest", tier],
+    queryFn: () => fetchLatestSnapshot(tier),
     retry: false,
   });
 
-export const usePullSnapshot = () => {
+export const usePullSnapshot = (tier: SnapshotTier) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: pullSnapshot,
+    mutationFn: () => pullSnapshot(tier),
     onSuccess: () => qc.invalidateQueries(),
   });
 };

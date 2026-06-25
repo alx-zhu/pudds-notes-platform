@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LogTimeline } from "./Timeline/LogTimeline";
 import { SensoryScores } from "./Sensory/SensoryScores";
 import { PhysicalMeasurementsSection } from "./Measurements/PhysicalMeasurementsSection";
-import { PhysicalMeasurementsSheet } from "./Measurements/PhysicalMeasurementsSheet";
+import { PhysicalMeasurementsDialog } from "./Measurements/PhysicalMeasurementsDialog";
 import { CreateLogModal } from "./CreateLogModal/CreateLogModal";
 import { PhotosModal } from "./Photos/PhotosModal";
 import { TrialImage } from "./Photos/TrialImage";
@@ -31,7 +31,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [photosLog, setPhotosLog] = useState<AnalysisLog | null>(null);
-  const [measurementsSheetOpen, setMeasurementsSheetOpen] = useState(false);
+  const [measurementsDialogOpen, setMeasurementsDialogOpen] = useState(false);
 
   const deleteMutation = useDeleteAnalysisLog(trialId);
   const deleteEvalMutation = useDeleteEvaluation(trialId);
@@ -182,7 +182,7 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
                 logs={logs}
                 activeLogId={activeLog.id}
                 isReadOnly={isReadOnly}
-                onOpenSheet={() => setMeasurementsSheetOpen(true)}
+                onOpenDialog={() => setMeasurementsDialogOpen(true)}
               />
             )}
 
@@ -227,10 +227,10 @@ export const AnalysisLogCard = ({ trialId, onOpenSensoryForm }: Props) => {
         />
       )}
 
-      {activeLog && measurementsSheetOpen && (
-        <PhysicalMeasurementsSheet
-          open={measurementsSheetOpen}
-          onOpenChange={setMeasurementsSheetOpen}
+      {activeLog && measurementsDialogOpen && (
+        <PhysicalMeasurementsDialog
+          open={measurementsDialogOpen}
+          onOpenChange={setMeasurementsDialogOpen}
           trialId={trialId}
           logId={activeLog.id}
           logLabel={activeLabel}

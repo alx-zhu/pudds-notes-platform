@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, FlaskConical, Pencil } from "lucide-react";
+import { ChevronLeft, FlaskConical, Pencil, Lock, Globe } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingredients/IngredientsCard";
@@ -88,9 +88,22 @@ export const TrialView = () => {
               <FlaskConical size={16} className="text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base font-semibold leading-tight truncate">
-                {pageTitle}
-              </h1>
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="text-base font-semibold leading-tight truncate">
+                  {pageTitle}
+                </h1>
+                {trial.visibility === "private" ? (
+                  <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5">
+                    <Lock size={11} />
+                    Private
+                  </span>
+                ) : (
+                  <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5">
+                    <Globe size={11} />
+                    Public
+                  </span>
+                )}
+              </div>
               {subtitle && (
                 <p className="text-sm text-muted-foreground truncate">
                   {subtitle}
@@ -152,6 +165,7 @@ export const TrialView = () => {
         trialId={trial.id}
         initialSetup={setup}
         initialName={trial.name}
+        initialVisibility={trial.visibility}
         key={setupModalOpen ? "open" : "closed"}
       />
 

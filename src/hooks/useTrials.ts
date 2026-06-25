@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TrialSetup, ProcessStep, PhysicalMeasurements, FoulingResult } from "@/types/trial";
+import type { TrialSetup, ProcessStep, PhysicalMeasurements, FoulingResult, TrialVisibility } from "@/types/trial";
 import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
 import * as api from "@/api/trials";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const trialKeys = {
   all: ["trials"] as const,
@@ -29,17 +30,46 @@ export const useCreateTrial = () => {
 
 export const useCreateTrialWithSetup = () => {
   const qc = useQueryClient();
+  const { role } = useAuth();
   return useMutation({
-    mutationFn: ({ setup, name }: { setup: TrialSetup; name?: string }) =>
-      api.createTrialWithSetup(setup, name),
+    mutationFn: ({
+      setup,
+      name,
+      visibility,
+    }: {
+      setup: TrialSetup;
+      name?: string;
+      visibility?: TrialVisibility;
+    }) =>
+      // Only owners may create private trials. Any other role (including a
+      // not-signed-in guest) is forced to public, regardless of what the
+      // caller requested.
+      api.createTrialWithSetup(
+        setup,
+        name,
+        role === "owner" ? visibility : "public",
+      ),
     onSuccess: () => qc.invalidateQueries({ queryKey: trialKeys.all }),
   });
 };
 
 export const useUpdateTrialSetup = (trialId: string) => {
   const qc = useQueryClient();
+  const { role } = useAuth();
   return useMutation({
-    mutationFn: (setup: TrialSetup) => api.updateTrialSetup(trialId, setup),
+    mutationFn: ({
+      setup,
+      visibility,
+    }: {
+      setup: TrialSetup;
+      visibility?: TrialVisibility;
+    }) =>
+      // Non-owners can never change visibility (undefined = leave unchanged).
+      api.updateTrialSetup(
+        trialId,
+        setup,
+        role === "owner" ? visibility : undefined,
+      ),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });

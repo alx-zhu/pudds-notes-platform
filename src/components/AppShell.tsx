@@ -69,10 +69,11 @@ const SidebarIcon = ({
 
 const RoleBanner = () => {
   const { session, role } = useAuth();
+  const tier = role === "owner" ? "owner" : "public";
   const qc = useQueryClient();
   const pushMutation = usePublishSnapshot();
-  const pullMutation = usePullSnapshot();
-  const latestSnapshot = useLatestSnapshot();
+  const pullMutation = usePullSnapshot(tier);
+  const latestSnapshot = useLatestSnapshot(tier);
   const lastSync = localStorage.getItem("pudds:last-sync");
 
   useEffect(() => {

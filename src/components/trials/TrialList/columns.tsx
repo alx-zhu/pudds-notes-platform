@@ -1,6 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Lock } from "lucide-react";
 import type { Trial } from "@/types/trial";
 import type { SortByScore } from "@/types/filters";
 import { FLAVORS, PROCESSING_TYPES } from "@/config/trial.config";
@@ -20,10 +20,19 @@ export const createColumns = (
   const baseCols = [
   columnHelper.accessor("trialNumber", {
     header: "#",
-    size: 48,
+    size: 56,
     cell: (info) => (
-      <span className="text-[15px] font-extrabold tabular-nums tracking-tight">
-        {info.getValue()}
+      <span className="inline-flex items-center gap-1">
+        <span className="text-[15px] font-extrabold tabular-nums tracking-tight">
+          {info.getValue()}
+        </span>
+        {info.row.original.visibility === "private" && (
+          <Lock
+            size={12}
+            className="shrink-0 text-amber-600"
+            aria-label="Private trial"
+          />
+        )}
       </span>
     ),
   }),

@@ -48,8 +48,7 @@ export interface ProcessStep {
   id: string;
   order: number;
   name: string;
-  timestamp?: string; // HH:MM wall-clock time, e.g. "06:45"
-  params: ProcessParam[];
+params: ProcessParam[];
   notes?: string;
 }
 
@@ -60,6 +59,8 @@ export interface FoulingResult {
   timeToFoulingMinutes?: number; // present only when didFoul === true
 }
 
+export type TrialVisibility = "public" | "private";
+
 export interface TrialRecord {
   id: string;
   trialNumber: number;
@@ -68,6 +69,8 @@ export interface TrialRecord {
   analysisLogs: AnalysisLog[];
   processSteps: ProcessStep[];
   fouling?: FoulingResult;
+  /** Owner-only privacy. Private trials are excluded from non-owner snapshots. */
+  visibility: TrialVisibility;
   createdAt: string;
   updatedAt: string;
 }

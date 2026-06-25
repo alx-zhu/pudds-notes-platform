@@ -108,11 +108,6 @@ export const ProcessCard = ({ trialId }: Props) => {
                             </span>
                           )}
                         </p>
-                        {step.timestamp && (
-                          <span className="text-xs text-muted-foreground tabular-nums shrink-0 ml-2">
-                            {step.timestamp}
-                          </span>
-                        )}
                       </div>
 
                       {filteredParams.length > 0 && (

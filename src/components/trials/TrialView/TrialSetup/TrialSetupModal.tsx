@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,8 +26,9 @@ import {
   useAllThermalProcessingTypeSuggestions,
 } from "@/hooks/useTrials";
 import { PROCESSING_TYPES, FLAVORS } from "@/config/trial.config";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import type { TrialSetup } from "@/types/trial";
+import type { TrialSetup, TrialVisibility } from "@/types/trial";
 
 interface Props {
   open: boolean;
@@ -36,6 +37,7 @@ interface Props {
   trialId?: string;
   initialSetup?: TrialSetup;
   initialName?: string;
+  initialVisibility?: TrialVisibility;
   onSuccess?: (trialId: string) => void;
 }
 
@@ -52,10 +54,19 @@ export const TrialSetupModal = ({
   trialId,
   initialSetup,
   initialName,
+  initialVisibility,
   onSuccess,
 }: Props) => {
+  const { role } = useAuth();
+  const isOwner = role === "owner";
+
   const [draft, setDraft] = useState<TrialSetup>(initialSetup ?? DEFAULT_SETUP);
   const [nameDraft, setNameDraft] = useState<string>(initialName ?? "");
+  // Seed visibility: editing → existing value; creating → owners default to
+  // private, everyone else creates public (they can't see private trials).
+  const [visibility, setVisibility] = useState<TrialVisibility>(
+    initialVisibility ?? (isOwner ? "private" : "public"),
+  );
 
   const createMutation = useCreateTrialWithSetup();
   const updateMutation = useUpdateTrialSetup(trialId ?? "");
@@ -71,19 +82,26 @@ export const TrialSetupModal = ({
   const handleSave = () => {
     if (!canSave) return;
     if (trialId) {
-      updateMutation.mutate(draft, {
-        onSuccess: () => {
-          updateNameMutation.mutate(nameDraft.trim() || undefined, {
-            onSuccess: () => {
-              onOpenChange(false);
-              onSuccess?.(trialId);
-            },
-          });
+      updateMutation.mutate(
+        { setup: draft, visibility: isOwner ? visibility : undefined },
+        {
+          onSuccess: () => {
+            updateNameMutation.mutate(nameDraft.trim() || undefined, {
+              onSuccess: () => {
+                onOpenChange(false);
+                onSuccess?.(trialId);
+              },
+            });
+          },
         },
-      });
+      );
     } else {
       createMutation.mutate(
-        { setup: draft, name: nameDraft.trim() || undefined },
+        {
+          setup: draft,
+          name: nameDraft.trim() || undefined,
+          visibility,
+        },
         {
           onSuccess: (trial) => {
             onOpenChange(false);
@@ -231,6 +249,39 @@ export const TrialSetupModal = ({
               emptyMessage="No matching types."
             />
           </div>
+
+          {/* Visibility — owners only */}
+          {isOwner && (
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Visibility
+              </Label>
+              <ToggleGroup
+                type="single"
+                value={visibility}
+                onValueChange={(v) => v && setVisibility(v as TrialVisibility)}
+                className="w-full bg-muted rounded-lg p-1"
+              >
+                <ToggleGroupItem
+                  value="private"
+                  className="flex-1 gap-1.5 text-sm font-medium py-1.5 data-[state=on]:bg-background"
+                >
+                  <Lock size={13} />
+                  Private
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="public"
+                  className="flex-1 gap-1.5 text-sm font-medium py-1.5 data-[state=on]:bg-background"
+                >
+                  <Globe size={13} />
+                  Public
+                </ToggleGroupItem>
+              </ToggleGroup>
+              <p className="text-xs text-muted-foreground">
+                Private trials are visible only to owners.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

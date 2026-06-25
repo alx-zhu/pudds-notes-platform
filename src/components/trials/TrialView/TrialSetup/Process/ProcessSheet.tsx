@@ -191,24 +191,6 @@ export const ProcessSheet = ({ trialId, steps, open, onOpenChange }: Props) => {
                   )}
                 </div>
 
-                {/* Time */}
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-muted-foreground w-20 shrink-0">
-                    Time
-                  </span>
-                  <Input
-                    type="time"
-                    value={step.timestamp ?? ""}
-                    onChange={(e) =>
-                      updateStep(stepIdx, {
-                        timestamp: e.target.value || undefined,
-                      })
-                    }
-                    className="h-8 text-sm w-36"
-                    readOnly={isReadOnly}
-                  />
-                </div>
-
                 {/* Parameters */}
                 <div className="flex flex-col gap-1.5">
                   <div className="grid grid-cols-[1fr_1fr_100px_20px] gap-1.5">
@@ -244,12 +226,10 @@ export const ProcessSheet = ({ trialId, steps, open, onOpenChange }: Props) => {
                             searchPlaceholder="Search or create..."
                             className="h-7 text-xs"
                           />
-                          <StringCombobox
+                          <Input
                             value={param.value}
-                            onChange={(v) => updateParam(stepIdx, paramIdx, { value: v })}
-                            suggestions={suggestions.getParamValues(param.key)}
+                            onChange={(e) => updateParam(stepIdx, paramIdx, { value: e.target.value })}
                             placeholder="Value"
-                            searchPlaceholder="Search or create..."
                             className="h-7 text-xs"
                           />
                           <StringCombobox

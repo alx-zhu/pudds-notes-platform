@@ -18,14 +18,14 @@ interface Props {
   logs: AnalysisLog[];
   activeLogId: string | null;
   isReadOnly: boolean;
-  onOpenSheet: () => void;
+  onOpenDialog: () => void;
 }
 
 export const PhysicalMeasurementsSection = ({
   logs,
   activeLogId,
   isReadOnly,
-  onOpenSheet,
+  onOpenDialog,
 }: Props) => {
   const sortedLogs = [...logs].sort(
     (a, b) => a.storageTimeMinutes - b.storageTimeMinutes,
@@ -60,7 +60,7 @@ export const PhysicalMeasurementsSection = ({
           <Button
             size="xs"
             variant="outline"
-            onClick={onOpenSheet}
+            onClick={onOpenDialog}
             className="gap-1"
           >
             {activeHasData ? (
@@ -138,7 +138,7 @@ export const PhysicalMeasurementsSection = ({
           {!isReadOnly && (
             <Button
               size="xs"
-              onClick={onOpenSheet}
+              onClick={onOpenDialog}
               className="gap-1 ml-4 shrink-0"
             >
               <Plus size={12} />

@@ -121,6 +121,7 @@ export function loadDemoData(queryClient: QueryClient): void {
       }),
     ),
     processSteps: [],
+    visibility: "public",
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
   }));
