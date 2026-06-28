@@ -7,6 +7,7 @@ import { IngredientsCard } from "@/components/trials/TrialView/TrialSetup/ingred
 import { ProcessCard } from "@/components/trials/TrialView/TrialSetup/Process/ProcessCard";
 import { FoulingCard } from "@/components/trials/TrialView/Fouling/FoulingCard";
 import { AnalysisLogCard } from "@/components/trials/TrialView/TrialAnalysis/AnalysisLogCard";
+import { ObservationsCard } from "@/components/trials/TrialView/Observations/ObservationsCard";
 import { CommentsCard } from "@/components/trials/TrialView/TrialAnalysis/Comments/CommentsCard";
 import { SensoryForm } from "@/components/trials/TrialView/TrialAnalysis/Sensory/SensoryForm/SensoryForm";
 import { TrialSetupModal } from "@/components/trials/TrialView/TrialSetup/TrialSetupModal";
@@ -149,6 +150,7 @@ export const TrialView = () => {
               trialId={trial.id}
               onOpenSensoryForm={setSensoryFormState}
             />
+            <ObservationsCard trialId={trial.id} />
             <CommentsCard
               trialId={trial.id}
               onOpenEval={(logId, logLabel, evaluation: SensoryEvaluation) =>

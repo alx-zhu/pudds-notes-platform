@@ -10,10 +10,13 @@ import type {
   ProcessStep,
   FoulingResult,
   TrialVisibility,
+  Observation,
+  ObservationMedia,
 } from "@/types/trial";
 import { simulateApiCall } from "./client";
 import { resolveForTrial, removeAllForTrial } from "./trialIngredients";
 import { runMigrations } from "./migration";
+import { deleteTrialMedia } from "@/lib/storage";
 
 const STORAGE_KEY = "pudds:trials";
 
@@ -27,6 +30,16 @@ export interface SensoryEvaluationInput {
   metrics: PartialSensoryMetrics;
   comments?: PartialSensoryComments;
 }
+
+export interface ObservationInput {
+  /** Present = edit existing observation; absent = create new. */
+  id?: string;
+  caption?: string;
+  media: ObservationMedia[];
+}
+
+const collectObservationMediaPaths = (record: TrialRecord): string[] =>
+  (record.observations ?? []).flatMap((o) => o.media.map((m) => m.path));
 
 /* ── Legacy migration ────────────────────────────────────────────── */
 
@@ -302,6 +315,72 @@ export const upsertFouling = async (
   return simulateApiCall(resolveTrial(updated));
 };
 
+/* ── Observations ────────────────────────────────────────────────── */
+
+export const upsertObservation = async (
+  trialId: string,
+  input: ObservationInput,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const existing = data[idx].observations ?? [];
+  const caption = input.caption?.trim() || undefined;
+  const observations: Observation[] = input.id
+    ? existing.map((o) =>
+        o.id === input.id
+          ? { ...o, caption, media: input.media, updatedAt: now }
+          : o,
+      )
+    : [
+        ...existing,
+        {
+          id: crypto.randomUUID(),
+          caption,
+          media: input.media,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ];
+  const updated: TrialRecord = { ...data[idx], observations, updatedAt: now };
+  data[idx] = updated;
+  writeStorage(data);
+  return simulateApiCall(resolveTrial(updated));
+};
+
+export const deleteObservation = async (
+  trialId: string,
+  observationId: string,
+): Promise<Trial> => {
+  const data = readStorage();
+  const idx = data.findIndex((t) => t.id === trialId);
+  if (idx === -1) throw new Error(`Trial ${trialId} not found`);
+  const now = new Date().toISOString();
+  const removed = (data[idx].observations ?? []).find(
+    (o) => o.id === observationId,
+  );
+  const updated: TrialRecord = {
+    ...data[idx],
+    observations: (data[idx].observations ?? []).filter(
+      (o) => o.id !== observationId,
+    ),
+    updatedAt: now,
+  };
+  data[idx] = updated;
+  // Persist-then-delete (best-effort): a failed storage delete leaves a
+  // harmless orphan; the reverse could leave a broken reference.
+  writeStorage(data);
+  if (removed?.media.length) {
+    try {
+      await deleteTrialMedia(removed.media.map((m) => m.path));
+    } catch {
+      /* orphaned storage object — storage cost only, no broken reference */
+    }
+  }
+  return simulateApiCall(resolveTrial(updated));
+};
+
 export const upsertMeasurements = async (
   trialId: string,
   logId: string,
@@ -502,7 +581,18 @@ export const deleteEvaluation = async (
 };
 
 export const deleteTrial = async (id: string): Promise<void> => {
-  writeStorage(readStorage().filter((t) => t.id !== id));
+  const data = readStorage();
+  const target = data.find((t) => t.id === id);
+  const mediaPaths = target ? collectObservationMediaPaths(target) : [];
+  writeStorage(data.filter((t) => t.id !== id));
   removeAllForTrial(id);
+  // Best-effort media cleanup after the record is gone (orphans are harmless).
+  if (mediaPaths.length) {
+    try {
+      await deleteTrialMedia(mediaPaths);
+    } catch {
+      /* orphaned storage objects — storage cost only */
+    }
+  }
   return simulateApiCall(undefined as void);
 };

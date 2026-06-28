@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TrialSetup, ProcessStep, PhysicalMeasurements, FoulingResult, TrialVisibility } from "@/types/trial";
-import type { AnalysisLogInput, SensoryEvaluationInput } from "@/api/trials";
+import type {
+  AnalysisLogInput,
+  SensoryEvaluationInput,
+  ObservationInput,
+} from "@/api/trials";
 import * as api from "@/api/trials";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -92,6 +96,30 @@ export const useUpsertFouling = (trialId: string) => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (fouling: FoulingResult | undefined) => api.upsertFouling(trialId, fouling),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useUpsertObservation = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ObservationInput) =>
+      api.upsertObservation(trialId, input),
+    onSuccess: (updated) => {
+      qc.setQueryData(trialKeys.detail(trialId), updated);
+      qc.invalidateQueries({ queryKey: trialKeys.all });
+    },
+  });
+};
+
+export const useDeleteObservation = (trialId: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (observationId: string) =>
+      api.deleteObservation(trialId, observationId),
     onSuccess: (updated) => {
       qc.setQueryData(trialKeys.detail(trialId), updated);
       qc.invalidateQueries({ queryKey: trialKeys.all });

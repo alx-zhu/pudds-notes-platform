@@ -48,7 +48,7 @@ export interface ProcessStep {
   id: string;
   order: number;
   name: string;
-params: ProcessParam[];
+  params: ProcessParam[];
   notes?: string;
 }
 
@@ -61,6 +61,25 @@ export interface FoulingResult {
 
 export type TrialVisibility = "public" | "private";
 
+/* ── Observations (trial-level open-ended notes + media) ─────────── */
+
+export type ObservationMediaType = "image" | "video";
+
+export interface ObservationMedia {
+  id: string;
+  /** Storage path in the `trial-media` bucket; URL derived at render. */
+  path: string;
+  type: ObservationMediaType;
+}
+
+export interface Observation {
+  id: string;
+  caption?: string; // optional — notes-only allowed
+  media: ObservationMedia[]; // optional/empty — media-only or note-only
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TrialRecord {
   id: string;
   trialNumber: number;
@@ -69,6 +88,8 @@ export interface TrialRecord {
   analysisLogs: AnalysisLog[];
   processSteps: ProcessStep[];
   fouling?: FoulingResult;
+  /** Optional, read as `trial.observations ?? []`. No backfill (mirrors `fouling`). */
+  observations?: Observation[];
   /** Owner-only privacy. Private trials are excluded from non-owner snapshots. */
   visibility: TrialVisibility;
   createdAt: string;
