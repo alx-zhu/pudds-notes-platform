@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Camera, Pencil } from "lucide-react";
+import { Camera, Pencil, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { resolveMediaSrc, isVideoSrc } from "@/lib/storage";
 
 interface Props {
   photos?: string[];
@@ -26,11 +27,21 @@ export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
     >
       {hasPhotos ? (
         <div className="group/img">
-          <img
-            src={photos[clampedIndex]}
-            alt={label}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          {isVideoSrc(photos[clampedIndex]) ? (
+            <video
+              key={photos[clampedIndex]}
+              src={resolveMediaSrc(photos[clampedIndex])}
+              className="absolute inset-0 w-full h-full object-cover bg-black"
+              controls
+              playsInline
+            />
+          ) : (
+            <img
+              src={resolveMediaSrc(photos[clampedIndex])}
+              alt={label}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
 
           {onAddPhoto && (
             <button
@@ -50,17 +61,31 @@ export const TrialImage = ({ photos = [], label, onAddPhoto }: Props) => {
                   type="button"
                   onClick={() => setActiveIndex(i)}
                   className={cn(
-                    "h-9 w-9 rounded-lg overflow-hidden ring-2 transition-all cursor-pointer shrink-0 shadow-md",
+                    "relative h-9 w-9 rounded-lg overflow-hidden ring-2 transition-all cursor-pointer shrink-0 shadow-md",
                     i === clampedIndex
                       ? "ring-white"
                       : "ring-transparent opacity-60 hover:opacity-90",
                   )}
                 >
-                  <img
-                    src={src}
-                    alt={`Photo ${i + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  {isVideoSrc(src) ? (
+                    <>
+                      <video
+                        src={resolveMediaSrc(src)}
+                        className="w-full h-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                        <Play size={10} className="text-white fill-white" />
+                      </span>
+                    </>
+                  ) : (
+                    <img
+                      src={resolveMediaSrc(src)}
+                      alt={`Photo ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </button>
               ))}
             </div>

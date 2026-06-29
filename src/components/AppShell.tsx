@@ -36,6 +36,8 @@ import {
   usePullSnapshot,
   useLatestSnapshot,
 } from "@/hooks/useSnapshot";
+// CLEANUP(migration-002, 2026-06-28): remove this import + the useMigration002() call once all clients are migrated.
+import { useMigration002 } from "@/migrations/002-photos-to-storage";
 import { loadDemoData } from "@/lib/loadDemoData";
 
 /* ── Sidebar icon ───────────────────────────────────────────────── */
@@ -226,7 +228,10 @@ const RoleBanner = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className={cn(btn, "bg-indigo-500/20 border-indigo-400/40 text-indigo-200 hover:bg-indigo-500/30 hover:text-indigo-200")}
+                  className={cn(
+                    btn,
+                    "bg-indigo-500/20 border-indigo-400/40 text-indigo-200 hover:bg-indigo-500/30 hover:text-indigo-200",
+                  )}
                 >
                   <FlaskConical size={11} />
                   Demo
@@ -298,6 +303,11 @@ export const AppShell = () => {
   const { role } = useAuth();
   const isTrials = location.pathname.startsWith("/trials");
   const isIngredients = location.pathname === "/ingredients";
+
+  // CLEANUP(migration-002, 2026-06-28): temporary — remove once all clients are
+  // migrated (no base64 left in any snapshot). See migrations/002-photos-to-storage.ts.
+  // Owner-only: migrate any legacy base64 photos to Storage on load.
+  useMigration002();
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-muted/60">

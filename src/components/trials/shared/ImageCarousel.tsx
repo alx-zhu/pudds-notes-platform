@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { resolveMediaSrc, isVideoSrc } from "@/lib/storage";
 
 interface Props {
   photos: string[];
@@ -31,11 +32,28 @@ export const ImageCarousel = ({ photos, labels, className }: Props) => {
 
   return (
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
-      <img
-        src={photos[clampedIndex]}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {isVideoSrc(photos[clampedIndex]) ? (
+        <>
+          <video
+            src={resolveMediaSrc(photos[clampedIndex])}
+            className="absolute inset-0 w-full h-full object-cover bg-black"
+            muted
+            playsInline
+            preload="metadata"
+          />
+          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="h-7 w-7 rounded-full bg-black/55 flex items-center justify-center">
+              <Play size={12} className="text-white fill-white" />
+            </span>
+          </span>
+        </>
+      ) : (
+        <img
+          src={resolveMediaSrc(photos[clampedIndex])}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* Storage label badge */}
       {labels?.[clampedIndex] && (
