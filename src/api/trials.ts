@@ -11,8 +11,8 @@ import type {
   FoulingResult,
   TrialVisibility,
   Observation,
-  ObservationMedia,
 } from "@/types/trial";
+import type { MediaRef } from "@/types/media";
 import { simulateApiCall } from "./client";
 import { resolveForTrial, removeAllForTrial } from "./trialIngredients";
 import { runMigrations } from "./migration";
@@ -35,7 +35,7 @@ export interface ObservationInput {
   /** Present = edit existing observation; absent = create new. */
   id?: string;
   caption?: string;
-  media: ObservationMedia[];
+  media: MediaRef[];
 }
 
 const collectObservationMediaPaths = (record: TrialRecord): string[] =>

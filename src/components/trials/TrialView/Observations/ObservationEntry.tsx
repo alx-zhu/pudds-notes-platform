@@ -1,7 +1,7 @@
-import { Pencil, Play } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
-import { getMediaUrl } from "@/lib/storage";
+import { MediaStrip } from "@/components/trials/shared/media/MediaStrip";
 import type { Observation } from "@/types/trial";
 
 interface Props {
@@ -10,8 +10,6 @@ interface Props {
   onEdit: () => void;
   onOpenLightbox: (index: number) => void;
 }
-
-const MAX_TILES = 4;
 
 const mediaMeta = (observation: Observation): string => {
   const parts = [format(parseISO(observation.createdAt), "MMM d, yyyy")];
@@ -33,8 +31,6 @@ export const ObservationEntry = ({
   onOpenLightbox,
 }: Props) => {
   const { caption, media } = observation;
-  const visible = media.slice(0, MAX_TILES);
-  const overflow = media.length - visible.length;
 
   return (
     <div className="relative rounded-xl border border-border p-3.5">
@@ -59,47 +55,8 @@ export const ObservationEntry = ({
       </p>
 
       {media.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {visible.map((m, i) => {
-            const showMore = overflow > 0 && i === MAX_TILES - 1;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => onOpenLightbox(i)}
-                aria-label="Open media"
-                className="relative h-16 w-16 rounded-lg overflow-hidden outline outline-1 outline-border bg-muted cursor-zoom-in"
-              >
-                {m.type === "video" ? (
-                  <video
-                    src={getMediaUrl(m.path)}
-                    className="h-full w-full object-cover"
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
-                ) : (
-                  <img
-                    src={getMediaUrl(m.path)}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                )}
-                {m.type === "video" && !showMore && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="h-5 w-5 rounded-full bg-black/55 flex items-center justify-center">
-                      <Play size={9} className="text-white fill-white" />
-                    </span>
-                  </span>
-                )}
-                {showMore && (
-                  <span className="absolute inset-0 bg-black/55 text-white text-sm font-semibold flex items-center justify-center">
-                    +{overflow}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="mt-3">
+          <MediaStrip media={media} onOpen={onOpenLightbox} />
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import type { MetricKey } from "@/config/sensoryForms";
 import type { ProcessingType, Flavor } from "@/config/trial.config";
 import type { TrialIngredient } from "@/types/ingredient";
+import type { MediaRef } from "@/types/media";
 
 export interface TrialSetup {
   date: string; // ISO string
@@ -63,19 +64,10 @@ export type TrialVisibility = "public" | "private";
 
 /* ── Observations (trial-level open-ended notes + media) ─────────── */
 
-export type ObservationMediaType = "image" | "video";
-
-export interface ObservationMedia {
-  id: string;
-  /** Storage path in the `trial-media` bucket; URL derived at render. */
-  path: string;
-  type: ObservationMediaType;
-}
-
 export interface Observation {
   id: string;
   caption?: string; // optional — notes-only allowed
-  media: ObservationMedia[]; // optional/empty — media-only or note-only
+  media: MediaRef[]; // optional/empty — media-only or note-only
   createdAt: string;
   updatedAt: string;
 }
