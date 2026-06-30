@@ -58,6 +58,8 @@ export interface ProcessStep {
 export interface FoulingResult {
   didFoul: boolean;
   timeToFoulingMinutes?: number; // present only when didFoul === true
+  notes?: string; // optional, any outcome
+  media: MediaRef[]; // shared type; optional/empty
 }
 
 export type TrialVisibility = "public" | "private";

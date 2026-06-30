@@ -38,8 +38,10 @@ export interface ObservationInput {
   media: MediaRef[];
 }
 
-const collectObservationMediaPaths = (record: TrialRecord): string[] =>
-  (record.observations ?? []).flatMap((o) => o.media.map((m) => m.path));
+const collectTrialMediaPaths = (record: TrialRecord): string[] => [
+  ...(record.observations ?? []).flatMap((o) => o.media.map((m) => m.path)),
+  ...(record.fouling?.media ?? []).map((m) => m.path),
+];
 
 /* ── Legacy migration ────────────────────────────────────────────── */
 
@@ -583,7 +585,7 @@ export const deleteEvaluation = async (
 export const deleteTrial = async (id: string): Promise<void> => {
   const data = readStorage();
   const target = data.find((t) => t.id === id);
-  const mediaPaths = target ? collectObservationMediaPaths(target) : [];
+  const mediaPaths = target ? collectTrialMediaPaths(target) : [];
   writeStorage(data.filter((t) => t.id !== id));
   removeAllForTrial(id);
   // Best-effort media cleanup after the record is gone (orphans are harmless).

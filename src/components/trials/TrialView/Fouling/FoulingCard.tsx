@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Flame, Pencil, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { MediaStrip } from "@/components/trials/shared/media/MediaStrip";
+import { MediaLightbox } from "@/components/trials/shared/media/MediaLightbox";
 import { useReadOnly } from "@/contexts/ReadOnlyContext";
 import { useTrial } from "@/hooks/useTrials";
 import { decomposeMinutes } from "@/lib/storageTime";
@@ -15,12 +17,29 @@ export const FoulingCard = ({ trialId }: Props) => {
   const { data: trial } = useTrial(trialId);
   const isReadOnly = useReadOnly();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const fouling = trial?.fouling;
+  const media = fouling?.media ?? [];
 
-  const timeDisplay = fouling?.didFoul && fouling.timeToFoulingMinutes != null
-    ? decomposeMinutes(fouling.timeToFoulingMinutes)
-    : null;
+  const timeDisplay =
+    fouling?.didFoul && fouling.timeToFoulingMinutes != null
+      ? decomposeMinutes(fouling.timeToFoulingMinutes)
+      : null;
+
+  const lightboxMeta = fouling
+    ? fouling.didFoul
+      ? timeDisplay
+        ? `Fouled · ${timeDisplay.value} ${timeDisplay.unit}`
+        : "Fouled"
+      : "Did not foul"
+    : undefined;
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   return (
     <>
@@ -60,7 +79,11 @@ export const FoulingCard = ({ trialId }: Props) => {
                 </p>
               </div>
               {!isReadOnly && (
-                <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDialogOpen(true)}
+                >
                   <Plus size={13} className="mr-1" />
                   Add fouling result
                 </Button>
@@ -68,39 +91,50 @@ export const FoulingCard = ({ trialId }: Props) => {
             </div>
           ) : (
             <>
-              {/* Status row */}
+              {/* Status row — dot + label + (gated) inline time badge */}
               <div className="flex items-center gap-2">
                 <div
                   className={`h-2 w-2 rounded-full shrink-0 ${
-                    fouling.didFoul ? "bg-destructive" : "bg-muted-foreground/40"
+                    fouling.didFoul
+                      ? "bg-destructive"
+                      : "bg-muted-foreground/40"
                   }`}
                 />
                 <span
                   className={`text-sm font-medium ${
-                    fouling.didFoul ? "text-destructive" : "text-muted-foreground"
+                    fouling.didFoul
+                      ? "text-destructive"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {fouling.didFoul ? "Did foul" : "Did not foul"}
                 </span>
+                {timeDisplay != null && (
+                  <span className="ml-auto text-xs text-muted-foreground bg-muted rounded-md px-2 py-1 tabular-nums">
+                    {timeDisplay.value} {timeDisplay.unit} to foul
+                  </span>
+                )}
               </div>
 
-              {/* Time block — only when fouled and time is set */}
-              {timeDisplay != null && (
+              {/* Notes — any outcome */}
+              {fouling.notes && (
                 <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-foreground tabular-nums">
-                      {timeDisplay.value}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {timeDisplay.unit}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Time to fouling
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                    Notes
                   </p>
+                  <p className="text-sm leading-relaxed">{fouling.notes}</p>
                 </div>
               )}
 
+              {/* Media — any outcome */}
+              {media.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                    Photos &amp; video
+                  </p>
+                  <MediaStrip media={media} onOpen={openLightbox} />
+                </div>
+              )}
             </>
           )}
         </CardContent>
@@ -112,6 +146,22 @@ export const FoulingCard = ({ trialId }: Props) => {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
+
+      {media.length > 0 && lightboxOpen && (
+        <MediaLightbox
+          open={lightboxOpen}
+          onOpenChange={setLightboxOpen}
+          media={media}
+          startIndex={lightboxIndex}
+          text={fouling?.notes}
+          meta={lightboxMeta}
+          isReadOnly={isReadOnly}
+          onEdit={() => {
+            setLightboxOpen(false);
+            setDialogOpen(true);
+          }}
+        />
+      )}
     </>
   );
 };
